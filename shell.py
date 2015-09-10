@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import os
 import ast
 
 from prompt_toolkit.shortcuts import get_input
@@ -57,7 +58,8 @@ def main():
     history = InMemoryHistory()
     while True:
         try:
-            text = get_input('aws> ', completer=completer)
+            text = get_input('aws> ', completer=completer,
+                             display_completions_in_columns=True)
         except KeyboardInterrupt:
             break
         else:
