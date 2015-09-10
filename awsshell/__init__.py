@@ -11,6 +11,9 @@ from prompt_toolkit.completion import Completer, Completion
 NOOP = {'arguments': [], 'commands': [], 'children': {}}
 
 
+__version__ = '0.0.1'
+
+
 def load_index(filename):
     with open(filename, 'r') as f:
         return ast.literal_eval(f.read())
@@ -68,4 +71,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
