@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+# Sanity check that we can load the index we built.
+
+import sys
+import ast
+with open(sys.argv[1], 'r') as f:
+    index = ast.literal_eval(f.read())
+print "SUCCESS"
