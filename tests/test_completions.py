@@ -171,3 +171,44 @@ def test_autocompletes_global_and_service_args(index_data):
     c('ec2 -')
     c('ec2 --')
     assert c('ec2 --q') == ['--query-ec2', '--query']
+
+
+def test_can_mix_options_and_commands(index_data):
+    index_data['aws']['arguments'] = ['--no-validate-ssl']
+    index_data['aws']['commands'] = ['ec2']
+    index_data['aws']['children'] = {
+        'ec2': {
+            'arguments': ['--query-ec2', '--instance-id'],
+            'commands': ['create-tags', 'describe-instances'],
+            'children': {},
+        }
+    }
+    completer = AWSCLICompleter(index_data)
+    c = completer.autocomplete
+    partial_cmd = 'ec2 --no-validate-ssl'
+    for i in range(len(partial_cmd)):
+        c(partial_cmd[:i])
+
+    assert c('ec2 --no-validate-ssl ') == ['create-tags', 'describe-instances']
+    assert c('ec2 --no-validate-ssl c') == ['create-tags']
+
+
+def test_only_change_context_when_in_index(index_data):
+    index_data['aws']['arguments'] = ['--region']
+    index_data['aws']['commands'] = ['ec2']
+    index_data['aws']['children'] = {
+        'ec2': {
+            'commands': ['create-tags', 'describe-instances'],
+            'children': {},
+            'arguments': [],
+        }
+    }
+    completer = AWSCLICompleter(index_data)
+    c = completer.autocomplete
+    partial_cmd = 'ec2 --region us-west-2'
+    for i in range(len(partial_cmd)):
+        c(partial_cmd[:i])
+
+    # We should ignore "us-west-2" because it's not a child
+    # of ec2.
+    assert c('ec2 --region us-west-2 ') == ['create-tags', 'describe-instances']
