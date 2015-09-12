@@ -32,11 +32,12 @@ setup(
     entry_points={
         'console_scripts': [
             'aws-shell = awsshell:main',
+            'aws-shell-mkindex = awsshell.makeindex:main',
         ]
     },
     license="Apache License 2.0",
     classifiers=(
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'Natural Language :: English',
