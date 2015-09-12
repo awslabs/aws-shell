@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import os
 import ast
+import subprocess
 
 from prompt_toolkit.shortcuts import get_input
 from prompt_toolkit.history import InMemoryHistory
@@ -88,7 +89,10 @@ def main():
         except KeyboardInterrupt:
             break
         else:
-           print 'aws ' + text
+            full_cmd = 'aws ' + text
+            print full_cmd
+            p = subprocess.Popen(full_cmd, shell=True)
+            p.communicate()
 
 
 if __name__ == '__main__':
