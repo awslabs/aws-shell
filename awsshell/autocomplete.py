@@ -15,6 +15,7 @@ class AWSCLICompleter(object):
         self._current_name = 'aws'
         self._current = index_data[self._root_name]
         self._last_position = 0
+        self._current_line = ''
 
     def reset(self):
         # Resets all the state.  Called after a user runs
@@ -27,6 +28,7 @@ class AWSCLICompleter(object):
         """Given a line, return a list of suggestions."""
         LOG.debug("line: %s", line)
         current_length = len(line)
+        self._current_line = line
         if current_length == 1 and self._last_position > 1:
             # Reset state.  This is likely from a user completing
             # a previous command.
@@ -36,6 +38,9 @@ class AWSCLICompleter(object):
             # the current words.
             return self._handle_backspace()
 
+        # This position is important.  We only update the _last_position
+        # after we've checked the special cases above where that value
+        # matters.
         self._last_position = len(line)
         if not line:
             return []
@@ -71,7 +76,20 @@ class AWSCLICompleter(object):
                 cmd.startswith(last_word)]
 
     def _handle_backspace(self):
-        return []
+        return self._complete_from_full_parse()
+
+    def _complete_from_full_parse(self):
+        # We try to avoid calling this, but this is necessary
+        # sometimes.  In this scenario, we're resetting everything
+        # and starting from the very beginning and reparsing
+        # everything.
+        # This is a naive implementation for now.  This
+        # can be optimized.
+        self.reset()
+        line = self._current_line
+        for i in range(len(self._current_line)):
+            self.autocomplete(line[:i])
+        return self.autocomplete(line)
 
     def _autocomplete_options(self, last_word):
         global_args = []

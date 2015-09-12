@@ -85,12 +85,12 @@ def main():
     while True:
         try:
             text = get_input('aws> ', completer=completer,
+                             history=history,
                              display_completions_in_columns=True)
         except KeyboardInterrupt:
             break
         else:
             full_cmd = 'aws ' + text
-            print full_cmd
             p = subprocess.Popen(full_cmd, shell=True)
             p.communicate()
 

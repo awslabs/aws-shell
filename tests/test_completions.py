@@ -119,8 +119,6 @@ def test_can_handle_entire_word_deleted(index_data):
 
 
 def test_can_handle_entire_line_deleted(index_data):
-    # TODO: Implement me.
-    return
     index_data['aws']['commands'] = ['ec2', 's3']
     index_data['aws']['children'] = {
         'ec2': {
