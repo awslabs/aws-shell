@@ -13,6 +13,9 @@ class AWSCLICompleter(object):
             # Reset state.  This is likely from a user completing
             # a previous command.
             self._current = self._index['aws']
+        elif self._last_position < current_length:
+            # TODO: implement me
+            return []
         self._last_position = len(line)
         if not line:
             return []

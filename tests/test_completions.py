@@ -7,7 +7,7 @@ def index_data():
         'aws': {
             'arguments': [],
             'commands': [],
-            'children': [],
+            'children': {},
         }
     }
 
@@ -36,7 +36,7 @@ def test_can_complete_subcommands(index_data):
         'ec2': {
             'arguments': [],
             'commands': ['copy-image', 'copy-snapshot', 'other'],
-            'children': [],
+            'children': {},
         }
     }
     completer = AWSCLICompleter(index_data)
@@ -58,7 +58,7 @@ def test_everything_completed_on_space(index_data):
         'ec2': {
             'arguments': [],
             'commands': ['copy-image', 'copy-snapshot', 'other'],
-            'children': [],
+            'children': {},
         }
     }
     completer = AWSCLICompleter(index_data)
@@ -92,7 +92,7 @@ def test_reset_after_subcommand_completion(index_data):
         'ec2': {
             'arguments': [],
             'commands': ['copy-image', 'copy-snapshot', 'other'],
-            'children': [],
+            'children': {},
         }
     }
     completer = AWSCLICompleter(index_data)
@@ -109,3 +109,35 @@ def test_reset_after_subcommand_completion(index_data):
     # top level commands:
     assert completer.autocomplete('s') == ['s3']
 
+
+def test_backspace_should_complete_previous_command(index_data):
+    pass
+
+
+def test_can_handle_entire_word_deleted(index_data):
+    pass
+
+
+def test_can_handle_entire_line_deleted(index_data):
+    index_data['aws']['commands'] = ['ec2', 's3']
+    index_data['aws']['children'] = {
+        'ec2': {
+            'arguments': [],
+            'commands': ['copy-image', 'copy-snapshot', 'other'],
+            'children': {},
+        }
+    }
+    completer = AWSCLICompleter(index_data)
+    c = completer.autocomplete
+    c('e')
+    c('ec')
+    c('ec2')
+    c('ec2 ')
+    c('ec2 c')
+    c('ec2 co')
+    # Use hits backspace a few times.
+    c('ec2 c')
+    c('ec2 ')
+    c('ec2')
+    # Now we should be auto completing 'ec2'
+    assert c('ec') == ['ec2']
