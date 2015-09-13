@@ -5,6 +5,17 @@ logging.basicConfig(filename='/tmp/completions', level=logging.DEBUG)
 LOG = logging.getLogger(__name__)
 
 
+def is_subsequence(search, value):
+    iter_value = iter(value)
+    for char in search:
+        for inner in iter_value:
+            if inner == char:
+                break
+        else:
+            return False
+    return True
+
+
 class AWSCLICompleter(object):
     def __init__(self, index_data):
         self._index = index_data
@@ -72,8 +83,24 @@ class AWSCLICompleter(object):
             return self._current['commands'][:]
         elif last_word.startswith('-'):
             return self._autocomplete_options(last_word)
-        return [cmd for cmd in self._current['commands'] if
-                cmd.startswith(last_word)]
+        return self._score(last_word, self._current['commands'])
+
+    def _score(self, word, corpus):
+        # This is a set of heuristics for what makes the
+        # most sense to autocomplete.
+        # The first thing are straight prefixes.  If anything
+        # you specify is an actual prefix, then we'll just
+        # stick with that.
+        # Note: I have a feeling I'll be messing with this
+        # algorithm for a while.  It might make sense to refactor
+        # this out.
+        prefix = [c for c in corpus if c.startswith(word)]
+        if prefix:
+            return prefix
+        subsequence = [c for c in corpus if is_subsequence(word, c)]
+        if subsequence:
+            return subsequence
+        return []
 
     def _handle_backspace(self):
         return self._complete_from_full_parse()

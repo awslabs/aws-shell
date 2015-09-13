@@ -1,5 +1,5 @@
 import pytest
-from awsshell.autocomplete import AWSCLICompleter
+from awsshell.autocomplete import AWSCLICompleter, is_subsequence
 
 @pytest.fixture
 def index_data():
@@ -210,3 +210,15 @@ def test_only_change_context_when_in_index(index_data):
     # We should ignore "us-west-2" because it's not a child
     # of ec2.
     assert c('ec2 --region us-west-2 ') == ['create-tags', 'describe-instances']
+
+
+@pytest.mark.parametrize("search,corpus,expected", [
+    ('foo', ['foobar', 'foobaz'], ['foobar', 'foobaz']),
+    ('f', ['foo', 'foobar', 'bar'], ['foo', 'foobar']),
+    ('pre', ['pre', 'prefix', 'not'], ['pre', 'prefix']),
+    ('fbb', ['foo-bar-baz', 'fo-ba-baz', 'bar'], ['foo-bar-baz', 'fo-ba-baz']),
+    ('fff', ['fi-fi-fi', 'fo'], ['fi-fi-fi']),
+])
+def test_subsequences(search, corpus, expected):
+    actual = [c for c in corpus if is_subsequence(search, c)]
+    assert actual == expected
