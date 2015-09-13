@@ -37,11 +37,6 @@ def load_index(filename):
 class AWSCLIAutoCompleter(Completer):
     def __init__(self, completer):
         self._completer = completer
-        #self._index = index_data
-        #self._current = index_data['aws']
-        #self._last_position = 0
-        #self._last_completed_arg = None
-        #self._global_options = self._current['arguments']
 
     def get_completions(self, document, complete_event):
         text_before_cursor = document.text_before_cursor
@@ -52,26 +47,6 @@ class AWSCLIAutoCompleter(Completer):
         for completion in completions:
             yield Completion(completion, -len(word_before_cursor),
                              display_meta='')
-        #self._last_position = len(document.text_before_cursor)
-        #if document.char_before_cursor == ' ':
-        #    self._current = self._current['children'].get(
-        #        word_before_cursor, NOOP)
-        #    if word_before_cursor.startswith('--'):
-        #        self._last_completed_arg = word_before_cursor[2:]
-
-        #for cmd in self._current['commands']:
-        #    if cmd.startswith(word_before_cursor):
-        #        #display_meta = self.meta_dict.get(a, '')
-        #        display_meta = ''
-        #        yield Completion(cmd, -len(word_before_cursor), display_meta=display_meta)
-        #for arg in self._current['arguments']:
-        #    if arg.startswith(word_before_cursor):
-        #        display_meta = ''
-        #        yield Completion(arg, -len(word_before_cursor), display_meta=display_meta)
-        #for arg in self._global_options:
-        #    if arg.startswith(word_before_cursor):
-        #        display_meta = 'Documentation for %s YO YO' % arg
-        #        yield Completion(arg, -len(word_before_cursor), display_meta=display_meta)
 
 
 def main():
