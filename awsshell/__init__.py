@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import os
 import ast
+import sys
 import subprocess
 
 from prompt_toolkit.shortcuts import get_input
@@ -60,13 +61,14 @@ def main():
     while True:
         try:
             text = get_input('aws> ', completer=completer,
-                             history=history,
-                             display_completions_in_columns=True)
-        except KeyboardInterrupt:
+                             history=history)
+        except (KeyboardInterrupt, EOFError):
             break
         else:
             full_cmd = 'aws ' + text
-            p = subprocess.Popen(full_cmd, shell=True)
+            p = subprocess.Popen(full_cmd, shell=True, stdout=subprocess.PIPE)
+            for line in p.stdout:
+                sys.stdout.write(line)
             p.communicate()
 
 
