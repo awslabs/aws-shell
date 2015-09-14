@@ -29,9 +29,9 @@ class AWSCLICompleter(object):
         self._current_line = ''
 
     @property
-    def required_args(self):
+    def arg_metadata(self):
         # Returns the required arguments for the current level.
-        return self._current['required_arguments']
+        return self._current['argument_metadata']
 
     def reset(self):
         # Resets all the state.  Called after a user runs

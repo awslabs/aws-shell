@@ -6,6 +6,7 @@ import pprint
 
 try:
     import awscli.clidriver
+    from awscli.argprocess import ParamShorthandDocGen
 except ImportError:
     print "Couldn't import awscli: pip install awscli"
     sys.exit(0)
@@ -14,16 +15,31 @@ from awsshell import determine_index_filename
 
 
 def new_index():
-    return {'arguments': [], 'required_arguments': [],
+    return {'arguments': [], 'argument_metadata': {},
             'commands': [], 'children': {}}
 
+
+SHORTHAND_DOC = ParamShorthandDocGen()
 
 def index_command(index_dict, help_command):
     arg_table = help_command.arg_table
     for arg in arg_table:
-        if arg_table[arg].required:
-            index_dict['required_arguments'].append('--%s' % arg)
+        arg_obj = arg_table[arg]
+        metadata = {
+            'required': arg_obj.required,
+            'type_name': arg_obj.cli_type_name,
+            'minidoc': '',
+            'example': '',
+        }
+        if arg_obj.documentation:
+            metadata['minidoc'] = arg_obj.documentation.split('\n')[0]
+        if SHORTHAND_DOC.supports_shorthand(arg_obj.argument_model):
+            example = SHORTHAND_DOC.generate_shorthand_example(
+                arg, arg_obj.argument_model)
+            metadata['example'] = example
+
         index_dict['arguments'].append('--%s' % arg)
+        index_dict['argument_metadata']['--%s' % arg] = metadata
     for cmd in help_command.command_table:
         index_dict['commands'].append(cmd)
         # Each sub command will trigger a recurse.

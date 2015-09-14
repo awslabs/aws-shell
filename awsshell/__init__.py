@@ -45,14 +45,22 @@ class AWSCLIAutoCompleter(Completer):
         if text_before_cursor.strip():
             word_before_cursor = text_before_cursor.split()[-1]
         completions = self._completer.autocomplete(text_before_cursor)
-        required_args = set(self._completer.required_args)
+        arg_meta = self._completer.arg_metadata
         for completion in completions:
-            if completion.startswith('--') and completion in required_args:
-                display_text = '%s (required)' % completion
+            if completion.startswith('--') and completion in arg_meta:
+                # TODO: Need to handle merging in global options as well.
+                meta = arg_meta[completion]
+                if meta['required']:
+                    display_text = '%s (required)' % completion
+                else:
+                    display_text = completion
+                type_name = arg_meta[completion]['type_name']
+                display_meta = '[%s] %s' % (type_name, arg_meta[completion]['minidoc'])
             else:
                 display_text = completion
+                display_meta = ''
             yield Completion(completion, -len(word_before_cursor),
-                             display=display_text)
+                             display=display_text, display_meta=display_meta)
 
 
 def main():
