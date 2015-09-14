@@ -28,6 +28,11 @@ class AWSCLICompleter(object):
         self._last_position = 0
         self._current_line = ''
 
+    @property
+    def required_args(self):
+        # Returns the required arguments for the current level.
+        return self._current['required_arguments']
+
     def reset(self):
         # Resets all the state.  Called after a user runs
         # a command.

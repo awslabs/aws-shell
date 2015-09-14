@@ -45,9 +45,14 @@ class AWSCLIAutoCompleter(Completer):
         if text_before_cursor.strip():
             word_before_cursor = text_before_cursor.split()[-1]
         completions = self._completer.autocomplete(text_before_cursor)
+        required_args = set(self._completer.required_args)
         for completion in completions:
+            if completion.startswith('--') and completion in required_args:
+                display_text = '%s (required)' % completion
+            else:
+                display_text = completion
             yield Completion(completion, -len(word_before_cursor),
-                             display_meta='')
+                             display=display_text)
 
 
 def main():
@@ -61,6 +66,7 @@ def main():
     while True:
         try:
             text = get_input('aws> ', completer=completer,
+                             display_completions_in_columns=True,
                              history=history)
         except (KeyboardInterrupt, EOFError):
             break

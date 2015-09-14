@@ -13,18 +13,21 @@ except ImportError:
 from awsshell import determine_index_filename
 
 
-# arguments/commands are used for completions
-# children is used for further indexing of subcommands.
-INDEX = {'aws': {'arguments': [], 'commands': [], 'children': {}}}
+def new_index():
+    return {'arguments': [], 'required_arguments': [],
+            'commands': [], 'children': {}}
 
 
 def index_command(index_dict, help_command):
-    for arg in help_command.arg_table:
+    arg_table = help_command.arg_table
+    for arg in arg_table:
+        if arg_table[arg].required:
+            index_dict['required_arguments'].append('--%s' % arg)
         index_dict['arguments'].append('--%s' % arg)
     for cmd in help_command.command_table:
         index_dict['commands'].append(cmd)
         # Each sub command will trigger a recurse.
-        child = {'arguments': [], 'commands': [], 'children': {}}
+        child = new_index()
         index_dict['children'][cmd] = child
         sub_command = help_command.command_table[cmd]
         sub_help_command = sub_command.create_help_command()
@@ -40,10 +43,11 @@ def main():
         args.output = determine_index_filename()
     driver = awscli.clidriver.create_clidriver()
     help_command = driver.create_help_command()
-    current = INDEX['aws']
+    index = {'aws': new_index()}
+    current = index['aws']
     index_command(current, help_command)
 
-    result = pprint.pformat(INDEX)
+    result = pprint.pformat(index)
     if not os.path.isdir(os.path.dirname(args.output)):
         os.makedirs(os.path.dirname(args.output))
     with open(args.output, 'w') as f:
