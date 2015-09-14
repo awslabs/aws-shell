@@ -4,6 +4,7 @@ import os
 import ast
 import sys
 import subprocess
+import tempfile
 
 from prompt_toolkit.shortcuts import get_input
 from prompt_toolkit.history import InMemoryHistory
@@ -85,11 +86,30 @@ def main():
         except (KeyboardInterrupt, EOFError):
             break
         else:
-            full_cmd = 'aws ' + text
-            p = subprocess.Popen(full_cmd, shell=True, stdout=subprocess.PIPE)
-            for line in p.stdout:
-                sys.stdout.write(line)
-            p.communicate()
+            if text.strip() in ['quit', 'exit']:
+                break
+            if text.startswith('.'):
+                # These are special commands.  The only one supported for now
+                # is .edit.
+                if text.startswith('.edit'):
+                    # Hardcoded VIM editor for now.  It's for demo purposes!
+                    all_commands = '\n'.join([h for h in list(history) if not
+                                              h.startswith(('.', '!'))])
+                with tempfile.NamedTemporaryFile('w') as f:
+                    f.write(all_commands)
+                    f.flush()
+                    p = subprocess.Popen(['vim', f.name])
+                    p.communicate()
+            else:
+                if text.startswith('!'):
+                    # Then run the rest as a normally shell command.
+                    full_cmd = text[1:]
+                else:
+                    full_cmd = 'aws ' + text
+                p = subprocess.Popen(full_cmd, shell=True, stdout=subprocess.PIPE)
+                for line in p.stdout:
+                    sys.stdout.write(line)
+                p.communicate()
 
 
 if __name__ == '__main__':
