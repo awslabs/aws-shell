@@ -59,7 +59,11 @@ class AWSCLIAutoCompleter(Completer):
             else:
                 display_text = completion
                 display_meta = ''
-            yield Completion(completion, -len(word_before_cursor),
+            if text_before_cursor and text_before_cursor[-1] == ' ':
+                location = 0
+            else:
+                location = -len(word_before_cursor)
+            yield Completion(completion, location,
                              display=display_text, display_meta=display_meta)
 
 

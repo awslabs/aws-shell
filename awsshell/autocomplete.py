@@ -82,6 +82,11 @@ class AWSCLICompleter(object):
                 if next_command is not None:
                     self._current = next_command
                     self._current_name = last_word
+            elif last_word in self.arg_metadata and \
+                    self.arg_metadata[last_word]['example']:
+                # Then this is an arg with a shorthand example so we'll
+                # suggest that example.
+                return [self.arg_metadata[last_word]['example']]
             # Even if we don't change context, we still want to
             # autocomplete all the commands for the current context
             # in either of the above two cases.
