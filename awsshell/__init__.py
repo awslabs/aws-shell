@@ -8,6 +8,7 @@ import subprocess
 from prompt_toolkit.shortcuts import get_input
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.completion import Completer, Completion
+from prompt_toolkit.filters import Always
 
 from awsshell import autocomplete
 
@@ -79,6 +80,7 @@ def main():
         try:
             text = get_input('aws> ', completer=completer,
                              display_completions_in_columns=True,
+                             vi_mode=Always(),
                              history=history)
         except (KeyboardInterrupt, EOFError):
             break
