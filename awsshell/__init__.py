@@ -93,8 +93,9 @@ def main():
                 # is .edit.
                 if text.startswith('.edit'):
                     # Hardcoded VIM editor for now.  It's for demo purposes!
-                    all_commands = '\n'.join([h for h in list(history) if not
-                                              h.startswith(('.', '!'))])
+                    all_commands = '\n'.join(
+                        ['aws ' + h for h in list(history)
+                         if not h.startswith(('.', '!'))])
                 with tempfile.NamedTemporaryFile('w') as f:
                     f.write(all_commands)
                     f.flush()
@@ -106,9 +107,7 @@ def main():
                     full_cmd = text[1:]
                 else:
                     full_cmd = 'aws ' + text
-                p = subprocess.Popen(full_cmd, shell=True, stdout=subprocess.PIPE)
-                for line in p.stdout:
-                    sys.stdout.write(line)
+                p = subprocess.Popen(full_cmd, shell=True)
                 p.communicate()
 
 
