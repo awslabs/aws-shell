@@ -41,6 +41,14 @@ class AWSCLIAutoCompleter(Completer):
     def __init__(self, completer):
         self._completer = completer
 
+    @property
+    def completer(self):
+        return self._completer
+
+    @completer.setter
+    def completer(self, value):
+        self._completer = value
+
     def get_completions(self, document, complete_event):
         text_before_cursor = document.text_before_cursor
         word_before_cursor = ''
@@ -72,8 +80,9 @@ class AWSCLIAutoCompleter(Completer):
 def main():
     index_file = determine_index_filename()
     if not os.path.isfile(index_file):
-        raise RuntimeError("Index file not created.  Please run "
-                           "aws-shell-mkindex")
+        print("First run, creating autocomplete index...")
+        from awsshell.makeindex import write_index
+        write_index()
     index_data = load_index(index_file)
     completer = AWSCLIAutoCompleter(autocomplete.AWSCLICompleter(index_data))
     history = InMemoryHistory()
