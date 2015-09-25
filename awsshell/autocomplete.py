@@ -1,3 +1,5 @@
+from awsshell.fuzzy import fuzzy_search
+
 EMPTY = {'arguments': [], 'commands': [], 'children': {}}
 import logging
 logging.basicConfig(filename='/tmp/completions', level=logging.DEBUG)
@@ -92,25 +94,8 @@ class AWSCLICompleter(object):
             # in either of the above two cases.
             return self._current['commands'][:]
         elif last_word.startswith('-'):
-            return self._autocomplete_options(last_word)
-        return self._score(last_word, self._current['commands'])
-
-    def _score(self, word, corpus):
-        # This is a set of heuristics for what makes the
-        # most sense to autocomplete.
-        # The first thing are straight prefixes.  If anything
-        # you specify is an actual prefix, then we'll just
-        # stick with that.
-        # Note: I have a feeling I'll be messing with this
-        # algorithm for a while.  It might make sense to refactor
-        # this out.
-        prefix = [c for c in corpus if c.startswith(word)]
-        if prefix:
-            return prefix
-        subsequence = [c for c in corpus if is_subsequence(word, c)]
-        if subsequence:
-            return subsequence
-        return []
+            return fuzzy_search(last_word, self._current['arguments'])
+        return fuzzy_search(last_word, self._current['commands'])
 
     def _handle_backspace(self):
         return self._complete_from_full_parse()
