@@ -53,13 +53,9 @@ def index_command(index_dict, help_command):
         index_command(child, sub_help_command)
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--output',
-                        help='The filename of the index file.')
-    args = parser.parse_args()
-    if args.output is None:
-        args.output = determine_index_filename()
+def write_index(output_filename=None):
+    if output_filename is None:
+        output_filename = determine_index_filename()
     driver = awscli.clidriver.create_clidriver()
     help_command = driver.create_help_command()
     index = {'aws': new_index()}
@@ -67,7 +63,17 @@ def main():
     index_command(current, help_command)
 
     result = pprint.pformat(index)
-    if not os.path.isdir(os.path.dirname(args.output)):
-        os.makedirs(os.path.dirname(args.output))
-    with open(args.output, 'w') as f:
+    if not os.path.isdir(os.path.dirname(output_filename)):
+        os.makedirs(os.path.dirname(output_filename))
+    with open(output_filename, 'w') as f:
         f.write(result)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-o', '--output',
+                        help='The filename of the index file.')
+    args = parser.parse_args()
+    if args.output is None:
+        args.output = determine_index_filename()
+    write_index(args.output)
