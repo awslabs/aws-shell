@@ -37,7 +37,14 @@ def load_index(filename):
         return ast.literal_eval(f.read())
 
 
-class AWSCLIAutoCompleter(Completer):
+class AWSShellCompleter(Completer):
+    """Completer class for the aws-shell.
+
+    This is the completer used specifically for the aws shell.
+    Not to be confused with the AWSCLICompleter, which is more
+    low level, and can be reused in contexts other than the
+    aws shell.
+    """
     def __init__(self, completer):
         self._completer = completer
 
@@ -84,7 +91,7 @@ def main():
         from awsshell.makeindex import write_index
         write_index()
     index_data = load_index(index_file)
-    completer = AWSCLIAutoCompleter(autocomplete.AWSCLICompleter(index_data))
+    completer = AWSShellCompleter(autocomplete.AWSCLICompleter(index_data))
     history = InMemoryHistory()
     while True:
         try:
