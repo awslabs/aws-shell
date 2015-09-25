@@ -12,6 +12,10 @@ except ImportError:
     sys.exit(0)
 
 from awsshell import determine_index_filename
+from awsshell.utils import remove_html
+
+
+SHORTHAND_DOC = ParamShorthandDocGen()
 
 
 def new_index():
@@ -19,7 +23,6 @@ def new_index():
             'commands': [], 'children': {}}
 
 
-SHORTHAND_DOC = ParamShorthandDocGen()
 
 def index_command(index_dict, help_command):
     arg_table = help_command.arg_table
@@ -32,7 +35,7 @@ def index_command(index_dict, help_command):
             'example': '',
         }
         if arg_obj.documentation:
-            metadata['minidoc'] = arg_obj.documentation.split('\n')[0]
+            metadata['minidoc'] = remove_html(arg_obj.documentation.split('\n')[0])
         if SHORTHAND_DOC.supports_shorthand(arg_obj.argument_model):
             example = SHORTHAND_DOC.generate_shorthand_example(
                 arg, arg_obj.argument_model)
