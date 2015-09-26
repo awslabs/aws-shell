@@ -9,9 +9,9 @@ import tempfile
 from prompt_toolkit.shortcuts import get_input
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.completion import Completer, Completion
-from prompt_toolkit.filters import Always
 
 from awsshell import autocomplete
+from awsshell import app
 
 
 NOOP = {'arguments': [], 'commands': [], 'children': {}}
@@ -93,12 +93,11 @@ def main():
     index_data = load_index(index_file)
     completer = AWSShellCompleter(autocomplete.AWSCLICompleter(index_data))
     history = InMemoryHistory()
+    cli = app.create_cli_interface(completer, history)
     while True:
         try:
-            text = get_input('aws> ', completer=completer,
-                             display_completions_in_columns=True,
-                             vi_mode=Always(),
-                             history=history)
+            document = cli.run()
+            text = document.text
         except (KeyboardInterrupt, EOFError):
             break
         else:
