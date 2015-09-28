@@ -29,6 +29,8 @@ class AWSCLICompleter(object):
         self._current = index_data[self._root_name]
         self._last_position = 0
         self._current_line = ''
+        # This will get populated as a command is completed.
+        self.cmd_path = [self._current_name]
 
     @property
     def arg_metadata(self):
@@ -41,6 +43,7 @@ class AWSCLICompleter(object):
         self._current_name = self._root_name
         self._current = self._index[self._root_name]
         self._last_position = 0
+        self.cmd_path = [self._current_name]
 
     def autocomplete(self, line):
         """Given a line, return a list of suggestions."""
@@ -84,6 +87,7 @@ class AWSCLICompleter(object):
                 if next_command is not None:
                     self._current = next_command
                     self._current_name = last_word
+                    self.cmd_path.append(self._current_name)
             elif last_word in self.arg_metadata and \
                     self.arg_metadata[last_word]['example']:
                 # Then this is an arg with a shorthand example so we'll
@@ -94,7 +98,14 @@ class AWSCLICompleter(object):
             # in either of the above two cases.
             return self._current['commands'][:]
         elif last_word.startswith('-'):
-            return fuzzy_search(last_word, self._current['arguments'])
+            # TODO: cache this for the duration of the current context.
+            # We don't need to recompute this until the args are
+            # different.
+            if self._current['arguments'] != self._global_options:
+                all_args = self._current['arguments'] + self._global_options
+            else:
+                all_args = self._current['arguments']
+            return fuzzy_search(last_word, all_args)
         return fuzzy_search(last_word, self._current['commands'])
 
     def _handle_backspace(self):
