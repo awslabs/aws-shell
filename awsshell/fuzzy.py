@@ -57,6 +57,7 @@ def calculate_score(search_string, word):
     #   immediately that this can't be a match.
     if len(search_string) > len(word):
         return 0
+    original_word = word
     score = 1
     search_index = 0
     last_match_index = 0
@@ -67,14 +68,18 @@ def calculate_score(search_string, word):
         i = word.find(search_char)
         if i < 0:
             return 0
-        if word[i - 1] == '-':
+        if i > 0 and word[i - 1] == '-':
             scale = 0.95
         else:
             scale = 1 - (i / float(len(word)))
         score *= scale
-        word = word[i:]
+        word = word[i+1:]
         last_match_index = i
         search_index += 1
         if search_index >= len(search_string):
             break
+    # The more characters that matched the word, the better
+    # so prefer more complete matches.
+    completion_scale = 1 - (len(word) / float(len(original_word)))
+    score *= completion_scale
     return score
