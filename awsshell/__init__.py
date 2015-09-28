@@ -93,37 +93,8 @@ def main():
     index_data = load_index(index_file)
     completer = AWSShellCompleter(autocomplete.AWSCLICompleter(index_data))
     history = InMemoryHistory()
-    cli = app.create_cli_interface(completer, history)
-    while True:
-        try:
-            document = cli.run()
-            text = document.text
-        except (KeyboardInterrupt, EOFError):
-            break
-        else:
-            if text.strip() in ['quit', 'exit']:
-                break
-            if text.startswith('.'):
-                # These are special commands.  The only one supported for now
-                # is .edit.
-                if text.startswith('.edit'):
-                    # Hardcoded VIM editor for now.  It's for demo purposes!
-                    all_commands = '\n'.join(
-                        ['aws ' + h for h in list(history)
-                         if not h.startswith(('.', '!'))])
-                with tempfile.NamedTemporaryFile('w') as f:
-                    f.write(all_commands)
-                    f.flush()
-                    p = subprocess.Popen(['vim', f.name])
-                    p.communicate()
-            else:
-                if text.startswith('!'):
-                    # Then run the rest as a normally shell command.
-                    full_cmd = text[1:]
-                else:
-                    full_cmd = 'aws ' + text
-                p = subprocess.Popen(full_cmd, shell=True)
-                p.communicate()
+    shell = app.create_aws_shell(completer, history)
+    shell.run()
 
 
 if __name__ == '__main__':

@@ -25,228 +25,103 @@ from prompt_toolkit.utils import Callback
 from pygments.token import Token
 
 from awsshell.compat import text_type
+from awsshell.ui import create_default_layout
 
 
-def create_layout():
-    return create_default_layout(
-        u'aws> ', reserve_space_for_menu=True,
-        display_completions_in_columns=True)
+def create_aws_shell(completer, history):
+    return AWSShell(completer, history)
 
 
-def create_buffer(completer, history):
-    return Buffer(
-        history=history,
-        completer=completer,
-        complete_while_typing=Always(),
-        accept_action=AcceptAction.RETURN_DOCUMENT)
+class AWSShell(object):
+    def __init__(self, completer, history):
+        self.completer = completer
+        self.history = history
+        self._cli = None
 
+    @property
+    def cli(self):
+        if self._cli is None:
+            self._cli = self.create_cli_interface()
+        return self._cli
 
-def create_application(completer, history):
-    key_bindings_registry = KeyBindingManager(
-        enable_vi_mode=True,
-        enable_system_bindings=False,
-        enable_open_in_editor=False).registry
-    buffers = {
-        'clidocs': Buffer(read_only=True)
-    }
-
-    return Application(
-        layout=create_layout(),
-        buffers=buffers,
-        buffer=create_buffer(completer, history),
-        on_abort=AbortAction.RAISE_EXCEPTION,
-        on_exit=AbortAction.RAISE_EXCEPTION,
-        on_input_timeout=Callback(on_input_timeout),
-        key_bindings_registry=key_bindings_registry,
-    )
-
-
-def on_input_timeout(cli):
-    buffer = cli.current_buffer
-    document = buffer.document
-    text = document.text
-    cli.buffers['clidocs'].reset(initial_document=Document(text, cursor_position=0))
-
-
-def create_cli_interface(completer, history):
-    # A CommandLineInterface from prompt_toolkit
-    # accepts two things: an application and an
-    # event loop.
-    loop = create_eventloop()
-    app = create_application(completer, history)
-    cli = CommandLineInterface(application=app, eventloop=loop)
-    return cli
-
-
-def create_default_layout(message='', lexer=None, is_password=False,
-                          reserve_space_for_menu=False,
-                          get_prompt_tokens=None, get_bottom_toolbar_tokens=None,
-                          display_completions_in_columns=False,
-                          extra_input_processors=None, multiline=False):
-    """
-    Generate default layout.
-    Returns a ``Layout`` instance.
-
-    :param message: Text to be used as prompt.
-    :param lexer: Lexer to be used for the highlighting.
-    :param is_password: `bool` or `CLIFilter`. When True, display input as '*'.
-    :param reserve_space_for_menu: When True, make sure that a minimal height is
-        allocated in the terminal, in order to display the completion menu.
-    :param get_prompt_tokens: An optional callable that returns the tokens to be
-        shown in the menu. (To be used instead of a `message`.)
-    :param get_bottom_toolbar_tokens: An optional callable that returns the
-        tokens for a toolbar at the bottom.
-    :param display_completions_in_columns: `bool` or `CLIFilter`. Display the
-        completions in multiple columns.
-    :param multiline: `bool` or `CLIFilter`. When True, prefer a layout that is
-        more adapted for multiline input. Text after newlines is automatically
-        indented, and search/arg input is shown below the input, instead of
-        replacing the prompt.
-    """
-    assert isinstance(message, text_type)
-    assert get_bottom_toolbar_tokens is None or callable(get_bottom_toolbar_tokens)
-    assert get_prompt_tokens is None or callable(get_prompt_tokens)
-    assert not (message and get_prompt_tokens)
-
-    display_completions_in_columns = to_cli_filter(display_completions_in_columns)
-    multiline = to_cli_filter(multiline)
-
-    if get_prompt_tokens is None:
-        get_prompt_tokens = lambda _: [(Token.Prompt, message)]
-
-    get_prompt_tokens_1, get_prompt_tokens_2 = _split_multiline_prompt(get_prompt_tokens)
-    # Create processors list.
-    # (DefaultPrompt should always be at the end.)
-    input_processors = [ConditionalProcessor(
-        # By default, only highlight search when the search
-        # input has the focus. (Note that this doesn't mean
-        # there is no search: the Vi 'n' binding for instance
-        # still allows to jump to the next match in
-        # navigation mode.)
-        HighlightSearchProcessor(preview_search=Always()),
-        HasFocus(SEARCH_BUFFER)),
-        HighlightSelectionProcessor(),
-        ConditionalProcessor(PasswordProcessor(), is_password)]
-
-    if extra_input_processors:
-        input_processors.extend(extra_input_processors)
-
-    # Show the prompt before the input (using the DefaultPrompt processor.
-    # This also replaces it with reverse-i-search and 'arg' when required.
-    # (Only for single line mode.)
-    input_processors.append(ConditionalProcessor(
-        DefaultPrompt(get_prompt_tokens), ~multiline))
-
-    # Create bottom toolbar.
-    if get_bottom_toolbar_tokens:
-        toolbars = [ConditionalContainer(
-            Window(TokenListControl(get_bottom_toolbar_tokens,
-                                    default_char=Char(' ', Token.Toolbar)),
-                   height=LayoutDimension.exact(1)),
-            filter=~IsDone() & RendererHeightIsKnown())]
-    else:
-        toolbars = []
-
-    def get_height(cli):
-        # If there is an autocompletion menu to be shown, make sure that our
-        # layout has at least a minimal height in order to display it.
-        if reserve_space_for_menu and not cli.is_done:
-            return LayoutDimension(min=8)
-        else:
-            return LayoutDimension()
-
-    # Create and return Layout instance.
-    return HSplit([
-                      ConditionalContainer(
-                          Window(
-                              TokenListControl(get_prompt_tokens_1),
-                              dont_extend_height=True),
-                          filter=multiline,
-                      ),
-                      VSplit([
-                          # In multiline mode, the prompt is displayed in a left pane.
-                          ConditionalContainer(
-                              Window(
-                                  TokenListControl(get_prompt_tokens_2),
-                                  dont_extend_width=True,
-                              ),
-                              filter=multiline,
-                          ),
-                          # The main input, with completion menus floating on top of it.
-                          FloatContainer(
-                              Window(
-                                  BufferControl(
-                                      input_processors=input_processors,
-                                      lexer=lexer,
-                                      # Enable preview_search, we want to have immediate feedback
-                                      # in reverse-i-search mode.
-                                      preview_search=Always()),
-                                  get_height=get_height,
-                              ),
-                              [
-                                  Float(xcursor=True,
-                                        ycursor=True,
-                                        content=CompletionsMenu(
-                                            max_height=16,
-                                            scroll_offset=1,
-                                            extra_filter=HasFocus(DEFAULT_BUFFER) &
-                                                         ~display_completions_in_columns)),
-                                  Float(xcursor=True,
-                                        ycursor=True,
-                                        content=MultiColumnCompletionsMenu(
-                                            extra_filter=HasFocus(DEFAULT_BUFFER) &
-                                                         display_completions_in_columns,
-                                            show_meta=Always()))
-                              ]
-                          ),
-                      ]),
-                      ConditionalContainer(
-                          content=Window(height=LayoutDimension.exact(1),
-                                         content=FillControl(u'\u2500', token=Token.Separator)),
-                          #filter=HasSignature(python_input) & ShowDocstring(python_input) & ~IsDone()),
-                          filter=~IsDone()),
-                      ConditionalContainer(
-                          content=Window(
-                              BufferControl(
-                                  buffer_name='clidocs',
-                              ),
-                              height=LayoutDimension(max=12)),
-                          #filter=HasSignature(python_input) & ShowDocstring(python_input) & ~IsDone(),
-                          filter=~IsDone(),
-                      ),
-                      ValidationToolbar(),
-                      SystemToolbar(),
-
-                      # In multiline mode, we use two toolbars for 'arg' and 'search'.
-                      ConditionalContainer(ArgToolbar(), multiline),
-                      ConditionalContainer(SearchToolbar(), multiline),
-                  ] + toolbars)
-
-
-def _split_multiline_prompt(get_prompt_tokens):
-    """
-    Take a `get_prompt_tokens` function. and return two new functions instead.
-    One that returns the tokens to be shown on the lines above the input, and
-    another one with the tokens to be shown at the first line of the input.
-    """
-    def before(cli):
-        result = []
-        found_nl = False
-        for token, char in reversed(explode_tokens(get_prompt_tokens(cli))):
-            if char == '\n':
-                found_nl = True
-            elif found_nl:
-                result.insert(0, (token, char))
-        return result
-
-    def first_input_line(cli):
-        result = []
-        for token, char in reversed(explode_tokens(get_prompt_tokens(cli))):
-            if char == '\n':
+    def run(self):
+        while True:
+            try:
+                document = self.cli.run()
+                text = document.text
+            except (KeyboardInterrupt, EOFError):
                 break
             else:
-                result.insert(0, (token, char))
-        return result
+                if text.strip() in ['quit', 'exit']:
+                    break
+                if text.startswith('.'):
+                    # These are special commands.  The only one supported for now
+                    # is .edit.
+                    if text.startswith('.edit'):
+                        # Hardcoded VIM editor for now.  It's for demo purposes!
+                        all_commands = '\n'.join(
+                            ['aws ' + h for h in list(self.history)
+                            if not h.startswith(('.', '!'))])
+                    with tempfile.NamedTemporaryFile('w') as f:
+                        f.write(all_commands)
+                        f.flush()
+                        p = subprocess.Popen(['vim', f.name])
+                        p.communicate()
+                else:
+                    if text.startswith('!'):
+                        # Then run the rest as a normally shell command.
+                        full_cmd = text[1:]
+                    else:
+                        full_cmd = 'aws ' + text
+                    p = subprocess.Popen(full_cmd, shell=True)
+                    p.communicate()
 
-    return before, first_input_line
+    def create_layout(self):
+        return create_default_layout(
+            u'aws> ', reserve_space_for_menu=True,
+            display_completions_in_columns=True)
 
+
+    def create_buffer(self, completer, history):
+        return Buffer(
+            history=history,
+            completer=completer,
+            complete_while_typing=Always(),
+            accept_action=AcceptAction.RETURN_DOCUMENT)
+
+
+    def create_application(self, completer, history):
+        key_bindings_registry = KeyBindingManager(
+            enable_vi_mode=True,
+            enable_system_bindings=False,
+            enable_open_in_editor=False).registry
+        buffers = {
+            'clidocs': Buffer(read_only=True)
+        }
+
+        return Application(
+            layout=self.create_layout(),
+            buffers=buffers,
+            buffer=self.create_buffer(completer, history),
+            on_abort=AbortAction.RAISE_EXCEPTION,
+            on_exit=AbortAction.RAISE_EXCEPTION,
+            on_input_timeout=Callback(self.on_input_timeout),
+            key_bindings_registry=key_bindings_registry,
+        )
+
+
+    def on_input_timeout(self, cli):
+        buffer = cli.current_buffer
+        document = buffer.document
+        text = document.text
+        cli.buffers['clidocs'].reset(initial_document=Document(text, cursor_position=0))
+
+
+    def create_cli_interface(self):
+        # A CommandLineInterface from prompt_toolkit
+        # accepts two things: an application and an
+        # event loop.
+        loop = create_eventloop()
+        app = self.create_application(self.completer, self.history)
+        cli = CommandLineInterface(application=app, eventloop=loop)
+        return cli
