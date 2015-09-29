@@ -101,8 +101,14 @@ class AWSShell(object):
         buffer = cli.current_buffer
         document = buffer.document
         text = document.text
+        command = self.completer.current_command
+        docs = u''
+        #if command:
+        #    output = subprocess.check_output(
+        #        self.completer.completer.cmd_path + ' help')
+        #    docs = output.decode('utf-8')
         cli.buffers['clidocs'].reset(
-            initial_document=Document(text, cursor_position=0))
+            initial_document=Document(command, cursor_position=0))
 
     def create_cli_interface(self):
         # A CommandLineInterface from prompt_toolkit
