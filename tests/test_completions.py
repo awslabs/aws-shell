@@ -83,7 +83,7 @@ def test_reset_auto_complete(index_data):
     completer.autocomplete('fir')
     # Then the user hits enter.
     # Now they've moved on to the next command.
-    assert completer.autocomplete('s') == ['second']
+    assert completer.autocomplete('d') == ['second']
 
 
 def test_reset_after_subcommand_completion(index_data):
@@ -146,6 +146,8 @@ def test_can_handle_entire_line_deleted(index_data):
 def test_autocompletes_argument_names(index_data):
     index_data['aws']['arguments'] = ['--query', '--debug']
     completer = AWSCLICompleter(index_data)
+    # These should only appear once in the output.  So we need
+    # to know if we're a top level argument or not.
     assert completer.autocomplete('-') == ['--query', '--debug']
     assert completer.autocomplete('--q') == ['--query']
 
@@ -168,7 +170,7 @@ def test_autocompletes_global_and_service_args(index_data):
     c('ec2 ')
     c('ec2 -')
     c('ec2 --')
-    assert c('ec2 --q') == ['--query-ec2', '--query']
+    assert c('ec2 --q') == ['--query', '--query-ec2']
 
 
 def test_can_mix_options_and_commands(index_data):
@@ -176,6 +178,7 @@ def test_can_mix_options_and_commands(index_data):
     index_data['aws']['commands'] = ['ec2']
     index_data['aws']['children'] = {
         'ec2': {
+            'argument_metadata': {},
             'arguments': ['--query-ec2', '--instance-id'],
             'commands': ['create-tags', 'describe-instances'],
             'children': {},
@@ -188,7 +191,11 @@ def test_can_mix_options_and_commands(index_data):
         c(partial_cmd[:i])
 
     assert c('ec2 --no-validate-ssl ') == ['create-tags', 'describe-instances']
-    assert c('ec2 --no-validate-ssl c') == ['create-tags']
+    c('ec2 --no-validate-ssl c')
+    c('ec2 --no-validate-ssl cr')
+    c('ec2 --no-validate-ssl cre')
+    c('ec2 --no-validate-ssl crea')
+    assert c('ec2 --no-validate-ssl creat') == ['create-tags']
 
 
 def test_only_change_context_when_in_index(index_data):
@@ -198,6 +205,7 @@ def test_only_change_context_when_in_index(index_data):
         'ec2': {
             'commands': ['create-tags', 'describe-instances'],
             'children': {},
+            'argument_metadata': {},
             'arguments': [],
         }
     }
