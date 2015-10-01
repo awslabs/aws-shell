@@ -32,6 +32,10 @@ class AWSShellCompleter(Completer):
         self._completer = value
 
     @property
+    def last_option(self):
+        return self._completer.last_option
+
+    @property
     def current_command(self):
         return u' '.join(self._completer.cmd_path)
 

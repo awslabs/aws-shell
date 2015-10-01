@@ -1,22 +1,5 @@
 from awsshell.fuzzy import fuzzy_search
 
-EMPTY = {'arguments': [], 'commands': [], 'children': {}}
-import logging
-logging.basicConfig(filename='/tmp/completions', level=logging.DEBUG)
-
-LOG = logging.getLogger(__name__)
-
-
-def is_subsequence(search, value):
-    iter_value = iter(value)
-    for char in search:
-        for inner in iter_value:
-            if inner == char:
-                break
-        else:
-            return False
-    return True
-
 
 class AWSCLICompleter(object):
     def __init__(self, index_data):
@@ -29,13 +12,14 @@ class AWSCLICompleter(object):
         self._current = index_data[self._root_name]
         self._last_position = 0
         self._current_line = ''
+        self.last_option = ''
         # This will get populated as a command is completed.
         self.cmd_path = [self._current_name]
 
     @property
     def arg_metadata(self):
         # Returns the required arguments for the current level.
-        return self._current['argument_metadata']
+        return self._current.get('argument_metadata', {})
 
     def reset(self):
         # Resets all the state.  Called after a user runs
@@ -43,11 +27,11 @@ class AWSCLICompleter(object):
         self._current_name = self._root_name
         self._current = self._index[self._root_name]
         self._last_position = 0
+        self.last_option = ''
         self.cmd_path = [self._current_name]
 
     def autocomplete(self, line):
         """Given a line, return a list of suggestions."""
-        LOG.debug("line: %s", line)
         current_length = len(line)
         self._current_line = line
         if current_length == 1 and self._last_position > 1:
@@ -71,6 +55,10 @@ class AWSCLICompleter(object):
             return self._current['commands']
 
         last_word = line.split()[-1]
+        if last_word in self.arg_metadata:
+            # The last thing we completed was an argument, record
+            # this as self.last_arg
+            self.last_option = last_word
         if line[-1] == ' ':
             # At this point the user has autocompleted a command
             # or an argument and has hit space.  If they've
