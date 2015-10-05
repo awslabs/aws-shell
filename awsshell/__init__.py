@@ -12,6 +12,8 @@ from prompt_toolkit.history import InMemoryHistory
 from awsshell import shellcomplete
 from awsshell import autocomplete
 from awsshell import app
+from awsshell import docs
+from awsshell.compat import StringIO
 
 
 __version__ = '0.0.1'
@@ -29,6 +31,10 @@ def determine_index_filename():
     )
 
 
+def determine_doc_index_filename():
+    return determine_index_filename() + '.docs'
+
+
 def load_index(filename):
     with open(filename, 'r') as f:
         return ast.literal_eval(f.read())
@@ -39,12 +45,27 @@ def main():
     if not os.path.isfile(index_file):
         print("First run, creating autocomplete index...")
         from awsshell.makeindex import write_index
-        write_index()
+        write_index(index_file)
+    doc_index_file = determine_doc_index_filename()
+    if not os.path.isfile(doc_index_file):
+        # TODO: Run in background.  Also capture
+        # stdout/stderr. Our doc generation process generates
+        # a lot of warnings/noise from the renderers.
+        print("First run, creating doc index, this will "
+              "take a few minutes, but only needs to run "
+              "once.")
+        from awsshell.makeindex import write_doc_index
+        sys.stderr = StringIO()
+        try:
+            write_doc_index()
+        finally:
+            sys.stderr = sys.__stderr__
     index_data = load_index(index_file)
+    doc_data = docs.load_doc_index(doc_index_file)
     completer = shellcomplete.AWSShellCompleter(
         autocomplete.AWSCLICompleter(index_data))
     history = InMemoryHistory()
-    shell = app.create_aws_shell(completer, history)
+    shell = app.create_aws_shell(completer, history, doc_data)
     shell.run()
 
 

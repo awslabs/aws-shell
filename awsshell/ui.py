@@ -2,7 +2,7 @@ from prompt_toolkit.document import Document
 from prompt_toolkit.shortcuts import create_eventloop
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.enums import DEFAULT_BUFFER, SEARCH_BUFFER
-from prompt_toolkit.filters import IsDone, HasFocus, Always, RendererHeightIsKnown, to_cli_filter
+from prompt_toolkit.filters import IsDone, HasFocus, Always, RendererHeightIsKnown, to_cli_filter, Filter
 from prompt_toolkit.interface import CommandLineInterface, Application, AbortAction, AcceptAction
 from prompt_toolkit.key_binding.manager import KeyBindingManager
 from prompt_toolkit.layout import Window, HSplit, VSplit, FloatContainer, Float
@@ -22,7 +22,10 @@ from pygments.token import Token
 from awsshell.compat import text_type
 
 
-def create_default_layout(message='', lexer=None, is_password=False,
+# This is borrowed from prompt_toolkit because we actually
+# need to mess with the layouts to get documentation pulled up.
+def create_default_layout(app, message='',
+                          lexer=None, is_password=False,
                           reserve_space_for_menu=False,
                           get_prompt_tokens=None, get_bottom_toolbar_tokens=None,
                           display_completions_in_columns=False,
@@ -147,16 +150,14 @@ def create_default_layout(message='', lexer=None, is_password=False,
                       ConditionalContainer(
                           content=Window(height=LayoutDimension.exact(1),
                                          content=FillControl(u'\u2500', token=Token.Separator)),
-                          #filter=HasSignature(python_input) & ShowDocstring(python_input) & ~IsDone()),
-                          filter=~IsDone()),
+                          filter=HasDocumentation(app) & ~IsDone()),
                       ConditionalContainer(
                           content=Window(
                               BufferControl(
                                   buffer_name='clidocs',
                               ),
-                              height=LayoutDimension(max=12)),
-                          #filter=HasSignature(python_input) & ShowDocstring(python_input) & ~IsDone(),
-                          filter=~IsDone(),
+                              height=LayoutDimension(max=15)),
+                          filter=HasDocumentation(app) & ~IsDone(),
                       ),
                       ValidationToolbar(),
                       SystemToolbar(),
@@ -194,3 +195,10 @@ def _split_multiline_prompt(get_prompt_tokens):
 
     return before, first_input_line
 
+
+class HasDocumentation(Filter):
+    def __init__(self, app):
+        self._app = app
+
+    def __call__(self, cli):
+        return bool(self._app.current_docs)

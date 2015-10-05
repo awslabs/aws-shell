@@ -18,15 +18,17 @@ from prompt_toolkit.utils import Callback
 from awsshell.ui import create_default_layout
 
 
-def create_aws_shell(completer, history):
-    return AWSShell(completer, history)
+def create_aws_shell(completer, history, docs):
+    return AWSShell(completer, history, docs)
 
 
 class AWSShell(object):
-    def __init__(self, completer, history):
+    def __init__(self, completer, history, docs):
         self.completer = completer
         self.history = history
         self._cli = None
+        self._docs = docs
+        self.current_docs = u''
 
     @property
     def cli(self):
@@ -68,7 +70,7 @@ class AWSShell(object):
 
     def create_layout(self):
         return create_default_layout(
-            u'aws> ', reserve_space_for_menu=True,
+            self, u'aws> ', reserve_space_for_menu=True,
             display_completions_in_columns=True)
 
     def create_buffer(self, completer, history):
@@ -101,14 +103,25 @@ class AWSShell(object):
         buffer = cli.current_buffer
         document = buffer.document
         text = document.text
-        command = self.completer.current_command
-        docs = u''
-        #if command:
-        #    output = subprocess.check_output(
-        #        self.completer.completer.cmd_path + ' help')
-        #    docs = output.decode('utf-8')
+        if text.strip():
+            # TODO: Big todo here.  Relying on the completer
+            # command means we're always "a step behind."
+            # We don't pull up docs until you start typing
+            # the next component :(
+            # We need to hook into prompt_toolkits auto
+            # completion event.
+            command = self.completer.current_command
+            key_name = '.'.join(command.split()).encode('utf-8')
+            last_option = self.completer.last_option
+            if last_option:
+                self.current_docs = self._docs.extract_param(
+                    key_name, last_option)
+            else:
+                self.current_docs = self._docs.extract_description(key_name)
+        else:
+            self.current_docs = u''
         cli.buffers['clidocs'].reset(
-            initial_document=Document(command, cursor_position=0))
+            initial_document=Document(self.current_docs, cursor_position=0))
 
     def create_cli_interface(self):
         # A CommandLineInterface from prompt_toolkit
