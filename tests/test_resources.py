@@ -149,3 +149,33 @@ def test_resource_not_included_if_no_has_many():
         'operations': {},
         'resources': {},
     }
+
+
+def test_can_complete_query():
+    built_index = {
+        'dynamodb': {
+            'operations': {
+                'DeleteTable': {
+                    'TableName': {
+                        'resourceName': 'Table',
+                        'resourceIdentifier': 'Name',
+                    }
+                }
+            },
+            'resources': {
+                'Table': {
+                    'operation': 'ListTables',
+                    'resourceIdentifier': {
+                        'Name': 'TableNames[]',
+                    }
+                }
+            }
+        }
+    }
+    q = index.CompleterQuery(built_index)
+    result = q.describe_autocomplete(
+        'dynamodb', 'DeleteTable', 'TableName')
+    assert result.service == 'dynamodb'
+    assert result.operation == 'ListTables'
+    assert result.params == {}
+    assert result.path == 'TableNames[]'

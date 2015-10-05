@@ -1,5 +1,13 @@
 """Index and retrive information from the resource JSON."""
 import jmespath
+from collections import namedtuple
+
+# service - The name of the AWS service
+# operation - The name of the AWS operation
+# params - A dict of params to send in the request (not implemented yet)
+# path - A JMESPath expression to select the expected elements.
+ServerCompletion = namedtuple('ServerCompletion',
+                              ['service', 'operation', 'params', 'path'])
 
 
 def extract_field_from_jmespath(expression):
@@ -55,6 +63,44 @@ class ResourceIndexBuilder(object):
                                 'resourceIdentifier': param['name'],
                             }
         return index
+
+
+class CompleterQuery(object):
+    """Describes how to autocomplete a resource."""
+    def __init__(self, resource_index):
+        self._index = resource_index
+
+    def describe_autocomplete(self, service, operation, param):
+        """
+
+        :type service: str
+        :param service: The AWS service name.
+
+        :type operation: str
+        :param operation: The AWS operation name.
+
+        :type param: str
+        :param param: The name of the parameter being completed.  This must
+            match the casing in the service model (e.g. InstanceIds, not
+            --instance-ids).
+
+        :rtype: ServerCompletion
+        :return: A ServerCompletion object that describes what API call to make
+            in order to complete the response.
+
+        """
+        service_index = self._index[service]
+        if param not in service_index.get('operations', {}).get(operation, {}):
+            return None
+        p = service_index['operations'][operation][param]
+        resource_name = p['resourceName']
+        resource_identifier = p['resourceIdentifier']
+
+        resource_index = service_index['resources'][resource_name]
+        completion_operation = resource_index['operation']
+        path = resource_index['resourceIdentifier'][resource_identifier]
+        return ServerCompletion(service=service, operation=completion_operation,
+                                params={}, path=path)
 
 
 def main():
