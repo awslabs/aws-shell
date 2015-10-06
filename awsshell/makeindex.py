@@ -39,6 +39,9 @@ def index_command(index_dict, help_command):
             'type_name': arg_obj.cli_type_name,
             'minidoc': '',
             'example': '',
+            # The name used in the API call/botocore,
+            # typically CamelCased.
+            'api_name': getattr(arg_obj, '_serialized_name', '')
         }
         if arg_obj.documentation:
             metadata['minidoc'] = remove_html(arg_obj.documentation.split('\n')[0])
@@ -132,5 +135,9 @@ def main():
     args = parser.parse_args()
     if args.output is None:
         args.output = determine_index_filename()
-    #write_index(args.output)
-    write_doc_index()
+    write_index(args.output)
+    #write_doc_index()
+
+
+if __name__ == '__main__':
+    main()
