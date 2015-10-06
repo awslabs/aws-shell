@@ -16,7 +16,7 @@ class AWSShellCompleter(Completer):
     """Completer class for the aws-shell.
 
     This is the completer used specifically for the aws shell.
-    Not to be confused with the AWSCLICompleter, which is more
+    Not to be confused with the AWSCLIModelCompleter, which is more
     low level, and can be reused in contexts other than the
     aws shell.
     """
@@ -43,10 +43,12 @@ class AWSShellCompleter(Completer):
         text_before_cursor = document.text_before_cursor
         word_before_cursor = ''
         if text_before_cursor.strip():
-            word_before_cursor = text_before_cursor.split()[-1]
+            word_before_cursor = text_before_cursor.strip().split()[-1]
         completions = self._completer.autocomplete(text_before_cursor)
         arg_meta = self._completer.arg_metadata
         for completion in completions:
+            # Go through the completions and add inline docs and
+            # mark which options are required.
             if completion.startswith('--') and completion in arg_meta:
                 # TODO: Need to handle merging in global options as well.
                 meta = arg_meta[completion]

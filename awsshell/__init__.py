@@ -63,7 +63,7 @@ def main():
     index_data = load_index(index_file)
     doc_data = docs.load_doc_index(doc_index_file)
     completer = shellcomplete.AWSShellCompleter(
-        autocomplete.AWSCLICompleter(index_data))
+        autocomplete.AWSCLIModelCompleter(index_data))
     history = InMemoryHistory()
     shell = app.create_aws_shell(completer, history, doc_data)
     shell.run()

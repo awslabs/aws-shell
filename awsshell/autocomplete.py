@@ -1,7 +1,13 @@
 from awsshell.fuzzy import fuzzy_search
 
 
-class AWSCLICompleter(object):
+class AWSCLIModelCompleter(object):
+    """Autocompletion based on the JSON models for AWS services.
+
+    This class consumes indexed data based on the JSON models from
+    AWS service (which we pull through botocore's data loaders).
+
+    """
     def __init__(self, index_data):
         self._index = index_data
         self._root_name = 'aws'
@@ -42,6 +48,8 @@ class AWSCLICompleter(object):
             # The user has hit backspace.  We'll need to check
             # the current words.
             return self._handle_backspace()
+        elif current_length != self._last_position + 1:
+            return self._complete_from_full_parse()
 
         # This position is important.  We only update the _last_position
         # after we've checked the special cases above where that value
@@ -108,7 +116,7 @@ class AWSCLICompleter(object):
         # can be optimized.
         self.reset()
         line = self._current_line
-        for i in range(len(self._current_line)):
+        for i in range(1, len(self._current_line)):
             self.autocomplete(line[:i])
         return self.autocomplete(line)
 
