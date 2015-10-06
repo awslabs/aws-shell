@@ -252,3 +252,34 @@ def test_can_handle_skips_in_completion(index_data):
     c = completer.autocomplete
     result = c('ec2 create-ta')
     assert result == ['create-tags']
+
+
+def test_cmd_path_updated_on_completions(index_data):
+    index_data['aws']['commands'] = ['ec2']
+    index_data['aws']['children'] = {
+        'ec2': {
+            'commands': ['create-tags', 'describe-instances'],
+            'argument_metadata': {},
+            'arguments': [],
+            'children': {
+                'create-tags': {
+                    'commands': [],
+                    'argument_metadata': {
+                        '--resources': {'example': '', 'minidoc': 'foo'},
+                        '--tags': {'example': 'bar', 'minidoc': 'baz'},
+                    },
+                    'arguments': ['--resources', '--tags'],
+                }
+            }
+        }
+    }
+    completer = AWSCLIModelCompleter(index_data)
+    c = completer.autocomplete
+    result = c('ec2 create-tags ')
+    assert result == []
+    assert completer.cmd_path == ['aws', 'ec2', 'create-tags']
+    assert completer.arg_metadata == {
+        '--resources': {'example': '', 'minidoc': 'foo'},
+        '--tags': {'example': 'bar', 'minidoc': 'baz'},
+    }
+
