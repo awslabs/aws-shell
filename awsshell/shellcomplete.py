@@ -11,9 +11,9 @@ logic, see awsshell.autocomplete.
 """
 import logging
 from prompt_toolkit.completion import Completer, Completion
+from awsshell import fuzzy
 
 
-logging.basicConfig(filename='/tmp/completions', level=logging.DEBUG)
 LOG = logging.getLogger(__name__)
 
 
@@ -93,8 +93,6 @@ class AWSShellCompleter(Completer):
         completions = self._completer.autocomplete(text_before_cursor)
         prompt_completions = list(self._convert_to_prompt_completions(
             completions, text_before_cursor))
-        LOG.debug("num_completions: %s, text: %s", len(prompt_completions),
-                  text_before_cursor)
         if (not prompt_completions and self._completer.last_option and
                 len(self._completer.cmd_path) == 3):
             # If we couldn't complete anything from the JSON model
@@ -114,12 +112,22 @@ class AWSShellCompleter(Completer):
             param = self._completer.arg_metadata.get(
                 self._completer.last_option, {}).get('api_name')
             if param is not None:
-                results = self._server_side_completer.autocomplete(
+                LOG.debug("Trying to retrieve autcompletion for: "
+                          "%s, %s, %s", service, operation, param)
+                results = self._server_side_completer.retrieve_candidate_values(
                     service, operation, param)
+                LOG.debug("Results for %s, %s, %s: %s",
+                          service, operation, param, results)
+                word_before_cursor = text_before_cursor.strip().split()[-1]
+                location = 0
+                if text_before_cursor[-1] != ' ' and word_before_cursor and results:
+                    # Filter the results down by fuzzy searching what
+                    # the user has provided.
+                    results = fuzzy.fuzzy_search(word_before_cursor, results)
+                    location = -len(word_before_cursor)
                 if results is not None:
                     for result in results:
                         # Insert at the end
-                        location = 0
                         yield Completion(result, location,
                                          display=result,
                                          display_meta='')

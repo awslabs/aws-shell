@@ -163,7 +163,7 @@ class ServerSideCompleter(object):
         self._client_cache[service_name] = client
         return client
 
-    def autocomplete(self, service, operation, param):
+    def retrieve_candidate_values(self, service, operation, param):
         if service not in self._services_with_completions:
             return
         # Example call:

@@ -283,3 +283,57 @@ def test_cmd_path_updated_on_completions(index_data):
         '--tags': {'example': 'bar', 'minidoc': 'baz'},
     }
 
+
+def test_last_option_updated_up_releated_api_params(index_data):
+    index_data['aws']['commands'] = ['ec2']
+    index_data['aws']['children'] = {
+        'ec2': {
+            'commands': ['create-tags'],
+            'argument_metadata': {},
+            'arguments': [],
+            'children': {
+                'create-tags': {
+                    'commands': [],
+                    'argument_metadata': {
+                        '--resources': {'example': '', 'minidoc': 'foo'},
+                        '--tags': {'example': 'bar', 'minidoc': 'baz'},
+                    },
+                    'arguments': ['--resources', '--tags'],
+                    'children': {},
+                }
+            }
+        }
+    }
+    completer = AWSCLIModelCompleter(index_data)
+    completer.autocomplete('ec2 create-tags --resources ')
+    assert completer.last_option == '--resources'
+    completer.autocomplete('ec2 create-tags --resources f --tags ')
+    # last_option should be updated.
+    assert completer.last_option == '--tags'
+
+
+def test_last_option_is_updated_on_global_options(index_data):
+    index_data['aws']['arguments'] = ['--no-sign-request']
+    index_data['aws']['commands'] = ['ec2']
+    index_data['aws']['children'] = {
+        'ec2': {
+            'commands': ['create-tags'],
+            'argument_metadata': {},
+            'arguments': [],
+            'children': {
+                'create-tags': {
+                    'commands': [],
+                    'argument_metadata': {
+                        '--resources': {'example': '', 'minidoc': 'foo'},
+                    },
+                    'arguments': ['--resources'],
+                    'children': {},
+                }
+            }
+        }
+    }
+    completer = AWSCLIModelCompleter(index_data)
+    completer.autocomplete('ec2 create-tags --resources ')
+    assert completer.last_option == '--resources'
+    completer.autocomplete('ec2 create-tags --resources f --no-sign-request ')
+    assert completer.last_option == '--no-sign-request'

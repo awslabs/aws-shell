@@ -63,7 +63,7 @@ class AWSCLIModelCompleter(object):
             return self._current['commands']
 
         last_word = line.split()[-1]
-        if last_word in self.arg_metadata:
+        if last_word in self.arg_metadata or last_word in self._global_options:
             # The last thing we completed was an argument, record
             # this as self.last_arg
             self.last_option = last_word
