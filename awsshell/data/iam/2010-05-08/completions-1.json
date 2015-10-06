@@ -1,0 +1,234 @@
+{
+  "operations": {
+    "DeleteInstanceProfile": {
+      "InstanceProfileName": {
+        "resourceName": "InstanceProfile", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "CreateLoginProfile": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeletePolicy": {
+      "PolicyArn": {
+        "resourceName": "Policy", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "CreateGroup": {
+      "GroupName": {
+        "resourceName": "Group", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DetachRolePolicy": {
+      "RoleName": {
+        "resourceName": "Role", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "EnableMFADevice": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteSAMLProvider": {
+      "SAMLProviderArn": {
+        "resourceName": "SamlProvider", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "UpdateUser": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "PutGroupPolicy": {
+      "GroupName": {
+        "resourceName": "Group", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteVirtualMFADevice": {
+      "SerialNumber": {
+        "resourceName": "VirtualMfaDevice", 
+        "resourceIdentifier": "SerialNumber"
+      }
+    }, 
+    "DeleteGroup": {
+      "GroupName": {
+        "resourceName": "Group", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteRole": {
+      "RoleName": {
+        "resourceName": "Role", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "AttachGroupPolicy": {
+      "PolicyArn": {
+        "resourceName": "Policy", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "CreateAccessKey": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "UpdateServerCertificate": {
+      "ServerCertificateName": {
+        "resourceName": "ServerCertificate", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "AddUserToGroup": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "UpdateSAMLProvider": {
+      "SAMLProviderArn": {
+        "resourceName": "SamlProvider", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "RemoveRoleFromInstanceProfile": {
+      "InstanceProfileName": {
+        "resourceName": "InstanceProfile", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DetachUserPolicy": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteUser": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "CreatePolicyVersion": {
+      "PolicyArn": {
+        "resourceName": "Policy", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "AttachRolePolicy": {
+      "RoleName": {
+        "resourceName": "Role", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "RemoveUserFromGroup": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "AttachUserPolicy": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "PutUserPolicy": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteServerCertificate": {
+      "ServerCertificateName": {
+        "resourceName": "ServerCertificate", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "UpdateGroup": {
+      "GroupName": {
+        "resourceName": "Group", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "CreateUser": {
+      "UserName": {
+        "resourceName": "User", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DetachGroupPolicy": {
+      "PolicyArn": {
+        "resourceName": "Policy", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "AddRoleToInstanceProfile": {
+      "InstanceProfileName": {
+        "resourceName": "InstanceProfile", 
+        "resourceIdentifier": "Name"
+      }
+    }
+  }, 
+  "resources": {
+    "Group": {
+      "operation": "ListGroups", 
+      "resourceIdentifier": {
+        "Name": "Groups[].GroupName"
+      }
+    }, 
+    "VirtualMfaDevice": {
+      "operation": "ListVirtualMFADevices", 
+      "resourceIdentifier": {
+        "SerialNumber": "VirtualMFADevices[].SerialNumber"
+      }
+    }, 
+    "InstanceProfile": {
+      "operation": "ListInstanceProfiles", 
+      "resourceIdentifier": {
+        "Name": "InstanceProfiles[].InstanceProfileName"
+      }
+    }, 
+    "Role": {
+      "operation": "ListRoles", 
+      "resourceIdentifier": {
+        "Name": "Roles[].RoleName"
+      }
+    }, 
+    "User": {
+      "operation": "ListUsers", 
+      "resourceIdentifier": {
+        "Name": "Users[].UserName"
+      }
+    }, 
+    "Policy": {
+      "operation": "ListPolicies", 
+      "resourceIdentifier": {
+        "Arn": "Policies[].Arn"
+      }
+    }, 
+    "SamlProvider": {
+      "operation": "ListSAMLProviders", 
+      "resourceIdentifier": {
+        "Arn": "SAMLProviderList[].Arn"
+      }
+    }, 
+    "ServerCertificate": {
+      "operation": "ListServerCertificates", 
+      "resourceIdentifier": {
+        "Name": "ServerCertificateMetadataList[].ServerCertificateName"
+      }
+    }
+  }
+}

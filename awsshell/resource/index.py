@@ -14,6 +14,7 @@ The classes are organized as follows:
   return a list of completions for you.
 
 """
+import os
 import logging
 from collections import namedtuple
 
@@ -135,11 +136,23 @@ class ServerSideCompleter(object):
         self._builder = builder
         self._client_cache = {}
         self._completer_cache = {}
+        self._update_loader_paths()
+        self._services_with_completions = set(
+            self._loader.list_available_services(type_name='completions-1'))
 
-    def _get_completer_for_service(self, service_name, resource_model):
+    def _update_loader_paths(self):
+        completions_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            'data')
+        self._loader.search_paths.insert(0, completions_path)
+
+    def _get_completer_for_service(self, service_name):
         if service_name not in self._completer_cache:
-            index = self._builder.build_index(resource_model)
-            cq = CompleterQuery({service_name: index})
+            api_version = self._loader.determine_latest_version(
+                service_name, 'completions-1')
+            completions_model = self._loader.load_service_model(
+                service_name, 'completions-1', api_version)
+            cq = CompleterQuery({service_name: completions_model})
             self._completer_cache[service_name] = cq
         return self._completer_cache[service_name]
 
@@ -151,18 +164,14 @@ class ServerSideCompleter(object):
         return client
 
     def autocomplete(self, service, operation, param):
+        if service not in self._services_with_completions:
+            return
         # Example call:
         # service='ec2', operation='terminate-instances',
         # param='--instance-ids'.
         # We need to convert this to botocore syntax.
         # First try to load the resource model.
         LOG.debug("Called with: %s, %s, %s", service, operation, param)
-        try:
-            resource_model = self._loader.load_service_model(
-                service, 'resources-1')
-        except Exception as e:
-            # No resource == no server side completion.
-            return
         # Now convert operation to the name used by botocore.
         client = self._get_client(service)
         api_operation_name = client.meta.method_to_api_mapping.get(
@@ -171,8 +180,7 @@ class ServerSideCompleter(object):
             return
         # Now we need to convert the param name to the
         # casing used by the API.
-        completer = self._get_completer_for_service(service,
-                                                    resource_model)
+        completer = self._get_completer_for_service(service)
         result = completer.describe_autocomplete(
             service, api_operation_name, param)
         if result is None:
@@ -189,11 +197,33 @@ class ServerSideCompleter(object):
 
 
 def main():
+    # Generate the latest autocompletion indices from
+    # boto3.  You'll need to do this if you pull in
+    # a new boto3 version that has updated resource models.
     import sys
     import json
+    import os
+    import boto3.session
+    data_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'data')
+    if not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
+    session = boto3.session.Session()
+    loader = session._loader
     builder = ResourceIndexBuilder()
-    index = builder.build_index(json.load(open(sys.argv[1])))
-    print json.dumps(index, indent=2)
+    for resource_name in session.get_available_resources():
+        api_version = loader.determine_latest_version(
+            resource_name, 'resources-1')
+        model = loader.load_service_model(resource_name, 'resources-1',
+                                          api_version)
+        index = builder.build_index(model)
+        output_file = os.path.join(data_dir, resource_name, api_version,
+                                   'completions-1.json')
+        if not os.path.isdir(os.path.dirname(output_file)):
+            os.makedirs(os.path.dirname(output_file))
+        with open(output_file, 'w') as f:
+            f.write(json.dumps(index, indent=2))
 
 
 if __name__ == '__main__':

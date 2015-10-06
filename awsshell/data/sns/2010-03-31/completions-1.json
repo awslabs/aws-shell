@@ -1,0 +1,96 @@
+{
+  "operations": {
+    "ConfirmSubscription": {
+      "TopicArn": {
+        "resourceName": "Topic", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "SetPlatformApplicationAttributes": {
+      "PlatformApplicationArn": {
+        "resourceName": "PlatformApplication", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "Subscribe": {
+      "TopicArn": {
+        "resourceName": "Topic", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "SetTopicAttributes": {
+      "TopicArn": {
+        "resourceName": "Topic", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "DeletePlatformApplication": {
+      "PlatformApplicationArn": {
+        "resourceName": "PlatformApplication", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "SetSubscriptionAttributes": {
+      "SubscriptionArn": {
+        "resourceName": "Subscription", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "Publish": {
+      "TopicArn": {
+        "resourceName": "Topic", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "AddPermission": {
+      "TopicArn": {
+        "resourceName": "Topic", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "Unsubscribe": {
+      "SubscriptionArn": {
+        "resourceName": "Subscription", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "RemovePermission": {
+      "TopicArn": {
+        "resourceName": "Topic", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "CreatePlatformEndpoint": {
+      "PlatformApplicationArn": {
+        "resourceName": "PlatformApplication", 
+        "resourceIdentifier": "Arn"
+      }
+    }, 
+    "DeleteTopic": {
+      "TopicArn": {
+        "resourceName": "Topic", 
+        "resourceIdentifier": "Arn"
+      }
+    }
+  }, 
+  "resources": {
+    "Topic": {
+      "operation": "ListTopics", 
+      "resourceIdentifier": {
+        "Arn": "Topics[].TopicArn"
+      }
+    }, 
+    "PlatformApplication": {
+      "operation": "ListPlatformApplications", 
+      "resourceIdentifier": {
+        "Arn": "PlatformApplications[].PlatformApplicationArn"
+      }
+    }, 
+    "Subscription": {
+      "operation": "ListSubscriptions", 
+      "resourceIdentifier": {
+        "Arn": "Subscriptions[].SubscriptionArn"
+      }
+    }
+  }
+}

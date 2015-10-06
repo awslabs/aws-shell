@@ -1,0 +1,62 @@
+{
+  "operations": {
+    "CreateVault": {
+      "vaultName": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "Name"
+      }, 
+      "accountId": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "AccountId"
+      }
+    }, 
+    "DeleteVault": {
+      "vaultName": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "Name"
+      }, 
+      "accountId": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "AccountId"
+      }
+    }, 
+    "InitiateJob": {
+      "vaultName": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "Name"
+      }, 
+      "accountId": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "AccountId"
+      }
+    }, 
+    "UploadArchive": {
+      "vaultName": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "Name"
+      }, 
+      "accountId": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "AccountId"
+      }
+    }, 
+    "InitiateMultipartUpload": {
+      "vaultName": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "Name"
+      }, 
+      "accountId": {
+        "resourceName": "Vault", 
+        "resourceIdentifier": "AccountId"
+      }
+    }
+  }, 
+  "resources": {
+    "Vault": {
+      "operation": "ListVaults", 
+      "resourceIdentifier": {
+        "AccountId": "accountId"
+      }
+    }
+  }
+}

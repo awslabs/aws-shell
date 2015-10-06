@@ -1,0 +1,60 @@
+{
+  "operations": {
+    "UpdateTable": {
+      "TableName": {
+        "resourceName": "Table", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteTable": {
+      "TableName": {
+        "resourceName": "Table", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "Scan": {
+      "TableName": {
+        "resourceName": "Table", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "GetItem": {
+      "TableName": {
+        "resourceName": "Table", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "Query": {
+      "TableName": {
+        "resourceName": "Table", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "PutItem": {
+      "TableName": {
+        "resourceName": "Table", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "UpdateItem": {
+      "TableName": {
+        "resourceName": "Table", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteItem": {
+      "TableName": {
+        "resourceName": "Table", 
+        "resourceIdentifier": "Name"
+      }
+    }
+  }, 
+  "resources": {
+    "Table": {
+      "operation": "ListTables", 
+      "resourceIdentifier": {
+        "Name": "TableNames[]"
+      }
+    }
+  }
+}

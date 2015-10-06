@@ -1,0 +1,553 @@
+{
+  "operations": {
+    "ResetNetworkInterfaceAttribute": {
+      "NetworkInterfaceId": {
+        "resourceName": "NetworkInterface", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateSubnet": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CopySnapshot": {
+      "SourceSnapshotId": {
+        "resourceName": "Snapshot", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AttachNetworkInterface": {
+      "NetworkInterfaceId": {
+        "resourceName": "NetworkInterface", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "UnassignPrivateIpAddresses": {
+      "NetworkInterfaceId": {
+        "resourceName": "NetworkInterface", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DescribeImageAttribute": {
+      "ImageId": {
+        "resourceName": "Image", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ResetSnapshotAttribute": {
+      "SnapshotId": {
+        "resourceName": "Snapshot", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "StartInstances": {
+      "InstanceIds": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteDhcpOptions": {
+      "DhcpOptionsId": {
+        "resourceName": "DhcpOptions", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "RejectVpcPeeringConnection": {
+      "VpcPeeringConnectionId": {
+        "resourceName": "VpcPeeringConnection", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteInternetGateway": {
+      "InternetGatewayId": {
+        "resourceName": "InternetGateway", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ResetImageAttribute": {
+      "ImageId": {
+        "resourceName": "Image", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ModifyNetworkInterfaceAttribute": {
+      "NetworkInterfaceId": {
+        "resourceName": "NetworkInterface", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "MonitorInstances": {
+      "InstanceIds": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteNetworkAcl": {
+      "NetworkAclId": {
+        "resourceName": "NetworkAcl", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DisableVpcClassicLink": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ModifyInstanceAttribute": {
+      "InstanceId": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "EnableVpcClassicLink": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AssociateDhcpOptions": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AssociateRouteTable": {
+      "RouteTableId": {
+        "resourceName": "RouteTable", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DescribeNetworkInterfaceAttribute": {
+      "NetworkInterfaceId": {
+        "resourceName": "NetworkInterface", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteVpc": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "GetPasswordData": {
+      "InstanceId": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "UnmonitorInstances": {
+      "InstanceIds": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AcceptVpcPeeringConnection": {
+      "VpcPeeringConnectionId": {
+        "resourceName": "VpcPeeringConnection", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteSnapshot": {
+      "SnapshotId": {
+        "resourceName": "Snapshot", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateRoute": {
+      "RouteTableId": {
+        "resourceName": "RouteTable", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateNetworkAclEntry": {
+      "NetworkAclId": {
+        "resourceName": "NetworkAcl", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "RevokeSecurityGroupEgress": {
+      "GroupId": {
+        "resourceName": "SecurityGroup", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeregisterImage": {
+      "ImageId": {
+        "resourceName": "Image", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AssignPrivateIpAddresses": {
+      "NetworkInterfaceId": {
+        "resourceName": "NetworkInterface", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ReportInstanceStatus": {
+      "Instances": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DescribeSnapshotAttribute": {
+      "SnapshotId": {
+        "resourceName": "Snapshot", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteSubnet": {
+      "SubnetId": {
+        "resourceName": "Subnet", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteVolume": {
+      "VolumeId": {
+        "resourceName": "Volume", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateNetworkAcl": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AttachClassicLinkVpc": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteSecurityGroup": {
+      "GroupId": {
+        "resourceName": "SecurityGroup", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateImage": {
+      "InstanceId": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteVpcPeeringConnection": {
+      "VpcPeeringConnectionId": {
+        "resourceName": "VpcPeeringConnection", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ModifyVolumeAttribute": {
+      "VolumeId": {
+        "resourceName": "Volume", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ModifyImageAttribute": {
+      "ImageId": {
+        "resourceName": "Image", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteNetworkAclEntry": {
+      "NetworkAclId": {
+        "resourceName": "NetworkAcl", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "RunInstances": {
+      "SubnetId": {
+        "resourceName": "Subnet", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "GetConsoleOutput": {
+      "InstanceId": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "StopInstances": {
+      "InstanceIds": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ModifySnapshotAttribute": {
+      "SnapshotId": {
+        "resourceName": "Snapshot", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DescribeVpcAttribute": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AttachInternetGateway": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DescribeVolumeAttribute": {
+      "VolumeId": {
+        "resourceName": "Volume", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DetachVolume": {
+      "VolumeId": {
+        "resourceName": "Volume", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ReplaceNetworkAclEntry": {
+      "NetworkAclId": {
+        "resourceName": "NetworkAcl", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AttachVolume": {
+      "VolumeId": {
+        "resourceName": "Volume", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DetachNetworkInterface": {}, 
+    "TerminateInstances": {
+      "InstanceIds": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DetachInternetGateway": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ResetInstanceAttribute": {
+      "InstanceId": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeletePlacementGroup": {
+      "GroupName": {
+        "resourceName": "PlacementGroup", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteRouteTable": {
+      "RouteTableId": {
+        "resourceName": "RouteTable", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateTags": {
+      "Resources": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "EnableVolumeIO": {
+      "VolumeId": {
+        "resourceName": "Volume", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateRouteTable": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateNetworkInterface": {
+      "SubnetId": {
+        "resourceName": "Subnet", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ReplaceNetworkAclAssociation": {
+      "NetworkAclId": {
+        "resourceName": "NetworkAcl", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "ModifyVpcAttribute": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteNetworkInterface": {
+      "NetworkInterfaceId": {
+        "resourceName": "NetworkInterface", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "RebootInstances": {
+      "InstanceIds": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DescribeVolumeStatus": {
+      "VolumeIds": {
+        "resourceName": "Volume", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DetachClassicLinkVpc": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "AuthorizeSecurityGroupEgress": {
+      "GroupId": {
+        "resourceName": "SecurityGroup", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateVpcPeeringConnection": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "RevokeSecurityGroupIngress": {
+      "GroupId": {
+        "resourceName": "SecurityGroup", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateSecurityGroup": {
+      "VpcId": {
+        "resourceName": "Vpc", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteKeyPair": {
+      "KeyName": {
+        "resourceName": "KeyPair", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "AuthorizeSecurityGroupIngress": {
+      "GroupId": {
+        "resourceName": "SecurityGroup", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "CreateSnapshot": {
+      "VolumeId": {
+        "resourceName": "Volume", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DescribeInstanceAttribute": {
+      "InstanceId": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }
+  }, 
+  "resources": {
+    "Subnet": {
+      "operation": "DescribeSubnets", 
+      "resourceIdentifier": {
+        "Id": "Subnets[].SubnetId"
+      }
+    }, 
+    "VpcPeeringConnection": {
+      "operation": "DescribeVpcPeeringConnections", 
+      "resourceIdentifier": {
+        "Id": "VpcPeeringConnections[].VpcPeeringConnectionId"
+      }
+    }, 
+    "NetworkAcl": {
+      "operation": "DescribeNetworkAcls", 
+      "resourceIdentifier": {
+        "Id": "NetworkAcls[].NetworkAclId"
+      }
+    }, 
+    "RouteTable": {
+      "operation": "DescribeRouteTables", 
+      "resourceIdentifier": {
+        "Id": "RouteTables[].RouteTableId"
+      }
+    }, 
+    "Snapshot": {
+      "operation": "DescribeSnapshots", 
+      "resourceIdentifier": {
+        "Id": "Snapshots[].SnapshotId"
+      }
+    }, 
+    "DhcpOptions": {
+      "operation": "DescribeDhcpOptions", 
+      "resourceIdentifier": {
+        "Id": "DhcpOptions[].DhcpOptionsId"
+      }
+    }, 
+    "SecurityGroup": {
+      "operation": "DescribeSecurityGroups", 
+      "resourceIdentifier": {
+        "Id": "SecurityGroups[].GroupId"
+      }
+    }, 
+    "NetworkInterface": {
+      "operation": "DescribeNetworkInterfaces", 
+      "resourceIdentifier": {
+        "Id": "NetworkInterfaces[].NetworkInterfaceId"
+      }
+    }, 
+    "Volume": {
+      "operation": "DescribeVolumes", 
+      "resourceIdentifier": {
+        "Id": "Volumes[].VolumeId"
+      }
+    }, 
+    "Instance": {
+      "operation": "DescribeInstances", 
+      "resourceIdentifier": {
+        "Id": "Reservations[].Instances[].InstanceId"
+      }
+    }, 
+    "KeyPair": {
+      "operation": "DescribeKeyPairs", 
+      "resourceIdentifier": {
+        "Name": "KeyPairs[].KeyName"
+      }
+    }, 
+    "InternetGateway": {
+      "operation": "DescribeInternetGateways", 
+      "resourceIdentifier": {
+        "Id": "InternetGateways[].InternetGatewayId"
+      }
+    }, 
+    "Vpc": {
+      "operation": "DescribeVpcs", 
+      "resourceIdentifier": {
+        "Id": "Vpcs[].VpcId"
+      }
+    }, 
+    "PlacementGroup": {
+      "operation": "DescribePlacementGroups", 
+      "resourceIdentifier": {
+        "Name": "PlacementGroups[].GroupName"
+      }
+    }, 
+    "Image": {
+      "operation": "DescribeImages", 
+      "resourceIdentifier": {
+        "Id": "Images[].ImageId"
+      }
+    }
+  }
+}
