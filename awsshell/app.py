@@ -69,6 +69,10 @@ class AWSShell(object):
                         full_cmd = text[1:]
                     else:
                         full_cmd = 'aws ' + text
+                    self.current_docs = u''
+                    self.cli.buffers['clidocs'].reset(
+                        initial_document=Document(self.current_docs, cursor_position=0))
+                    self.cli.request_redraw()
                     p = subprocess.Popen(full_cmd, shell=True)
                     p.communicate()
 
