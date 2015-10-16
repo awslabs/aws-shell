@@ -1,0 +1,72 @@
+{
+  "operations": {
+    "SetQueueAttributes": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "SendMessageBatch": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "DeleteMessageBatch": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "AddPermission": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "ChangeMessageVisibilityBatch": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "SendMessage": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "DeleteQueue": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "PurgeQueue": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "ReceiveMessage": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }, 
+    "RemovePermission": {
+      "QueueUrl": {
+        "resourceName": "Queue", 
+        "resourceIdentifier": "Url"
+      }
+    }
+  }, 
+  "resources": {
+    "Queue": {
+      "operation": "ListQueues", 
+      "resourceIdentifier": {
+        "Url": "QueueUrls[]"
+      }
+    }
+  }
+}

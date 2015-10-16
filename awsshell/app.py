@@ -5,6 +5,7 @@ Main entry point to the AWS Shell.
 """
 import tempfile
 import subprocess
+import logging
 
 from prompt_toolkit.document import Document
 from prompt_toolkit.shortcuts import create_eventloop
@@ -16,6 +17,9 @@ from prompt_toolkit.key_binding.manager import KeyBindingManager
 from prompt_toolkit.utils import Callback
 
 from awsshell.ui import create_default_layout
+
+
+LOG = logging.getLogger(__name__)
 
 
 def create_aws_shell(completer, history, docs):
@@ -65,6 +69,10 @@ class AWSShell(object):
                         full_cmd = text[1:]
                     else:
                         full_cmd = 'aws ' + text
+                    self.current_docs = u''
+                    self.cli.buffers['clidocs'].reset(
+                        initial_document=Document(self.current_docs, cursor_position=0))
+                    self.cli.request_redraw()
                     p = subprocess.Popen(full_cmd, shell=True)
                     p.communicate()
 
@@ -103,13 +111,9 @@ class AWSShell(object):
         buffer = cli.current_buffer
         document = buffer.document
         text = document.text
+        LOG.debug("document.text = %s", text)
+        LOG.debug("current_command = %s", self.completer.current_command)
         if text.strip():
-            # TODO: Big todo here.  Relying on the completer
-            # command means we're always "a step behind."
-            # We don't pull up docs until you start typing
-            # the next component :(
-            # We need to hook into prompt_toolkits auto
-            # completion event.
             command = self.completer.current_command
             key_name = '.'.join(command.split()).encode('utf-8')
             last_option = self.completer.last_option
@@ -122,6 +126,7 @@ class AWSShell(object):
             self.current_docs = u''
         cli.buffers['clidocs'].reset(
             initial_document=Document(self.current_docs, cursor_position=0))
+        cli.request_redraw()
 
     def create_cli_interface(self):
         # A CommandLineInterface from prompt_toolkit

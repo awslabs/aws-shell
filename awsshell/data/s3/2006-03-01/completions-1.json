@@ -1,0 +1,36 @@
+{
+  "operations": {
+    "CreateBucket": {
+      "Bucket": {
+        "resourceName": "Bucket", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "PutObject": {
+      "Bucket": {
+        "resourceName": "Bucket", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteObjects": {
+      "Bucket": {
+        "resourceName": "Bucket", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteBucket": {
+      "Bucket": {
+        "resourceName": "Bucket", 
+        "resourceIdentifier": "Name"
+      }
+    }
+  }, 
+  "resources": {
+    "Bucket": {
+      "operation": "ListBuckets", 
+      "resourceIdentifier": {
+        "Name": "Buckets[].Name"
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "operations": {
+    "CreateLayer": {
+      "StackId": {
+        "resourceName": "Stack", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
+    "DeleteStack": {
+      "StackId": {
+        "resourceName": "Stack", 
+        "resourceIdentifier": "Id"
+      }
+    }
+  }, 
+  "resources": {
+    "Stack": {
+      "operation": "DescribeStacks", 
+      "resourceIdentifier": {
+        "Id": "Stacks[].StackId"
+      }
+    }
+  }
+}

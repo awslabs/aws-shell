@@ -1,0 +1,30 @@
+{
+  "operations": {
+    "UpdateStack": {
+      "StackName": {
+        "resourceName": "Stack", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "DeleteStack": {
+      "StackName": {
+        "resourceName": "Stack", 
+        "resourceIdentifier": "Name"
+      }
+    }, 
+    "CancelUpdateStack": {
+      "StackName": {
+        "resourceName": "Stack", 
+        "resourceIdentifier": "Name"
+      }
+    }
+  }, 
+  "resources": {
+    "Stack": {
+      "operation": "DescribeStacks", 
+      "resourceIdentifier": {
+        "Name": "Stacks[].StackName"
+      }
+    }
+  }
+}
