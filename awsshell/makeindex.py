@@ -2,7 +2,7 @@
 import os
 import sys
 import argparse
-import pprint
+import json
 from subprocess import Popen, PIPE
 from six import BytesIO
 
@@ -71,7 +71,7 @@ def write_index(output_filename=None):
     current = index['aws']
     index_command(current, help_command)
 
-    result = pprint.pformat(index)
+    result = json.dumps(index)
     if not os.path.isdir(os.path.dirname(output_filename)):
         os.makedirs(os.path.dirname(output_filename))
     with open(output_filename, 'w') as f:

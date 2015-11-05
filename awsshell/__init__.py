@@ -14,6 +14,7 @@ from awsshell import autocomplete
 from awsshell import app
 from awsshell import docs
 from awsshell.compat import StringIO
+from awsshell import loaders
 
 
 __version__ = '0.0.1'
@@ -25,10 +26,8 @@ def determine_index_filename():
     # CLI version, so if you update your CLI, then you need to
     # update your version.
     import awscli
-    return os.path.join(
-        os.path.expanduser('~'), '.aws', 'shell',
-        '%s-completions.idx' % awscli.__version__,
-    )
+    return loaders.JSONIndexLoader.index_filename(
+        awscli.__version__)
 
 
 def determine_doc_index_filename():
@@ -36,8 +35,8 @@ def determine_doc_index_filename():
 
 
 def load_index(filename):
-    with open(filename, 'r') as f:
-        return ast.literal_eval(f.read())
+    load = loaders.JSONIndexLoader()
+    return load.load_index(filename)
 
 
 def main():
