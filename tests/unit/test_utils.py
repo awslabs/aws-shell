@@ -5,6 +5,7 @@ import shutil
 
 from awsshell.utils import FSLayer
 from awsshell.utils import InMemoryFSLayer
+from awsshell.utils import FileReadError
 
 
 class TestFSLayer(unittest.TestCase):
@@ -40,6 +41,11 @@ class TestFSLayer(unittest.TestCase):
 
         self.assertTrue(self.fslayer.file_exists(self.temporary_filename))
 
+    def test_file_does_not_exist_error(self):
+        with self.assertRaises(FileReadError):
+            self.fslayer.file_contents('/tmp/thisdoesnot-exist.asdf')
+
+
 
 class TestInMemoryFSLayer(unittest.TestCase):
     def setUp(self):
@@ -55,3 +61,7 @@ class TestInMemoryFSLayer(unittest.TestCase):
         self.assertEqual(self.fslayer.file_contents('/myfile'), 'helloworld')
         self.assertEqual(self.fslayer.file_contents('/myfile', binary=True),
                          b'helloworld')
+
+    def test_file_does_not_exist_error(self):
+        with self.assertRaises(FileReadError):
+            self.fslayer.file_contents('/tmp/thisdoesnot-exist.asdf')

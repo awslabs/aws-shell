@@ -1,7 +1,14 @@
 """Utility module for misc aws shell functions."""
 import os
+import awscli
 
 from awsshell.compat import HTMLParser
+
+AWSCLI_VERSION = awscli.__version__
+
+
+class FileReadError(Exception):
+    pass
 
 
 def remove_html(html):
@@ -41,8 +48,11 @@ class FSLayer(object):
             mode = 'rb'
         else:
             mode = 'r'
-        with open(filename, mode) as f:
-            return f.read()
+        try:
+            with open(filename, mode) as f:
+                return f.read()
+        except (OSError, IOError) as e:
+            raise FileReadError(str(e))
 
     def file_exists(self, filename):
         """Checks if a file exists.
@@ -66,7 +76,10 @@ class InMemoryFSLayer(object):
         self._file_mapping = file_mapping
 
     def file_contents(self, filename, binary=False):
-        contents = self._file_mapping[filename]
+        try:
+            contents = self._file_mapping[filename]
+        except KeyError:
+            raise FileReadError(filename)
         if binary:
             contents = contents.encode('utf-8')
         return contents
