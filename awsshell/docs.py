@@ -36,5 +36,5 @@ class DocRetriever(object):
 if __name__ == '__main__':
     from awsshell import determine_doc_index_filename
     docs = load_doc_index(determine_doc_index_filename())
-    print docs.extract_description('aws.ec2.run-instances')
-    print docs.extract_param('aws.ec2.run-instances', '--placement')
+    print(docs.extract_description('aws.ec2.run-instances'))
+    print(docs.extract_param('aws.ec2.run-instances', '--placement'))
