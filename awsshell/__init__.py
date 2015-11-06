@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
 
 import os
-import ast
 import sys
 import subprocess
 import tempfile
+import json
 
 from prompt_toolkit.shortcuts import get_input
 from prompt_toolkit.history import InMemoryHistory
@@ -15,23 +15,18 @@ from awsshell import app
 from awsshell import docs
 from awsshell.compat import StringIO
 from awsshell import loaders
+from awsshell.index import completion
+from awsshell import utils
 
 
 __version__ = '0.0.1'
 
 
-def determine_index_filename():
-    # Calculate where we should write out the index file.
-    # The intent is that an index file is tied to a specific
-    # CLI version, so if you update your CLI, then you need to
-    # update your version.
-    import awscli
-    return loaders.JSONIndexLoader.index_filename(
-        awscli.__version__)
-
-
 def determine_doc_index_filename():
-    return determine_index_filename() + '.docs'
+    import awscli
+    base = loaders.JSONIndexLoader.index_filename(
+        awscli.__version__)
+    return base + '.docs'
 
 
 def load_index(filename):
@@ -40,11 +35,19 @@ def load_index(filename):
 
 
 def main():
-    index_file = determine_index_filename()
-    if not os.path.isfile(index_file):
+    indexer = completion.CompletionIndex()
+    try:
+        index_str = indexer.load_index(utils.AWSCLI_VERSION)
+        index_data = json.loads(index_str)
+    except completion.IndexLoadError as e:
         print("First run, creating autocomplete index...")
         from awsshell.makeindex import write_index
+        # TODO: Using internal method, but this will eventually
+        # be moved into the CompletionIndex class anyways.
+        index_file = indexer._filename_for_version(utils.AWSCLI_VERSION)
         write_index(index_file)
+        index_str = indexer.load_index(utils.AWSCLI_VERSION)
+        index_data = json.loads(index_str)
     doc_index_file = determine_doc_index_filename()
     if not os.path.isfile(doc_index_file):
         # TODO: Run in background.  Also capture
@@ -59,7 +62,6 @@ def main():
             write_doc_index()
         finally:
             sys.stderr = sys.__stderr__
-    index_data = load_index(index_file)
     doc_data = docs.load_doc_index(doc_index_file)
     completer = shellcomplete.AWSShellCompleter(
         autocomplete.AWSCLIModelCompleter(index_data))
