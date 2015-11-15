@@ -5,7 +5,7 @@ import argparse
 import pprint
 import shelve
 from subprocess import Popen, PIPE
-from cStringIO import StringIO
+from six.moves import cStringIO
 
 from docutils.core import publish_string
 from docutils.writers import manpage
@@ -118,7 +118,7 @@ def _render_docs_for_cmd(help_command):
 class FileRenderer(object):
 
     def __init__(self):
-        self._io = StringIO()
+        self._io = cStringIO()
 
     def render(self, contents):
         self._io.write(contents)
