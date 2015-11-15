@@ -14,7 +14,7 @@ try:
     import awscli.clidriver
     from awscli.argprocess import ParamShorthandDocGen
 except ImportError:
-    print "Couldn't import awscli: pip install awscli"
+    print("Couldn't import awscli: pip install awscli")
     sys.exit(0)
 
 from awsshell import determine_index_filename
