@@ -8,6 +8,7 @@ from setuptools import setup, find_packages
 requires = [
     'awscli>=1.8.9,<2.0.0',
     'prompt-toolkit==0.50',
+    'boto3>=1.2.1',
 ]
 
 
