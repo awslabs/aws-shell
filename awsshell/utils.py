@@ -10,6 +10,8 @@ def remove_html(html):
 
 class DataOnly(HTMLParser):
     def __init__(self):
+        # HTMLParser is an old-style class, which can't be used with super()
+        HTMLParser.__init__(self)
         self.reset()
         self.lines = []
 
