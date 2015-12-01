@@ -1,4 +1,4 @@
-import unittest
+from tests import unittest
 
 from awsshell.index import completion
 from awsshell.utils import InMemoryFSLayer
