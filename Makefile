@@ -31,3 +31,6 @@ check:
 	#
 	#
 	pep257 --add-ignore=D100,D101,D102,D103,D104,D105
+
+coverage:
+	py.test --cov awsshell --cov-report term-missing tests/
