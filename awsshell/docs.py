@@ -1,7 +1,7 @@
-import shelve
+from awsshell import compat
 
 def load_doc_index(filename):
-    return DocRetriever(shelve.open(filename, 'r'))
+    return DocRetriever(compat.dbm.open(filename, 'r'))
 
 
 class DocRetriever(object):
@@ -18,19 +18,21 @@ class DocRetriever(object):
         docs = self._doc_index.get(dot_cmd)
         if docs is None:
             return u''
+        docs = docs.decode('utf-8')
         index = docs.find('SYNOPSIS')
         if index > 0:
             docs = docs[:index]
-        return docs.decode('utf-8')
+        return docs
 
     def extract_param(self, dot_cmd, param_name):
         docs = self._doc_index.get(dot_cmd)
         if docs is None:
             return u''
+        docs = docs.decode('utf-8')
         index = docs.find('OPTIONS')
         param_start_index = docs.find(param_name, index)
         param_end_index = docs.find('  --', param_start_index)
-        return docs[param_start_index:param_end_index].decode('utf-8')
+        return docs[param_start_index:param_end_index]
 
 
 if __name__ == '__main__':

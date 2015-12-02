@@ -3,9 +3,8 @@ import os
 import sys
 import argparse
 import pprint
-import shelve
 from subprocess import Popen, PIPE
-from six.moves import cStringIO
+from six import BytesIO
 
 from docutils.core import publish_string
 from docutils.writers import manpage
@@ -19,6 +18,7 @@ except ImportError:
 
 from awsshell import determine_index_filename
 from awsshell.utils import remove_html
+from awsshell import compat
 
 
 SHORTHAND_DOC = ParamShorthandDocGen()
@@ -83,7 +83,7 @@ def write_doc_index(output_filename=None):
         output_filename = determine_index_filename() + '.docs'
     driver = awscli.clidriver.create_clidriver()
     help_command = driver.create_help_command()
-    db = shelve.open(output_filename, 'c')
+    db = compat.dbm.open(output_filename, 'c')
     try:
         _index_docs(db, help_command)
     finally:
@@ -109,16 +109,17 @@ def _render_docs_for_cmd(help_command):
     p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     groff_output = p.communicate(input=man_contents)[0]
     p2 = Popen(['col', '-bx'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-    text_content = p2.communicate(input=groff_output)[0]
+    text_content = p2.communicate(input=groff_output)[0].decode('utf-8')
     index = text_content.find('DESCRIPTION')
     if index > 0:
         text_content = text_content[index + len('DESCRIPTION'):]
     return text_content
 
+
 class FileRenderer(object):
 
     def __init__(self):
-        self._io = cStringIO()
+        self._io = BytesIO()
 
     def render(self, contents):
         self._io.write(contents)
