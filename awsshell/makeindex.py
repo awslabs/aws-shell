@@ -1,7 +1,7 @@
 """Module for building the autocompletion indices."""
+from __future__ import print_function
 import os
 import sys
-import argparse
 import json
 from subprocess import Popen, PIPE
 from six import BytesIO
@@ -29,7 +29,6 @@ def new_index():
             'commands': [], 'children': {}}
 
 
-
 def index_command(index_dict, help_command):
     arg_table = help_command.arg_table
     for arg in arg_table:
@@ -44,7 +43,8 @@ def index_command(index_dict, help_command):
             'api_name': getattr(arg_obj, '_serialized_name', '')
         }
         if arg_obj.documentation:
-            metadata['minidoc'] = remove_html(arg_obj.documentation.split('\n')[0])
+            metadata['minidoc'] = remove_html(
+                arg_obj.documentation.split('\n')[0])
         if SHORTHAND_DOC.supports_shorthand(arg_obj.argument_model):
             example = SHORTHAND_DOC.generate_shorthand_example(
                 arg, arg_obj.argument_model)
@@ -125,18 +125,3 @@ class FileRenderer(object):
     @property
     def contents(self):
         return self._io.getvalue()
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--output',
-                        help='The filename of the index file.')
-    args = parser.parse_args()
-    if args.output is None:
-        args.output = determine_index_filename()
-    write_index(args.output)
-    #write_doc_index()
-
-
-if __name__ == '__main__':
-    main()
