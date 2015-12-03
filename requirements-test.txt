@@ -1,4 +1,5 @@
 pytest==2.8.2
+pytest-cov==2.2.0
 mock==1.3.0
 tox==2.2.1
 # Note you need at least pip --version of 6.0 or
