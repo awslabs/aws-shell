@@ -54,7 +54,7 @@ class ResourceIndexBuilder(object):
         }
         service = resource_data['service']
         if 'hasMany' in service:
-            for has_many_name, model in service['hasMany'].items():
+            for model in service['hasMany'].values():
                 resource_name = model['resource']['type']
                 for identifier in model['resource']['identifiers']:
                     first_identifier = model['resource']['identifiers'][0]
@@ -71,7 +71,7 @@ class ResourceIndexBuilder(object):
                 continue
             if 'actions' in model:
                 resource_actions = model['actions']
-                for action_name, action_model in resource_actions.items():
+                for action_model in resource_actions.values():
                     op_name = action_model['request']['operation']
                     current = {}
                     index['operations'][op_name] = current
@@ -190,7 +190,7 @@ class ServerSideCompleter(object):
             # params={}, path=u'Reservations[].Instances[].InstanceId')
         try:
             response = getattr(client, xform_name(result.operation, '_'))()
-        except Exception as e:
+        except Exception:
             return
         results = jmespath.search(result.path, response)
         return results

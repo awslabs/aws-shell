@@ -40,6 +40,7 @@ for the word to be a match.
 
 """
 
+
 def fuzzy_search(user_input, corpus):
     candidates = []
     for word in corpus:
@@ -60,10 +61,8 @@ def calculate_score(search_string, word):
     original_word = word
     score = 1
     search_index = 0
-    last_match_index = 0
-
     while True:
-        scale = 1
+        scale = 1.0
         search_char = search_string[search_index]
         i = word.find(search_char)
         if i < 0:
@@ -74,7 +73,6 @@ def calculate_score(search_string, word):
             scale = 1 - (i / float(len(word)))
         score *= scale
         word = word[i+1:]
-        last_match_index = i
         search_index += 1
         if search_index >= len(search_string):
             break

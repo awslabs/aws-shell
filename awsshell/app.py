@@ -71,7 +71,8 @@ class AWSShell(object):
                         full_cmd = 'aws ' + text
                     self.current_docs = u''
                     self.cli.buffers['clidocs'].reset(
-                        initial_document=Document(self.current_docs, cursor_position=0))
+                        initial_document=Document(self.current_docs,
+                                                  cursor_position=0))
                     self.cli.request_redraw()
                     p = subprocess.Popen(full_cmd, shell=True)
                     p.communicate()
@@ -108,8 +109,7 @@ class AWSShell(object):
         )
 
     def on_input_timeout(self, cli):
-        buffer = cli.current_buffer
-        document = buffer.document
+        document = cli.current_buffer.document
         text = document.text
         LOG.debug("document.text = %s", text)
         LOG.debug("current_command = %s", self.completer.current_command)

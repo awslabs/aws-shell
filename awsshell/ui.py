@@ -1,22 +1,21 @@
-from prompt_toolkit.document import Document
-from prompt_toolkit.shortcuts import create_eventloop
-from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.enums import DEFAULT_BUFFER, SEARCH_BUFFER
-from prompt_toolkit.filters import IsDone, HasFocus, Always, RendererHeightIsKnown, to_cli_filter, Filter
-from prompt_toolkit.interface import CommandLineInterface, Application, AbortAction, AcceptAction
-from prompt_toolkit.key_binding.manager import KeyBindingManager
+from prompt_toolkit.filters import IsDone, HasFocus, Always, \
+    RendererHeightIsKnown, to_cli_filter, Filter
 from prompt_toolkit.layout import Window, HSplit, VSplit, FloatContainer, Float
 from prompt_toolkit.layout.containers import ConditionalContainer
-from prompt_toolkit.layout.controls import BufferControl, TokenListControl, FillControl
+from prompt_toolkit.layout.controls import BufferControl, \
+    TokenListControl, FillControl
 from prompt_toolkit.layout.dimension import LayoutDimension
-from prompt_toolkit.layout.menus import CompletionsMenu, MultiColumnCompletionsMenu
-from prompt_toolkit.layout.processors import PasswordProcessor, HighlightSearchProcessor, \
-    HighlightSelectionProcessor, ConditionalProcessor
+from prompt_toolkit.layout.menus import CompletionsMenu, \
+    MultiColumnCompletionsMenu
+from prompt_toolkit.layout.processors import PasswordProcessor, \
+    HighlightSearchProcessor, HighlightSelectionProcessor, \
+    ConditionalProcessor
 from prompt_toolkit.layout.prompt import DefaultPrompt
 from prompt_toolkit.layout.screen import Char
-from prompt_toolkit.layout.toolbars import ValidationToolbar, SystemToolbar, ArgToolbar, SearchToolbar
+from prompt_toolkit.layout.toolbars import ValidationToolbar, \
+    SystemToolbar, ArgToolbar, SearchToolbar
 from prompt_toolkit.layout.utils import explode_tokens
-from prompt_toolkit.utils import Callback
 from pygments.token import Token
 
 from awsshell.compat import text_type
@@ -27,7 +26,8 @@ from awsshell.compat import text_type
 def create_default_layout(app, message='',
                           lexer=None, is_password=False,
                           reserve_space_for_menu=False,
-                          get_prompt_tokens=None, get_bottom_toolbar_tokens=None,
+                          get_prompt_tokens=None,
+                          get_bottom_toolbar_tokens=None,
                           display_completions_in_columns=False,
                           extra_input_processors=None, multiline=False):
     """
@@ -37,10 +37,10 @@ def create_default_layout(app, message='',
     :param message: Text to be used as prompt.
     :param lexer: Lexer to be used for the highlighting.
     :param is_password: `bool` or `CLIFilter`. When True, display input as '*'.
-    :param reserve_space_for_menu: When True, make sure that a minimal height is
-        allocated in the terminal, in order to display the completion menu.
-    :param get_prompt_tokens: An optional callable that returns the tokens to be
-        shown in the menu. (To be used instead of a `message`.)
+    :param reserve_space_for_menu: When True, make sure that a minimal height
+        is allocated in the terminal, in order to display the completion menu.
+    :param get_prompt_tokens: An optional callable that returns the tokens to
+        be shown in the menu. (To be used instead of a `message`.)
     :param get_bottom_toolbar_tokens: An optional callable that returns the
         tokens for a toolbar at the bottom.
     :param display_completions_in_columns: `bool` or `CLIFilter`. Display the
@@ -51,29 +51,34 @@ def create_default_layout(app, message='',
         replacing the prompt.
     """
     assert isinstance(message, text_type)
-    assert get_bottom_toolbar_tokens is None or callable(get_bottom_toolbar_tokens)
+    assert (get_bottom_toolbar_tokens is None or
+            callable(get_bottom_toolbar_tokens))
     assert get_prompt_tokens is None or callable(get_prompt_tokens)
     assert not (message and get_prompt_tokens)
 
-    display_completions_in_columns = to_cli_filter(display_completions_in_columns)
+    display_completions_in_columns = to_cli_filter(
+        display_completions_in_columns)
     multiline = to_cli_filter(multiline)
 
     if get_prompt_tokens is None:
         get_prompt_tokens = lambda _: [(Token.Prompt, message)]
 
-    get_prompt_tokens_1, get_prompt_tokens_2 = _split_multiline_prompt(get_prompt_tokens)
+    get_prompt_tokens_1, get_prompt_tokens_2 = _split_multiline_prompt(
+        get_prompt_tokens)
     # Create processors list.
     # (DefaultPrompt should always be at the end.)
-    input_processors = [ConditionalProcessor(
-        # By default, only highlight search when the search
-        # input has the focus. (Note that this doesn't mean
-        # there is no search: the Vi 'n' binding for instance
-        # still allows to jump to the next match in
-        # navigation mode.)
-        HighlightSearchProcessor(preview_search=Always()),
-        HasFocus(SEARCH_BUFFER)),
+    input_processors = [
+        ConditionalProcessor(
+            # By default, only highlight search when the search
+            # input has the focus. (Note that this doesn't mean
+            # there is no search: the Vi 'n' binding for instance
+            # still allows to jump to the next match in
+            # navigation mode.)
+            HighlightSearchProcessor(preview_search=Always()),
+            HasFocus(SEARCH_BUFFER)),
         HighlightSelectionProcessor(),
-        ConditionalProcessor(PasswordProcessor(), is_password)]
+        ConditionalProcessor(PasswordProcessor(), is_password)
+    ]
 
     if extra_input_processors:
         input_processors.extend(extra_input_processors)
@@ -104,68 +109,69 @@ def create_default_layout(app, message='',
 
     # Create and return Layout instance.
     return HSplit([
-                      ConditionalContainer(
-                          Window(
-                              TokenListControl(get_prompt_tokens_1),
-                              dont_extend_height=True),
-                          filter=multiline,
-                      ),
-                      VSplit([
-                          # In multiline mode, the prompt is displayed in a left pane.
-                          ConditionalContainer(
-                              Window(
-                                  TokenListControl(get_prompt_tokens_2),
-                                  dont_extend_width=True,
-                              ),
-                              filter=multiline,
-                          ),
-                          # The main input, with completion menus floating on top of it.
-                          FloatContainer(
-                              Window(
-                                  BufferControl(
-                                      input_processors=input_processors,
-                                      lexer=lexer,
-                                      # Enable preview_search, we want to have immediate feedback
-                                      # in reverse-i-search mode.
-                                      preview_search=Always()),
-                                  get_height=get_height,
-                              ),
-                              [
-                                  Float(xcursor=True,
-                                        ycursor=True,
-                                        content=CompletionsMenu(
-                                            max_height=16,
-                                            scroll_offset=1,
-                                            extra_filter=HasFocus(DEFAULT_BUFFER) &
-                                                         ~display_completions_in_columns)),
-                                  Float(xcursor=True,
-                                        ycursor=True,
-                                        content=MultiColumnCompletionsMenu(
-                                            extra_filter=HasFocus(DEFAULT_BUFFER) &
-                                                         display_completions_in_columns,
-                                            show_meta=Always()))
-                              ]
-                          ),
-                      ]),
-                      ConditionalContainer(
-                          content=Window(height=LayoutDimension.exact(1),
-                                         content=FillControl(u'\u2500', token=Token.Separator)),
-                          filter=HasDocumentation(app) & ~IsDone()),
-                      ConditionalContainer(
-                          content=Window(
-                              BufferControl(
-                                  buffer_name='clidocs',
-                              ),
-                              height=LayoutDimension(max=15)),
-                          filter=HasDocumentation(app) & ~IsDone(),
-                      ),
-                      ValidationToolbar(),
-                      SystemToolbar(),
+        ConditionalContainer(
+            Window(
+                TokenListControl(get_prompt_tokens_1),
+                dont_extend_height=True),
+            filter=multiline,
+        ),
+        VSplit([
+            # In multiline mode, the prompt is displayed in a left pane.
+            ConditionalContainer(
+                Window(
+                    TokenListControl(get_prompt_tokens_2),
+                    dont_extend_width=True,
+                ),
+                filter=multiline,
+            ),
+            # The main input, with completion menus floating on top of it.
+            FloatContainer(
+                Window(
+                    BufferControl(
+                        input_processors=input_processors,
+                        lexer=lexer,
+                        # Enable preview_search, we want to have immediate
+                        # feedback in reverse-i-search mode.
+                        preview_search=Always()),
+                    get_height=get_height,
+                ),
+                [
+                    Float(xcursor=True,
+                          ycursor=True,
+                          content=CompletionsMenu(
+                              max_height=16,
+                              scroll_offset=1,
+                              extra_filter=(HasFocus(DEFAULT_BUFFER) &
+                                            ~display_completions_in_columns))),
+                    Float(xcursor=True,
+                          ycursor=True,
+                          content=MultiColumnCompletionsMenu(
+                              extra_filter=(HasFocus(DEFAULT_BUFFER) &
+                                            display_completions_in_columns),
+                              show_meta=Always()))
+                ]
+            ),
+        ]),
+        ConditionalContainer(
+            content=Window(height=LayoutDimension.exact(1),
+                           content=FillControl(u'\u2500',
+                                               token=Token.Separator)),
+            filter=HasDocumentation(app) & ~IsDone()),
+        ConditionalContainer(
+            content=Window(
+                BufferControl(
+                    buffer_name='clidocs',
+                ),
+                height=LayoutDimension(max=15)),
+            filter=HasDocumentation(app) & ~IsDone(),
+        ),
+        ValidationToolbar(),
+        SystemToolbar(),
 
-                      # In multiline mode, we use two toolbars for 'arg' and 'search'.
-                      ConditionalContainer(ArgToolbar(), multiline),
-                      ConditionalContainer(SearchToolbar(), multiline),
-                  ] + toolbars)
+        # In multiline mode, we use two toolbars for 'arg' and 'search'.
+        ConditionalContainer(ArgToolbar(), multiline),
+        ConditionalContainer(SearchToolbar(), multiline),
+    ] + toolbars)
 
 
 def _split_multiline_prompt(get_prompt_tokens):

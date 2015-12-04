@@ -1,12 +1,9 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import os
 import sys
-import subprocess
-import tempfile
 import json
 
-from prompt_toolkit.shortcuts import get_input
 from prompt_toolkit.history import InMemoryHistory
 
 from awsshell import shellcomplete
@@ -39,7 +36,7 @@ def main():
     try:
         index_str = indexer.load_index(utils.AWSCLI_VERSION)
         index_data = json.loads(index_str)
-    except completion.IndexLoadError as e:
+    except completion.IndexLoadError:
         print("First run, creating autocomplete index...")
         from awsshell.makeindex import write_index
         # TODO: Using internal method, but this will eventually

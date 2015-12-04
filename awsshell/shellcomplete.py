@@ -76,7 +76,8 @@ class AWSShellCompleter(Completer):
                 else:
                     display_text = completion
                 type_name = arg_meta[completion]['type_name']
-                display_meta = '[%s] %s' % (type_name, arg_meta[completion]['minidoc'])
+                display_meta = '[%s] %s' % (type_name,
+                                            arg_meta[completion]['minidoc'])
             else:
                 display_text = completion
                 display_meta = ''
@@ -86,7 +87,6 @@ class AWSShellCompleter(Completer):
                 location = -len(word_before_cursor)
             yield Completion(completion, location,
                              display=display_text, display_meta=display_meta)
-
 
     def get_completions(self, document, complete_event):
         text_before_cursor = document.text_before_cursor
@@ -114,13 +114,14 @@ class AWSShellCompleter(Completer):
             if param is not None:
                 LOG.debug("Trying to retrieve autcompletion for: "
                           "%s, %s, %s", service, operation, param)
-                results = self._server_side_completer.retrieve_candidate_values(
-                    service, operation, param)
+                results = self._server_side_completer\
+                    .retrieve_candidate_values(service, operation, param)
                 LOG.debug("Results for %s, %s, %s: %s",
                           service, operation, param, results)
                 word_before_cursor = text_before_cursor.strip().split()[-1]
                 location = 0
-                if text_before_cursor[-1] != ' ' and word_before_cursor and results:
+                if text_before_cursor[-1] != ' ' and \
+                        word_before_cursor and results:
                     # Filter the results down by fuzzy searching what
                     # the user has provided.
                     results = fuzzy.fuzzy_search(word_before_cursor, results)

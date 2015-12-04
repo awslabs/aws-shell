@@ -97,12 +97,16 @@ class AWSCLIModelCompleter(object):
             # TODO: cache this for the duration of the current context.
             # We don't need to recompute this until the args are
             # different.
-            if self._current['arguments'] != self._global_options:
-                all_args = self._current['arguments'] + self._global_options
-            else:
-                all_args = self._current['arguments']
+            all_args = self._get_all_args()
             return fuzzy_search(last_word, all_args)
         return fuzzy_search(last_word, self._current['commands'])
+
+    def _get_all_args(self):
+        if self._current['arguments'] != self._global_options:
+            all_args = self._current['arguments'] + self._global_options
+        else:
+            all_args = self._current['arguments']
+        return all_args
 
     def _handle_backspace(self):
         return self._complete_from_full_parse()
