@@ -1,5 +1,6 @@
-from awsshell import compat
 import threading
+
+from awsshell import compat
 
 
 def load_lazy_doc_index(filename):

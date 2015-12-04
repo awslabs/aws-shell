@@ -1,7 +1,5 @@
 from __future__ import unicode_literals, print_function
 
-import os
-import sys
 import json
 import threading
 
@@ -11,7 +9,6 @@ from awsshell import shellcomplete
 from awsshell import autocomplete
 from awsshell import app
 from awsshell import docs
-from awsshell.compat import StringIO
 from awsshell import loaders
 from awsshell.index import completion
 from awsshell import utils
@@ -56,8 +53,8 @@ def main():
         db['__complete__']
     except KeyError:
         print("Creating doc index in the background. "
-                "It will be a few minutes before all documentation is "
-                "available.")
+              "It will be a few minutes before all documentation is "
+              "available.")
         t = threading.Thread(target=write_doc_index, args=(doc_index_file, db))
         t.daemon = True
         t.start()

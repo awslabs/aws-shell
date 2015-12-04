@@ -1,7 +1,6 @@
 """Module for building the autocompletion indices."""
 from __future__ import print_function
 import os
-import sys
 import json
 from subprocess import Popen, PIPE
 
