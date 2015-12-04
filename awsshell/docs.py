@@ -1,26 +1,17 @@
 import threading
 
 from awsshell import compat
+from awsshell import db
 
 
 def load_lazy_doc_index(filename):
-    db = ConcurrentDBM(
-        compat.dbm.open(filename, 'c'))
-    return DocRetriever(db), db
+    d = load_doc_db(filename)
+    return DocRetriever(d)
 
 
-class ConcurrentDBM(object):
-    def __init__(self, db):
-        self._db = db
-        self._lock = threading.Lock()
-
-    def __getitem__(self, key):
-        with self._lock:
-            return self._db[key]
-
-    def __setitem__(self, key, value):
-        with self._lock:
-            self._db[key] = value
+def load_doc_db(filename):
+    d = db.ConcurrentDBM.open(filename, create=True)
+    return d
 
 
 class DocRetriever(object):
