@@ -2,7 +2,7 @@
 import os
 import sys
 import argparse
-import pprint
+import json
 from subprocess import Popen, PIPE
 from six import BytesIO
 
@@ -16,7 +16,7 @@ except ImportError:
     print("Couldn't import awscli: pip install awscli")
     sys.exit(0)
 
-from awsshell import determine_index_filename
+from awsshell import determine_doc_index_filename
 from awsshell.utils import remove_html
 from awsshell import compat
 
@@ -63,15 +63,13 @@ def index_command(index_dict, help_command):
 
 
 def write_index(output_filename=None):
-    if output_filename is None:
-        output_filename = determine_index_filename()
     driver = awscli.clidriver.create_clidriver()
     help_command = driver.create_help_command()
     index = {'aws': new_index()}
     current = index['aws']
     index_command(current, help_command)
 
-    result = pprint.pformat(index)
+    result = json.dumps(index)
     if not os.path.isdir(os.path.dirname(output_filename)):
         os.makedirs(os.path.dirname(output_filename))
     with open(output_filename, 'w') as f:
@@ -80,7 +78,7 @@ def write_index(output_filename=None):
 
 def write_doc_index(output_filename=None):
     if output_filename is None:
-        output_filename = determine_index_filename() + '.docs'
+        output_filename = determine_doc_index_filename()
     driver = awscli.clidriver.create_clidriver()
     help_command = driver.create_help_command()
     db = compat.dbm.open(output_filename, 'c')
