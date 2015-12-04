@@ -4,17 +4,12 @@ import os
 import sys
 import json
 from subprocess import Popen, PIPE
-from six import BytesIO
 
+from six import BytesIO
 from docutils.core import publish_string
 from docutils.writers import manpage
-
-try:
-    import awscli.clidriver
-    from awscli.argprocess import ParamShorthandDocGen
-except ImportError:
-    print("Couldn't import awscli: pip install awscli")
-    sys.exit(0)
+import awscli.clidriver
+from awscli.argprocess import ParamShorthandDocGen
 
 from awsshell import determine_doc_index_filename
 from awsshell.utils import remove_html
@@ -76,16 +71,25 @@ def write_index(output_filename=None):
         f.write(result)
 
 
-def write_doc_index(output_filename=None):
+def write_doc_index(output_filename=None, db=None):
     if output_filename is None:
         output_filename = determine_doc_index_filename()
     driver = awscli.clidriver.create_clidriver()
     help_command = driver.create_help_command()
-    db = compat.dbm.open(output_filename, 'c')
+    user_provided_db = True
+    if db is None:
+        user_provided_db = False
+        db = compat.dbm.open(output_filename, 'c')
     try:
         _index_docs(db, help_command)
+        db['__complete__'] = 'true'
     finally:
-        db.close()
+        if not user_provided_db:
+            # If the user provided their own db object,
+            # they are responsible for closing it.
+            # If we created our own db object, we own
+            # closing the db.
+            db.close()
 
 
 def _index_docs(db, help_command):
@@ -102,7 +106,10 @@ def _render_docs_for_cmd(help_command):
     renderer = FileRenderer()
     help_command.renderer = renderer
     help_command(None, None)
-    man_contents = publish_string(renderer.contents, writer=manpage.Writer())
+    # The report_level override is so that we don't print anything
+    # to stdout/stderr on rendering issues.
+    man_contents = publish_string(renderer.contents, writer=manpage.Writer(),
+                                  settings_overrides={'report_level': 5})
     cmdline = ['groff', '-man', '-T', 'ascii']
     p = Popen(cmdline, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     groff_output = p.communicate(input=man_contents)[0]
