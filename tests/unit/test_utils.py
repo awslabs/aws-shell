@@ -46,7 +46,6 @@ class TestFSLayer(unittest.TestCase):
             self.fslayer.file_contents('/tmp/thisdoesnot-exist.asdf')
 
 
-
 class TestInMemoryFSLayer(unittest.TestCase):
     def setUp(self):
         self.file_mapping = {}
