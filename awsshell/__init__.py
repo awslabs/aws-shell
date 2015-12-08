@@ -45,17 +45,18 @@ def main():
         index_data = json.loads(index_str)
     doc_index_file = determine_doc_index_filename()
     from awsshell.makeindex import write_doc_index
-    doc_data, db = docs.load_lazy_doc_index(doc_index_file)
+    doc_data = docs.load_lazy_doc_index(doc_index_file)
     # There's room for improvement here.  If the docs didn't finish
     # generating, we regen the whole doc index.  Ideally we pick up
     # from where we left off.
     try:
+        db = docs.load_doc_db(doc_index_file)
         db['__complete__']
     except KeyError:
         print("Creating doc index in the background. "
               "It will be a few minutes before all documentation is "
               "available.")
-        t = threading.Thread(target=write_doc_index, args=(doc_index_file, db))
+        t = threading.Thread(target=write_doc_index, args=(doc_index_file,))
         t.daemon = True
         t.start()
     completer = shellcomplete.AWSShellCompleter(
