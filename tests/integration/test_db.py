@@ -15,12 +15,9 @@ def test_can_get_and_set_value(shell_db):
 
 
 def test_raise_key_error_when_no_key_exists(shell_db):
-    try:
+    with pytest.raises(KeyError) as e:
         shell_db['foo']
-    except KeyError as e:
-        assert 'foo' in str(e)
-    else:
-        raise AssertionError("Expected KeyError")
+    assert 'foo' in str(e.value)
 
 
 def test_can_set_multiple_values(shell_db):
