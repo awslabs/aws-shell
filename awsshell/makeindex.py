@@ -13,6 +13,7 @@ from awscli.argprocess import ParamShorthandDocGen
 from awsshell import determine_doc_index_filename
 from awsshell.utils import remove_html
 from awsshell import compat
+from awsshell import docs
 
 
 SHORTHAND_DOC = ParamShorthandDocGen()
@@ -78,7 +79,7 @@ def write_doc_index(output_filename=None, db=None):
     user_provided_db = True
     if db is None:
         user_provided_db = False
-        db = compat.dbm.open(output_filename, 'c')
+        db = docs.load_doc_db(output_filename)
     try:
         _index_docs(db, help_command)
         db['__complete__'] = 'true'
