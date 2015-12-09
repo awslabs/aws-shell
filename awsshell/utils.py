@@ -1,4 +1,5 @@
 """Utility module for misc aws shell functions."""
+from __future__ import print_function
 import os
 import awscli
 
