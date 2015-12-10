@@ -1,6 +1,4 @@
-import threading
-
-from awsshell import compat
+from __future__ import unicode_literals
 from awsshell import db
 
 
@@ -29,7 +27,6 @@ class DocRetriever(object):
             docs = self._doc_index[dot_cmd]
         except KeyError:
             return u''
-        docs = docs.decode('utf-8')
         index = docs.find('SYNOPSIS')
         if index > 0:
             docs = docs[:index]
@@ -40,8 +37,7 @@ class DocRetriever(object):
             docs = self._doc_index[dot_cmd]
         except KeyError:
             return u''
-        docs = docs.decode('utf-8')
         index = docs.find('OPTIONS')
         param_start_index = docs.find(param_name, index)
-        param_end_index = docs.find('  --', param_start_index)
+        param_end_index = docs.find('--', param_start_index + 1)
         return docs[param_start_index:param_end_index]

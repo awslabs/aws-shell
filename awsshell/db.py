@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import os
 import sqlite3
 
@@ -24,6 +25,8 @@ class ConcurrentDBM(object):
         self._db = db
 
     def __getitem__(self, key):
+        if isinstance(key, bytes):
+            key = key.decode('utf-8')
         cursor = self._db.cursor()
         cursor.execute(
             'SELECT value FROM docindex WHERE key = :key', {'key': key})

@@ -3,6 +3,7 @@
 Main entry point to the AWS Shell.
 
 """
+from __future__ import unicode_literals
 import tempfile
 import subprocess
 import logging

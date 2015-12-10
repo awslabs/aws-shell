@@ -1,3 +1,4 @@
+from __future__ import print_function
 from awsshell.fuzzy import fuzzy_search
 
 

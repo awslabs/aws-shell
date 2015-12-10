@@ -39,6 +39,7 @@ and 0 is the lowest meaning these is no possible chance
 for the word to be a match.
 
 """
+from __future__ import print_function
 
 
 def fuzzy_search(user_input, corpus):
