@@ -29,6 +29,7 @@ setup(
     url='https://github.com/jamesls/aws-shell',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
+    package_data={'awsshell': ['data/*/*.json']},
     install_requires=requires,
     entry_points={
         'console_scripts': [

@@ -1,0 +1,5 @@
+include README.rst
+include LICENSE.txt
+include NOTICE.txt
+recursive-include awsshell/data *.json
+graft tests
