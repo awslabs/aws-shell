@@ -49,6 +49,8 @@ class AWSCLIModelCompleter(object):
             # The user has hit backspace.  We'll need to check
             # the current words.
             return self._handle_backspace()
+        elif not line:
+            return []
         elif current_length != self._last_position + 1:
             return self._complete_from_full_parse()
 
@@ -56,8 +58,6 @@ class AWSCLIModelCompleter(object):
         # after we've checked the special cases above where that value
         # matters.
         self._last_position = len(line)
-        if not line:
-            return []
         if line and not line.strip():
             # Special case, the user hits a space on a new line so
             # we autocomplete all the top level commands.

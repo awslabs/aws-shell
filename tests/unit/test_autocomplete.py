@@ -337,3 +337,20 @@ def test_last_option_is_updated_on_global_options(index_data):
     assert completer.last_option == '--resources'
     completer.autocomplete('ec2 create-tags --resources f --no-sign-request ')
     assert completer.last_option == '--no-sign-request'
+
+
+def test_can_handle_autocompleting_same_string_twice(index_data):
+    index_data['aws']['commands'] = ['first', 'second']
+    completer = AWSCLIModelCompleter(index_data)
+    completer.autocomplete('f')
+    assert completer.autocomplete('f') == ['first']
+
+
+def test_can_handle_autocomplete_empty_string_twice(index_data):
+    # Sometimes prompt_toolkit will try to autocomplete
+    # the empty string multiple times.  We need to handle this
+    # gracefully.
+    index_data['aws']['commands'] = ['first', 'second']
+    completer = AWSCLIModelCompleter(index_data)
+    assert completer.autocomplete('') == []
+    assert completer.autocomplete('') == []
