@@ -111,7 +111,6 @@ def render_docs_for_cmd(help_command):
     renderer = FileRenderer()
     help_command.renderer = renderer
     help_command(None, None)
-    writer = BasicTextWriter()
     # The report_level override is so that we don't print anything
     # to stdout/stderr on rendering issues.
     original_cli_help = renderer.contents.decode('utf-8')
