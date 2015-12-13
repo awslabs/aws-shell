@@ -19,6 +19,7 @@ from prompt_toolkit.utils import Callback
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 
 from awsshell.ui import create_default_layout
+from awsshell.config import Config
 
 
 LOG = logging.getLogger(__name__)
@@ -29,12 +30,31 @@ def create_aws_shell(completer, history, docs):
 
 
 class AWSShell(object):
+    """Encapsulates the ui, completer, command history, docs, and config.
+
+    Runs the input event loop and delegates the command execution to either
+    the `awscli` or the underlying shell.
+
+    :type config_obj: :class:`configobj.ConfigObj`
+    :param config_obj: Contains the config information for reading and writing.
+
+    :type config_section: :class:`configobj.Section`
+    :param config_section: Convenience attribute to access the main section
+        of the config.
+    """
+
     def __init__(self, completer, history, docs):
         self.completer = completer
         self.history = history
         self._cli = None
         self._docs = docs
         self.current_docs = u''
+        self._init_config()
+
+    def _init_config(self):
+        config = Config()
+        self.config_obj = config.load('awsshellrc')
+        self.config_section = self.config_obj['aws-shell']
 
     @property
     def cli(self):
@@ -48,6 +68,7 @@ class AWSShell(object):
                 document = self.cli.run()
                 text = document.text
             except (KeyboardInterrupt, EOFError):
+                self.config_obj.write()
                 break
             else:
                 if text.strip() in ['quit', 'exit']:

@@ -9,6 +9,7 @@ requires = [
     'awscli>=1.8.9,<2.0.0',
     'prompt-toolkit==0.52',
     'boto3>=1.2.1',
+    'configobj>=5.0.6',
 ]
 
 
@@ -28,6 +29,7 @@ setup(
     author='James Saryerwinnie',
     url='https://github.com/jamesls/aws-shell',
     packages=find_packages(exclude=['tests*']),
+    package_data={'awsshell': ['awsshellrc']},
     include_package_data=True,
     install_requires=requires,
     entry_points={
