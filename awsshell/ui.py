@@ -10,7 +10,7 @@ from prompt_toolkit.layout.menus import CompletionsMenu, \
     MultiColumnCompletionsMenu
 from prompt_toolkit.layout.processors import PasswordProcessor, \
     HighlightSearchProcessor, HighlightSelectionProcessor, \
-    ConditionalProcessor
+    ConditionalProcessor, AppendAutoSuggestion
 from prompt_toolkit.layout.prompt import DefaultPrompt
 from prompt_toolkit.layout.screen import Char
 from prompt_toolkit.layout.toolbars import ValidationToolbar, \
@@ -77,6 +77,8 @@ def create_default_layout(app, message='',
             HighlightSearchProcessor(preview_search=Always()),
             HasFocus(SEARCH_BUFFER)),
         HighlightSelectionProcessor(),
+        ConditionalProcessor(
+            AppendAutoSuggestion(), HasFocus(DEFAULT_BUFFER) & ~IsDone()),
         ConditionalProcessor(PasswordProcessor(), is_password)
     ]
 
