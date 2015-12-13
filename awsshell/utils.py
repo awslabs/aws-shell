@@ -18,6 +18,10 @@ def remove_html(html):
     return s.get_data()
 
 
+def build_config_file_path(file_name):
+    return os.path.join(os.path.expanduser('~'), '.aws', 'shell', file_name)
+
+
 class DataOnly(HTMLParser):
     def __init__(self):
         # HTMLParser is an old-style class, which can't be used with super()
