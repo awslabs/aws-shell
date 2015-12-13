@@ -59,10 +59,10 @@ def main():
         t = threading.Thread(target=write_doc_index, args=(doc_index_file,))
         t.daemon = True
         t.start()
-    completer = shellcomplete.AWSShellCompleter(
-        autocomplete.AWSCLIModelCompleter(index_data))
+    model_completer = autocomplete.AWSCLIModelCompleter(index_data)
+    completer = shellcomplete.AWSShellCompleter(model_completer)
     history = InMemoryHistory()
-    shell = app.create_aws_shell(completer, history, doc_data)
+    shell = app.create_aws_shell(completer, model_completer, history, doc_data)
     shell.run()
 
 

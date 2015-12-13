@@ -25,8 +25,8 @@ from awsshell.config import Config
 LOG = logging.getLogger(__name__)
 
 
-def create_aws_shell(completer, history, docs):
-    return AWSShell(completer, history, docs)
+def create_aws_shell(completer, model_completer, history, docs):
+    return AWSShell(completer, model_completer, history, docs)
 
 
 class AWSShell(object):
@@ -43,8 +43,9 @@ class AWSShell(object):
         of the config.
     """
 
-    def __init__(self, completer, history, docs):
+    def __init__(self, completer, model_completer, history, docs):
         self.completer = completer
+        self.model_completer = model_completer
         self.history = history
         self._cli = None
         self._docs = docs
@@ -55,11 +56,13 @@ class AWSShell(object):
         config = Config()
         self.config_obj = config.load('awsshellrc')
         self.config_section = self.config_obj['aws-shell']
+        self.model_completer.match_fuzzy = self.match_fuzzy()
 
     @property
     def cli(self):
         if self._cli is None:
-            self._cli = self.create_cli_interface()
+            self._cli = self.create_cli_interface(
+                self.show_completion_columns())
         return self._cli
 
     def run(self):
@@ -100,10 +103,86 @@ class AWSShell(object):
                     p = subprocess.Popen(full_cmd, shell=True)
                     p.communicate()
 
-    def create_layout(self):
+    def match_fuzzy(self, match_fuzzy=None):
+        """Setter/Getter for fuzzy matching mode.
+
+        Used by `prompt_toolkit.KeyBindingManager`, which expects this method to
+        be callable so we can't use the standard @property and @attrib.setter.
+
+        :type match_fuzzy: bool
+        :param match_fuzzy: (Optional) The match fuzzy flag.
+
+        :rtype: bool
+        :return: The match fuzzy flag.
+        """
+        CFG_FUZZY = 'match_fuzzy'
+        if match_fuzzy is not None:
+            self.model_completer.match_fuzzy = match_fuzzy
+            self.config_section[CFG_FUZZY] = match_fuzzy
+        return self.config_section.as_bool(CFG_FUZZY)
+
+    def enable_vi_bindings(self, enable_vi_bindings=None):
+        """Setter/Getter for vi mode keybindings.
+
+        If vi mode is off, emacs mode is enabled by default by `prompt_toolkit`.
+
+        TODO: `enable_vi_bindings`, `show_completion_columns`, and `show_help`
+        could use a refactor.  `prompt_toolkit.KeyBindingManager` seems to make
+        this a little tricky.
+
+        Used by `prompt_toolkit.KeyBindingManager`, which expects this method to
+        be callable so we can't use the standard @property and @attrib.setter.
+
+        :type enable_vi_bindings: bool
+        :param enable_vi_bindings: (Optional) The enable vi bindings flag.
+
+        :rtype: bool
+        :return: The enable vi bindings flag.
+        """
+        CFG_VI = 'enable_vi_bindings'
+        if enable_vi_bindings is not None:
+            self.config_section[CFG_VI] = enable_vi_bindings
+        return self.config_section.as_bool(CFG_VI)
+
+    def show_completion_columns(self, show_completion_columns=None):
+        """Setter/Getter for showing the completions in columns flag.
+
+        Used by `prompt_toolkit.KeyBindingManager`, which expects this method to
+        be callable so we can't use the standard @property and @attrib.setter.
+
+        :type show_completion_columns: bool
+        :param show_completion_columns: (Optional) The show completions in
+            multiple columns flag.
+
+        :rtype: bool
+        :return: The show completions in multiple columns flag.
+        """
+        CFG_COLUMNS = 'show_completion_columns'
+        if show_completion_columns is not None:
+            self.config_section[CFG_COLUMNS] = show_completion_columns
+        return self.config_section.as_bool(CFG_COLUMNS)
+
+    def show_help(self, show_help=None):
+        """Setter/Getter for showing the help container flag.
+
+        Used by `prompt_toolkit.KeyBindingManager`, which expects this method to
+        be callable so we can't use the standard @property and @attrib.setter.
+
+        :type show_help: bool
+        :param show_help: (Optional) The show help flag.
+
+        :rtype: bool
+        :return: The show help flag.
+        """
+        CFG_HELP = 'show_help'
+        if show_help is not None:
+            self.config_section[CFG_HELP] = show_help
+        return self.config_section.as_bool(CFG_HELP)
+
+    def create_layout(self, display_completions_in_columns):
         return create_default_layout(
             self, u'aws> ', reserve_space_for_menu=True,
-            display_completions_in_columns=True)
+            display_completions_in_columns=display_completions_in_columns)
 
     def create_buffer(self, completer, history):
         return Buffer(
@@ -114,12 +193,13 @@ class AWSShell(object):
             complete_while_typing=Always(),
             accept_action=AcceptAction.RETURN_DOCUMENT)
 
-    def create_application(self, completer, history):
+    def create_application(self, completer, history,
+                           display_completions_in_columns):
         key_bindings_registry = KeyBindingManager(
             enable_search=True,
             enable_abort_and_exit_bindings=True,
             enable_auto_suggest_bindings=True,
-            enable_vi_mode=True,
+            enable_vi_mode=self.enable_vi_bindings(),
             enable_system_bindings=False,
             enable_open_in_editor=False).registry
         buffers = {
@@ -127,7 +207,7 @@ class AWSShell(object):
         }
 
         return Application(
-            layout=self.create_layout(),
+            layout=self.create_layout(display_completions_in_columns),
             mouse_support=False,
             buffers=buffers,
             buffer=self.create_buffer(completer, history),
@@ -138,6 +218,8 @@ class AWSShell(object):
         )
 
     def on_input_timeout(self, cli):
+        if not self.show_help():
+            return
         document = cli.current_buffer.document
         text = document.text
         LOG.debug("document.text = %s", text)
@@ -157,11 +239,13 @@ class AWSShell(object):
             initial_document=Document(self.current_docs, cursor_position=0))
         cli.request_redraw()
 
-    def create_cli_interface(self):
+    def create_cli_interface(self, display_completions_in_columns):
         # A CommandLineInterface from prompt_toolkit
         # accepts two things: an application and an
         # event loop.
         loop = create_eventloop()
-        app = self.create_application(self.completer, self.history)
+        app = self.create_application(self.completer,
+                                      self.history,
+                                      display_completions_in_columns)
         cli = CommandLineInterface(application=app, eventloop=loop)
         return cli
