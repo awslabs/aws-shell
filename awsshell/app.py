@@ -21,6 +21,7 @@ from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from awsshell.ui import create_default_layout
 from awsshell.config import Config
 from awsshell.keys import KeyManager
+from awsshell.style import StyleFactory
 from awsshell.toolbar import Toolbar
 
 
@@ -248,6 +249,7 @@ class AWSShell(object):
             self.enable_vi_bindings,
             self.show_completion_columns,
             self.show_help)
+        style_factory = StyleFactory(self.config_section['theme'])
         toolbar = Toolbar(self.match_fuzzy,
                           self.enable_vi_bindings,
                           self.show_completion_columns,
@@ -259,6 +261,7 @@ class AWSShell(object):
         return Application(
             layout=self.create_layout(display_completions_in_columns, toolbar),
             mouse_support=False,
+            style=style_factory.style,
             buffers=buffers,
             buffer=self.create_buffer(completer, history),
             on_abort=AbortAction.RAISE_EXCEPTION,
