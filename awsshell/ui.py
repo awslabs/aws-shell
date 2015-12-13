@@ -154,11 +154,7 @@ def create_default_layout(app, message='',
                 ]
             ),
         ]),
-        ConditionalContainer(
-            content=Window(height=LayoutDimension.exact(1),
-                           content=FillControl(u'\u2500',
-                                               token=Token.Separator)),
-            filter=HasDocumentation(app) & ~IsDone()),
+        # Docs container.
         ConditionalContainer(
             content=Window(
                 BufferControl(
@@ -167,6 +163,12 @@ def create_default_layout(app, message='',
                 height=LayoutDimension(max=15)),
             filter=HasDocumentation(app) & ~IsDone(),
         ),
+        # Toolbar options container.
+        ConditionalContainer(
+            content=Window(height=LayoutDimension.exact(1),
+                           content=FillControl(u'\u2500',
+                                               token=Token.Separator)),
+            filter=HasDocumentation(app) & ~IsDone()),
         ValidationToolbar(),
         SystemToolbar(),
 
