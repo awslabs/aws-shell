@@ -16,6 +16,7 @@ from prompt_toolkit.interface import CommandLineInterface, Application
 from prompt_toolkit.interface import AbortAction, AcceptAction
 from prompt_toolkit.key_binding.manager import KeyBindingManager
 from prompt_toolkit.utils import Callback
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 
 from awsshell.ui import create_default_layout
 
@@ -86,12 +87,17 @@ class AWSShell(object):
     def create_buffer(self, completer, history):
         return Buffer(
             history=history,
+            auto_suggest=AutoSuggestFromHistory(),
+            enable_history_search=True,
             completer=completer,
             complete_while_typing=Always(),
             accept_action=AcceptAction.RETURN_DOCUMENT)
 
     def create_application(self, completer, history):
         key_bindings_registry = KeyBindingManager(
+            enable_search=True,
+            enable_abort_and_exit_bindings=True,
+            enable_auto_suggest_bindings=True,
             enable_vi_mode=True,
             enable_system_bindings=False,
             enable_open_in_editor=False).registry
@@ -101,6 +107,7 @@ class AWSShell(object):
 
         return Application(
             layout=self.create_layout(),
+            mouse_support=False,
             buffers=buffers,
             buffer=self.create_buffer(completer, history),
             on_abort=AbortAction.RAISE_EXCEPTION,
