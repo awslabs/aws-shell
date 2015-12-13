@@ -92,6 +92,8 @@ class AWSShell(object):
 
     def create_application(self, completer, history):
         key_bindings_registry = KeyBindingManager(
+            enable_search=True,
+            enable_abort_and_exit_bindings=True,
             enable_vi_mode=True,
             enable_system_bindings=False,
             enable_open_in_editor=False).registry
@@ -101,6 +103,7 @@ class AWSShell(object):
 
         return Application(
             layout=self.create_layout(),
+            mouse_support=False,
             buffers=buffers,
             buffer=self.create_buffer(completer, history),
             on_abort=AbortAction.RAISE_EXCEPTION,
