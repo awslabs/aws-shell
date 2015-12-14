@@ -27,43 +27,76 @@ class KeyManager(object):
     :param manager: A custom `KeyBindingManager`.
     """
 
-    def __init__(self, match_fuzzy, enable_vi_bindings,
-                 show_completion_columns, show_help):
+    def __init__(
+        self, get_match_fuzzy, set_match_fuzzy,
+        get_enable_vi_bindings, set_enable_vi_bindings,
+        get_show_completion_columns, set_show_completion_columns,
+        get_show_help, set_show_help, stop_input_and_refresh_cli):
         self.manager = None
-        self._create_key_manager(match_fuzzy, enable_vi_bindings,
-                                 show_completion_columns, show_help)
+        self._create_key_manager(
+            get_match_fuzzy, set_match_fuzzy,
+            get_enable_vi_bindings, set_enable_vi_bindings,
+            get_show_completion_columns, set_show_completion_columns,
+            get_show_help, set_show_help, stop_input_and_refresh_cli)
 
-    def _create_key_manager(self, match_fuzzy, enable_vi_bindings,
-                            show_completion_columns, show_help):
+    def _create_key_manager(
+        self, get_match_fuzzy, set_match_fuzzy,
+        get_enable_vi_bindings, set_enable_vi_bindings,
+        get_show_completion_columns, set_show_completion_columns,
+        get_show_help, set_show_help, stop_input_and_refresh_cli):
         """Creates and initializes the keybinding manager.
 
-        :type fuzzy_match: callable
-        :param fuzzy_match: Gets/sets the fuzzy matching config.
+        :type get_fuzzy_match: callable
+        :param get_fuzzy_match: Gets the fuzzy matching config.
 
-        :type enable_vi_bindings: callable
-        :param enable_vi_bindings: Gets/sets the vi (or emacs) key bindings
+        :type set_fuzzy_match: callable
+        :param set_fuzzy_match: Sets the fuzzy matching config.
+
+        :type get_enable_vi_bindings: callable
+        :param get_enable_vi_bindings: Gets the vi (or emacs) key bindings
             config.
 
-        :type show_completion_columns: callable
-        :param show_completion_columns: Gets/sets the show completions in
+        :type set_enable_vi_bindings: callable
+        :param set_enable_vi_bindings: Sets the vi (or emacs) key bindings
+            config.
+
+        :type get_show_completion_columns: callable
+        :param get_show_completion_columns: Gets the show completions in
             multiple or single columns config.
 
-        :type show_help: callable
-        :param show_help: Gets/sets the show help pane config.
+        type set_show_completion_columns: callable
+        :param set_show_completion_columns: Sets the show completions in
+            multiple or single columns config.
+
+        :type get_show_help: callable
+        :param get_show_help: Gets the show help pane config.
+
+        :type set_show_help: callable
+        :param set_show_help: Sets the show help pane config.
+
+        :type stop_input_and_refresh_cli: callable
+        param stop_input_and_refresh_cli: Stops input by raising an
+            `InputInterrupt`, forces a cli refresh to ensure certain
+            options take effect within the current session.
 
         :rtype: :class:`prompt_toolkit.KeyBindingManager`
         :return: A custom `KeyBindingManager`.
         """
-        assert callable(match_fuzzy)
-        assert callable(enable_vi_bindings)
-        assert callable(show_completion_columns)
-        assert callable(show_help)
+        assert callable(get_match_fuzzy)
+        assert callable(set_match_fuzzy)
+        assert callable(get_enable_vi_bindings)
+        assert callable(set_enable_vi_bindings)
+        assert callable(get_show_completion_columns)
+        assert callable(set_show_completion_columns)
+        assert callable(get_show_help)
+        assert callable(set_show_help)
+        assert callable(stop_input_and_refresh_cli)
         self.manager = KeyBindingManager(
             enable_search=True,
             enable_abort_and_exit_bindings=True,
             enable_system_bindings=True,
             enable_auto_suggest_bindings=True,
-            enable_vi_mode=enable_vi_bindings(),
+            enable_vi_mode=get_enable_vi_bindings(),
             enable_open_in_editor=False)
 
         @self.manager.registry.add_binding(Keys.F2)
@@ -73,7 +106,7 @@ class KeyManager(object):
             :type _: :class:`prompt_toolkit.Event`
             :param _: (Unused)
             """
-            match_fuzzy(not match_fuzzy())
+            set_match_fuzzy(not get_match_fuzzy())
 
         @self.manager.registry.add_binding(Keys.F3)
         def handle_f3(_):
@@ -84,7 +117,8 @@ class KeyManager(object):
             :type _: :class:`prompt_toolkit.Event`
             :param _: (Unused)
             """
-            enable_vi_bindings(not enable_vi_bindings(), refresh_ui=True)
+            set_enable_vi_bindings(not get_enable_vi_bindings())
+            stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(Keys.F4)
         def handle_f4(_):
@@ -93,8 +127,8 @@ class KeyManager(object):
             :type _: :class:`prompt_toolkit.Event`
             :param _: (Unused)
             """
-            show_completion_columns(not show_completion_columns(),
-                                    refresh_ui=True)
+            set_show_completion_columns(not get_show_completion_columns())
+            stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(Keys.F5)
         def handle_f5(_):
@@ -103,14 +137,15 @@ class KeyManager(object):
             :type _: :class:`prompt_toolkit.Event`
             :param _: (Unused)
             """
-            show_help(not show_help(), refresh_ui=True)
+            set_show_help(not get_show_help())
+            stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(Keys.F10)
         def handle_f10(event):
             """Quits when the `F10` key is pressed.
 
-            :type _: :class:`prompt_toolkit.Event`
-            :param _: (Unused) Contains info about the event, namely the cli
+            :type event: :class:`prompt_toolkit.Event`
+            :param event: Contains info about the event, namely the cli
                 which is used for exiting the app.
             """
             event.cli.set_exit()

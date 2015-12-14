@@ -17,40 +17,40 @@ class Toolbar(object):
     """Shows information about the aws-shell in a tool bar.
 
     :type handler: callable
-    :param handler: `get_toolbar_items`.
+    :param handler: Wraps the callable `get_toolbar_items`.
     """
 
-    def __init__(self, match_fuzzy, enable_vi_bindings,
-                 show_completion_columns, show_help):
+    def __init__(self, get_match_fuzzy, get_enable_vi_bindings,
+                 get_show_completion_columns, get_show_help):
         self.handler = self._create_toolbar_handler(
-            match_fuzzy, enable_vi_bindings,
-            show_completion_columns, show_help)
+            get_match_fuzzy, get_enable_vi_bindings,
+            get_show_completion_columns, get_show_help)
 
-    def _create_toolbar_handler(self, match_fuzzy, enable_vi_bindings,
-                                show_completion_columns, show_help):
+    def _create_toolbar_handler(self, get_match_fuzzy, get_enable_vi_bindings,
+                                get_show_completion_columns, get_show_help):
         """Creates the toolbar handler.
 
-        :type fuzzy_match: callable
-        :param fuzzy_match: Gets/sets the fuzzy matching config.
+        :type get_fuzzy_match: callable
+        :param fuzzy_match: Gets the fuzzy matching config.
 
-        :type enable_vi_bindings: callable
-        :param enable_vi_bindings: Gets/sets the vi (or emacs) key bindings
+        :type get_enable_vi_bindings: callable
+        :param get_enable_vi_bindings: Gets the vi (or emacs) key bindings
             config.
 
-        :type show_completion_columns: callable
-        :param show_completion_columns: Gets/sets the show completions in
+        :type get_show_completion_columns: callable
+        :param get_show_completion_columns: Gets the show completions in
             multiple or single columns config.
 
-        :type show_help: callable
-        :param show_help: Gets/sets the show help pane config.
+        :type get_show_help: callable
+        :param get_show_help: Gets the show help pane config.
 
         :rtype: callable
         :returns: get_toolbar_items.
         """
-        assert callable(match_fuzzy)
-        assert callable(enable_vi_bindings)
-        assert callable(show_completion_columns)
-        assert callable(show_help)
+        assert callable(get_match_fuzzy)
+        assert callable(get_enable_vi_bindings)
+        assert callable(get_show_completion_columns)
+        assert callable(get_show_help)
 
         def get_toolbar_items(_):
             """Returns the toolbar items.
@@ -61,25 +61,25 @@ class Toolbar(object):
             :rtype: list
             :return: A list of (pygments.Token.Toolbar, str).
             """
-            if match_fuzzy():
+            if get_match_fuzzy():
                 match_fuzzy_token = Token.Toolbar.On
                 match_fuzzy_cfg = 'ON'
             else:
                 match_fuzzy_token = Token.Toolbar.Off
                 match_fuzzy_cfg = 'OFF'
-            if enable_vi_bindings():
+            if get_enable_vi_bindings():
                 enable_vi_bindings_token = Token.Toolbar.On
                 enable_vi_bindings_cfg = 'Vi'
             else:
                 enable_vi_bindings_token = Token.Toolbar.On
                 enable_vi_bindings_cfg = 'Emacs'
-            if show_completion_columns():
+            if get_show_completion_columns():
                 show_columns_token = Token.Toolbar.On
                 show_columns_cfg = 'Multi'
             else:
                 show_columns_token = Token.Toolbar.On
                 show_columns_cfg = 'Single'
-            if show_help():
+            if get_show_help():
                 show_help_token = Token.Toolbar.On
                 show_help_cfg = 'ON'
             else:

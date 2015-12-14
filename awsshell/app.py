@@ -56,6 +56,24 @@ class AWSShell(object):
     :type config_section: :class:`configobj.Section`
     :param config_section: Convenience attribute to access the main section
         of the config.
+
+    :type model_completer: :class:`AWSCLIModelCompleter`
+    :param model_completer: Matches input with completions.  `AWSShell` sets
+        and gets the attribute `AWSCLIModelCompleter.match_fuzzy`.
+
+    :type enable_vi_bindings: bool
+    :param enable_vi_bindings: If True, enables Vi key bindings. Else, Emacs
+        key bindings are enabled.
+
+    :type show_completion_columns: bool
+    param show_completion_columns: If True, completions are shown in multiple
+        columns.  Else, completions are shown in a single scrollable column.
+
+    :type show_help: bool
+    :param show_help: If True, shows the help pane.  Else, hides the help pane.
+
+    :type theme: str
+    :param theme: The pygments theme.
     """
 
     def __init__(self, completer, model_completer, history, docs):
@@ -66,19 +84,36 @@ class AWSShell(object):
         self._docs = docs
         self.current_docs = u''
         self.refresh_cli = False
-        self._init_config()
+        self.load_config()
 
-    def _init_config(self):
+    def load_config(self):
+        """Loads the config from the config file or template."""
         config = Config()
         self.config_obj = config.load('awsshellrc')
         self.config_section = self.config_obj['aws-shell']
-        self.model_completer.match_fuzzy = self.match_fuzzy()
+        self.model_completer.match_fuzzy = self.config_section.as_bool(
+            'match_fuzzy')
+        self.enable_vi_bindings = self.config_section.as_bool(
+            'enable_vi_bindings')
+        self.show_completion_columns = self.config_section.as_bool(
+            'show_completion_columns')
+        self.show_help = self.config_section.as_bool('show_help')
+        self.theme = self.config_section['theme']
+
+    def save_config(self):
+        """Saves the config to the config file."""
+        self.config_section['match_fuzzy'] = self.model_completer.match_fuzzy
+        self.config_section['enable_vi_bindings'] = self.enable_vi_bindings
+        self.config_section['show_completion_columns'] = \
+            self.show_completion_columns
+        self.config_section['show_help'] = self.show_help
+        self.config_section['theme'] = self.theme
+        self.config_obj.write()
 
     @property
     def cli(self):
         if self._cli is None or self.refresh_cli:
-            self._cli = self.create_cli_interface(
-                self.show_completion_columns())
+            self._cli = self.create_cli_interface(self.show_completion_columns)
             self.refresh_cli = False
         return self._cli
 
@@ -90,7 +125,7 @@ class AWSShell(object):
             except InputInterrupt:
                 pass
             except (KeyboardInterrupt, EOFError):
-                self.config_obj.write()
+                self.save_config()
                 break
             else:
                 if text.strip() in ['quit', 'exit']:
@@ -135,98 +170,6 @@ class AWSShell(object):
         self.cli.request_redraw()
         raise InputInterrupt
 
-    def match_fuzzy(self, match_fuzzy=None):
-        """Setter/Getter for fuzzy matching mode.
-
-        Used by `prompt_toolkit.KeyBindingManager`, which expects this method to
-        be callable so we can't use the standard @property and @attrib.setter.
-
-        :type match_fuzzy: bool
-        :param match_fuzzy: (Optional) The match fuzzy flag.
-
-        :rtype: bool
-        :return: The match fuzzy flag.
-        """
-        CFG_FUZZY = 'match_fuzzy'
-        if match_fuzzy is not None:
-            self.model_completer.match_fuzzy = match_fuzzy
-            self.config_section[CFG_FUZZY] = match_fuzzy
-        return self.config_section.as_bool(CFG_FUZZY)
-
-    def enable_vi_bindings(self, enable_vi_bindings=None, refresh_ui=False):
-        """Setter/Getter for vi mode keybindings.
-
-        If vi mode is off, emacs mode is enabled by default by `prompt_toolkit`.
-
-        TODO: `enable_vi_bindings`, `show_completion_columns`, and `show_help`
-        could use a refactor.  `prompt_toolkit.KeyBindingManager` seems to make
-        this a little tricky.
-
-        Used by `prompt_toolkit.KeyBindingManager`, which expects this method to
-        be callable so we can't use the standard @property and @attrib.setter.
-
-        :type enable_vi_bindings: bool
-        :param enable_vi_bindings: (Optional) The enable vi bindings flag.
-
-        :type refresh_ui: bool
-        :param refresh_ui: (Optional) True: Stops input and refreshes the cli.
-
-        :rtype: bool
-        :return: The enable vi bindings flag.
-        """
-        CFG_VI = 'enable_vi_bindings'
-        if enable_vi_bindings is not None:
-            self.config_section[CFG_VI] = enable_vi_bindings
-            if refresh_ui:
-                self.stop_input_and_refresh_cli()
-        return self.config_section.as_bool(CFG_VI)
-
-    def show_completion_columns(self, show_completion_columns=None,
-                                refresh_ui=False):
-        """Setter/Getter for showing the completions in columns flag.
-
-        Used by `prompt_toolkit.KeyBindingManager`, which expects this method to
-        be callable so we can't use the standard @property and @attrib.setter.
-
-        :type show_completion_columns: bool
-        :param show_completion_columns: (Optional) The show completions in
-            multiple columns flag.
-
-        :type refresh_ui: bool
-        :param refresh_ui: (Optional) True: Stops input and refreshes the cli.
-
-        :rtype: bool
-        :return: The show completions in multiple columns flag.
-        """
-        CFG_COLUMNS = 'show_completion_columns'
-        if show_completion_columns is not None:
-            self.config_section[CFG_COLUMNS] = show_completion_columns
-            if refresh_ui:
-                self.stop_input_and_refresh_cli()
-        return self.config_section.as_bool(CFG_COLUMNS)
-
-    def show_help(self, show_help=None, refresh_ui=False):
-        """Setter/Getter for showing the help container flag.
-
-        Used by `prompt_toolkit.KeyBindingManager`, which expects this method to
-        be callable so we can't use the standard @property and @attrib.setter.
-
-        :type show_help: bool
-        :param show_help: (Optional) The show help flag.
-
-        :type refresh_ui: bool
-        :param refresh_ui: (Optional) True: Stops input and refreshes the cli.
-
-        :rtype: bool
-        :return: The show help flag.
-        """
-        CFG_HELP = 'show_help'
-        if show_help is not None:
-            self.config_section[CFG_HELP] = show_help
-            if refresh_ui:
-                self.stop_input_and_refresh_cli()
-        return self.config_section.as_bool(CFG_HELP)
-
     def create_layout(self, display_completions_in_columns, toolbar):
         return create_default_layout(
             self, u'aws> ', reserve_space_for_menu=True,
@@ -242,18 +185,71 @@ class AWSShell(object):
             complete_while_typing=Always(),
             accept_action=AcceptAction.RETURN_DOCUMENT)
 
+    def create_key_manager(self):
+        """Creates the :class:`KeyManager`.
+
+        The inputs to KeyManager are expected to be callable, so we can't
+        use the standard @property and @attrib.setter for these attributes.
+        Lambdas cannot contain assignments so we're forced to define setters.
+
+        :rtype: :class:`KeyManager`
+        :return: A KeyManager with callables to set the toolbar options.  Also
+            includes the method stop_input_and_refresh_cli to ensure certain
+            options take effect within the current session.
+        """
+
+        def set_match_fuzzy(match_fuzzy):
+            """Setter for fuzzy matching mode.
+
+            :type match_fuzzy: bool
+            :param match_fuzzy: The match fuzzy flag.
+            """
+            self.model_completer.match_fuzzy = match_fuzzy
+
+        def set_enable_vi_bindings(enable_vi_bindings):
+            """Setter for vi mode keybindings.
+
+            If vi mode is off, emacs mode is enabled by default by
+            `prompt_toolkit`.
+
+            :type enable_vi_bindings: bool
+            :param enable_vi_bindings: The enable Vi bindings flag.
+            """
+            self.enable_vi_bindings = enable_vi_bindings
+
+        def set_show_completion_columns(show_completion_columns):
+            """Setter for showing the completions in columns flag.
+
+            :type show_completion_columns: bool
+            :param show_completion_columns: The show completions in
+                multiple columns flag.
+            """
+            self.show_completion_columns = show_completion_columns
+
+        def set_show_help(show_help):
+            """Setter for showing the help container flag.
+
+            :type show_help: bool
+            :param show_help: The show help flag.
+            """
+            self.show_help = show_help
+
+        return KeyManager(
+            lambda: self.model_completer.match_fuzzy, set_match_fuzzy,
+            lambda: self.enable_vi_bindings, set_enable_vi_bindings,
+            lambda: self.show_completion_columns, set_show_completion_columns,
+            lambda: self.show_help, set_show_help,
+            self.stop_input_and_refresh_cli)
+
     def create_application(self, completer, history,
                            display_completions_in_columns):
-        self.key_manager = KeyManager(
-            self.match_fuzzy,
-            self.enable_vi_bindings,
-            self.show_completion_columns,
-            self.show_help)
-        style_factory = StyleFactory(self.config_section['theme'])
-        toolbar = Toolbar(self.match_fuzzy,
-                          self.enable_vi_bindings,
-                          self.show_completion_columns,
-                          self.show_help)
+        self.key_manager = self.create_key_manager()
+        toolbar = Toolbar(
+            lambda: self.model_completer.match_fuzzy,
+            lambda: self.enable_vi_bindings,
+            lambda: self.show_completion_columns,
+            lambda: self.show_help)
+        style_factory = StyleFactory(self.theme)
         buffers = {
             'clidocs': Buffer(read_only=True)
         }
@@ -271,7 +267,7 @@ class AWSShell(object):
         )
 
     def on_input_timeout(self, cli):
-        if not self.show_help():
+        if not self.show_help:
             return
         document = cli.current_buffer.document
         text = document.text

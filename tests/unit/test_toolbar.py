@@ -23,16 +23,17 @@ class ToolbarTest(unittest.TestCase):
     def setUp(self):
         self.aws_shell = AWSShell(mock.Mock(), mock.Mock(),
                                   mock.Mock(), mock.Mock())
-        self.toolbar = Toolbar(self.aws_shell.match_fuzzy,
-                               self.aws_shell.enable_vi_bindings,
-                               self.aws_shell.show_completion_columns,
-                               self.aws_shell.show_help)
+        self.toolbar = Toolbar(
+            lambda: self.aws_shell.model_completer.match_fuzzy,
+            lambda: self.aws_shell.enable_vi_bindings,
+            lambda: self.aws_shell.show_completion_columns,
+            lambda: self.aws_shell.show_help)
 
     def test_toolbar_on(self):
-        self.aws_shell.match_fuzzy(True)
-        self.aws_shell.enable_vi_bindings(True)
-        self.aws_shell.show_completion_columns(True)
-        self.aws_shell.show_help(True)
+        self.aws_shell.model_completer.match_fuzzy = True
+        self.aws_shell.enable_vi_bindings = True
+        self.aws_shell.show_completion_columns = True
+        self.aws_shell.show_help = True
         expected = [
             (Token.Toolbar.On, ' [F2] Fuzzy: ON '),
             (Token.Toolbar.On, ' [F3] Keys: Vi '),
@@ -42,10 +43,10 @@ class ToolbarTest(unittest.TestCase):
         assert expected == self.toolbar.handler(None)
 
     def test_toolbar_off(self):
-        self.aws_shell.match_fuzzy(False)
-        self.aws_shell.enable_vi_bindings(False)
-        self.aws_shell.show_completion_columns(False)
-        self.aws_shell.show_help(False)
+        self.aws_shell.model_completer.match_fuzzy = False
+        self.aws_shell.enable_vi_bindings = False
+        self.aws_shell.show_completion_columns = False
+        self.aws_shell.show_help = False
         expected = [
             (Token.Toolbar.Off, ' [F2] Fuzzy: OFF '),
             (Token.Toolbar.On, ' [F3] Keys: Emacs '),
