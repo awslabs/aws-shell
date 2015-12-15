@@ -4,9 +4,11 @@ Main entry point to the AWS Shell.
 
 """
 from __future__ import unicode_literals
+import os
 import tempfile
 import subprocess
 import logging
+import sys
 
 from prompt_toolkit.document import Document
 from prompt_toolkit.shortcuts import create_eventloop
@@ -25,6 +27,7 @@ from awsshell.keys import KeyManager
 from awsshell.style import StyleFactory
 from awsshell.toolbar import Toolbar
 from awsshell.utils import build_config_file_path
+from awsshell import compat
 
 
 LOG = logging.getLogger(__name__)
@@ -41,6 +44,66 @@ class InputInterrupt(Exception):
     sometimes necessary in order for config changes to take effect.
     """
     pass
+
+
+class EditHandler(object):
+    def __init__(self, popen_cls=None, env=None):
+        if popen_cls is None:
+            popen_cls = subprocess.Popen
+        self._popen_cls = popen_cls
+        if env is None:
+            env = os.environ
+        self._env = env
+
+    def _get_editor_command(self):
+        if 'EDITOR' in self._env:
+            return self._env['EDITOR']
+        else:
+            return compat.default_editor()
+
+    def run(self, command, context):
+        all_commands = '\n'.join(
+            ['aws ' + h for h in list(context.history)
+             if not h.startswith(('.', '!'))])
+        with tempfile.NamedTemporaryFile('w') as f:
+            f.write(all_commands)
+            f.flush()
+            editor = self._get_editor_command()
+            p = self._popen_cls([editor, f.name])
+            p.communicate()
+
+
+class DotCommandHandler(object):
+    HANDLER_CLASSES = {
+        'edit': EditHandler,
+    }
+
+    def __init__(self, output=sys.stdout, err=sys.stderr):
+        self._output = output
+        self._err = err
+
+    def handle_cmd(self, command, context):
+        """Handles running a given dot command from a user.
+
+        :type command: str
+        :param command: The full dot command string, e.g. ``.edit``,
+            of ``.profile prod``.
+
+        :type context: AWSShell
+        :param context: The application object.
+
+        """
+        parts = command.split()
+        cmd_name = parts[0][1:]
+        if cmd_name not in self.HANDLER_CLASSES:
+            self._unknown_cmd(parts, context)
+        else:
+            # Note we expect the class to support no-arg
+            # instantiation.
+            self.HANDLER_CLASSES[cmd_name]().run(parts, context)
+
+    def _unknown_cmd(self, cmd_parts, context):
+        self._err.write("Unknown dot command: %s\n" % cmd_parts[0])
 
 
 class AWSShell(object):
@@ -81,12 +144,13 @@ class AWSShell(object):
     def __init__(self, completer, model_completer, docs):
         self.completer = completer
         self.model_completer = model_completer
-        self.memory_history = InMemoryHistory()
+        self.history = InMemoryHistory()
         self.file_history = FileHistory(build_config_file_path('history'))
         self._cli = None
         self._docs = docs
         self.current_docs = u''
         self.refresh_cli = False
+        self._dot_cmd = DotCommandHandler()
         self.load_config()
 
     def load_config(self):
@@ -136,23 +200,14 @@ class AWSShell(object):
                 if text.startswith('.'):
                     # These are special commands.  The only one supported for
                     # now is .edit.
-                    if text.startswith('.edit'):
-                        # TODO: Use EDITOR env var.
-                        all_commands = '\n'.join(
-                            ['aws ' + h for h in list(self.memory_history)
-                             if not h.startswith(('.', '!'))])
-                    with tempfile.NamedTemporaryFile('w') as f:
-                        f.write(all_commands)
-                        f.flush()
-                        p = subprocess.Popen(['vim', f.name])
-                        p.communicate()
+                    self._dot_cmd.handle_cmd(text, context=self)
                 else:
                     if text.startswith('!'):
                         # Then run the rest as a normally shell command.
                         full_cmd = text[1:]
                     else:
                         full_cmd = 'aws ' + text
-                        self.memory_history.append(full_cmd)
+                        self.history.append(full_cmd)
                     self.current_docs = u''
                     self.cli.buffers['clidocs'].reset(
                         initial_document=Document(self.current_docs,
