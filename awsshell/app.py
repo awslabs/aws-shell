@@ -260,7 +260,7 @@ class AWSShell(object):
             style=style_factory.style,
             buffers=buffers,
             buffer=self.create_buffer(completer, history),
-            on_abort=AbortAction.RAISE_EXCEPTION,
+            on_abort=AbortAction.RETRY,
             on_exit=AbortAction.RAISE_EXCEPTION,
             on_input_timeout=Callback(self.on_input_timeout),
             key_bindings_registry=self.key_manager.manager.registry,
