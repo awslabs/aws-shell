@@ -21,8 +21,7 @@ from awsshell.toolbar import Toolbar
 class ToolbarTest(unittest.TestCase):
 
     def setUp(self):
-        self.aws_shell = AWSShell(mock.Mock(), mock.Mock(),
-                                  mock.Mock(), mock.Mock())
+        self.aws_shell = AWSShell(mock.Mock(), mock.Mock(), mock.Mock())
         self.toolbar = Toolbar(
             lambda: self.aws_shell.model_completer.match_fuzzy,
             lambda: self.aws_shell.enable_vi_bindings,
