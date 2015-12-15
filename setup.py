@@ -29,9 +29,9 @@ setup(
     author='James Saryerwinnie',
     url='https://github.com/jamesls/aws-shell',
     packages=find_packages(exclude=['tests*']),
-    package_data={'awsshell': ['awsshellrc']},
     include_package_data=True,
-    package_data={'awsshell': ['data/*/*.json']},
+    package_data={'awsshell': ['data/*/*.json',
+                               'awsshellrc']},
     install_requires=requires,
     entry_points={
         'console_scripts': [
