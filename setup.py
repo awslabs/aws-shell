@@ -31,6 +31,7 @@ setup(
     packages=find_packages(exclude=['tests*']),
     package_data={'awsshell': ['awsshellrc']},
     include_package_data=True,
+    package_data={'awsshell': ['data/*/*.json']},
     install_requires=requires,
     entry_points={
         'console_scripts': [
