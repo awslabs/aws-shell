@@ -1,4 +1,4 @@
-AWS Shell - the interactive productivity booster for the AWS CLI
+aws-shell - The interactive productivity booster for the AWS CLI
 ================================================================
 
 .. image:: https://aws-developer-blog-media.s3-us-west-2.amazonaws.com/cli/Super-Charge-Your-AWS-Command-Line-Experience-with-aws-shell/aws-shell-final.gif
@@ -7,7 +7,8 @@ AWS Shell - the interactive productivity booster for the AWS CLI
 Installation
 ============
 
-You can install the AWS Shell using `pip`_::
+The aws-shell requires python and `pip`_ to install.
+You can install the aws-shell using `pip`_::
 
     $ pip install aws-shell
 
@@ -15,16 +16,16 @@ If you are not installing into a virtualenv you can run::
 
     $ sudo pip install aws-shell
 
-If you want to upgrade to the latest version of the AWS Shell,
+If you want to upgrade to the latest version of the aws-shell,
 you can run::
 
     $ pip install --upgrade aws-shell
 
 You can also use this upgrade command whenever a new version of the AWS CLI is
 released that includes new services and API updates.  You will then be
-able to use these new services and API updates in the AWS Shell.
+able to use these new services and API updates in the aws-shell.
 
-Once you've installed the AWS Shell, you can now run::
+Once you've installed the aws-shell, you can now run::
 
     $ aws-shell
 
@@ -33,7 +34,7 @@ To exit the shell, press ``Ctrl-D``.
 Supported Python Versions
 -------------------------
 
-The AWS Shell works on the same python versions supported by the AWS CLI:
+The aws-shell works on the same python versions supported by the AWS CLI:
 
 * 2.6.5 and greater
 * 2.7.x and greater
@@ -44,7 +45,7 @@ The AWS Shell works on the same python versions supported by the AWS CLI:
 Configuration
 =============
 
-The AWS Shell uses the same configuration settings as the AWS CLI.
+The aws-shell uses the same configuration settings as the AWS CLI.
 If you've never used the AWS CLI before, the easiest way to get
 started is to run the ``configure`` command::
 
@@ -62,7 +63,7 @@ For more information about configure settings, see the
 Basic Usage
 ===========
 
-The AWS Shell accepts the same commands as the AWS CLI, except you don't
+The aws-shell accepts the same commands as the AWS CLI, except you don't
 need to provide the ``aws`` prefix.  For example, here are a few commands
 you can try::
 
@@ -91,7 +92,7 @@ Features
 Auto Completion of Commands and Options
 ---------------------------------------
 
-The AWS Shell provides auto completion of commands and
+The aws-shell provides auto completion of commands and
 options as you type.
 
 
@@ -101,7 +102,7 @@ options as you type.
 Shorthand Auto Completion
 -------------------------
 
-The AWS Shell can also fill in an example of the
+The aws-shell can also fill in an example of the
 shorthand syntax used for various AWS CLI options:
 
 .. image:: https://cloud.githubusercontent.com/assets/368057/11823453/e95d85da-a328-11e5-8b8d-67566eccf9e3.png
@@ -110,7 +111,7 @@ shorthand syntax used for various AWS CLI options:
 Server Side Auto Completion
 ---------------------------
 
-The AWS Shell also leverages `boto3`_, the AWS SDK for Python, to auto complete
+The aws-shell also leverages `boto3`_, the AWS SDK for Python, to auto complete
 server side resources such as Amazon EC2 instance Ids, Amazon Dynamodb table
 names, AWS IAM user names, Amazon S3 bucket names, etc.
 
@@ -139,7 +140,7 @@ typing.  You can try typing:
 Inline Documentation
 --------------------
 
-The AWS Shell will automatically pull up documentation as you type commands.
+The aws-shell will automatically pull up documentation as you type commands.
 It will show inline documentation for CLI options.  There is also a separate
 documentation panel that will show documentation for the current command or
 option you are typing.
@@ -150,7 +151,7 @@ option you are typing.
 Fish-Style Auto Suggestions
 ---------------------------
 
-The AWS Shell supports Fish-style auto-suggestions. Use the right arrow key to
+The aws-shell supports Fish-style auto-suggestions. Use the right arrow key to
 complete a suggestion.
 
 .. image:: https://cloud.githubusercontent.com/assets/368057/11822961/4bceff94-a326-11e5-87fa-c664e1e82be4.png
@@ -158,7 +159,7 @@ complete a suggestion.
 Command History
 ---------------
 
-The AWS Shell records the commands you run and writes them to
+The aws-shell records the commands you run and writes them to
 ``~/.aws/shell/history``.  You can use the up and down arrow keys to scroll
 through your history.
 
@@ -167,37 +168,37 @@ through your history.
 Toolbar Options
 ---------------
 
-The AWS Shell has a bottom toolbar that provides several options:
+The aws-shell has a bottom toolbar that provides several options:
 
 * ``F2`` toggles between fuzzy and substring matching
 * ``F3`` toggles between VI and Emacs key bindings
 * ``F4`` toggles between single and multi column auto completions
 * ``F5`` shows and hides the help documentation pane
-* ``F10`` or ``Ctrl-D`` exits the AWS Shell
+* ``F10`` or ``Ctrl-D`` exits the aws-shell
 
 As you toggle options in the toolbar, your preferences are persisted
 to the ``~/.aws/shell/awsshellrc`` file so that the next time you run
-the AWS Shell, your preferences will be restored.
+the aws-shell, your preferences will be restored.
 
 .. image:: https://cloud.githubusercontent.com/assets/368057/11823907/8c3f1e60-a32b-11e5-9f99-fe504ea0a5dc.png
 
 Dot Commands
 ------------
 
-The AWS Shell provides additional commands specific to the AWS Shell.
+The aws-shell provides additional commands specific to the aws-shell.
 The commands are available by adding the ``.`` prefix before a command.
 
 Creating Shell Scripts with .edit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are times when you may want to take a sequence of commands
-you've run in the AWS Shell and combine them into a shell script.
+you've run in the aws-shell and combine them into a shell script.
 In addition to the command history that's persisted to the
-history file, the AWS Shell also keeps track of all the commands
-you've run since you first started your AWS Shell session.
+history file, the aws-shell also keeps track of all the commands
+you've run since you first started your aws-shell session.
 
 You can run the ``.edit`` command to open all these commands in
-an editor.  The AWS Shell will use the ``EDITOR`` environment
+an editor.  The aws-shell will use the ``EDITOR`` environment
 variable before defaulting to ``notepad`` on Windows and
 ``vim`` on other platforms.
 
@@ -211,7 +212,7 @@ variable before defaulting to ``notepad`` on Windows and
 Executing Shell Commands
 ------------------------
 
-The AWS Shell integrates with other commands in several ways.
+The aws-shell integrates with other commands in several ways.
 First, you can pipe AWS CLI commands to other processes as well
 as redirect output to a file::
 
@@ -228,11 +229,11 @@ command, you can add the ``!`` prefix to your command::
 Developer Preview Status
 ========================
 
-The AWS Shell is currently in developer preview.
+The aws-shell is currently in developer preview.
 We welcome feedback, feature requests, and bug reports.
 There may be backwards incompatible changes made in order
 to respond to customer feedback as we continue to iterate
-on the AWS Shell.
+on the aws-shell.
 
 
 More Information
