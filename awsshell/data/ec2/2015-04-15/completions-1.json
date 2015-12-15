@@ -36,6 +36,12 @@
         "resourceIdentifier": "Id"
       }
     }, 
+    "DescribeInstances": {
+      "InstanceIds": {
+        "resourceName": "Instance", 
+        "resourceIdentifier": "Id"
+      }
+    }, 
     "ResetSnapshotAttribute": {
       "SnapshotId": {
         "resourceName": "Snapshot", 
