@@ -1,5 +1,6 @@
 from __future__ import print_function
 from awsshell.fuzzy import fuzzy_search
+from awsshell.substring import substring_search
 
 
 class AWSCLIModelCompleter(object):
@@ -9,7 +10,7 @@ class AWSCLIModelCompleter(object):
     AWS service (which we pull through botocore's data loaders).
 
     """
-    def __init__(self, index_data):
+    def __init__(self, index_data, match_fuzzy=True):
         self._index = index_data
         self._root_name = 'aws'
         self._global_options = index_data[self._root_name]['arguments']
@@ -22,6 +23,7 @@ class AWSCLIModelCompleter(object):
         self.last_option = ''
         # This will get populated as a command is completed.
         self.cmd_path = [self._current_name]
+        self.match_fuzzy = match_fuzzy
 
     @property
     def arg_metadata(self):
@@ -99,8 +101,14 @@ class AWSCLIModelCompleter(object):
             # We don't need to recompute this until the args are
             # different.
             all_args = self._get_all_args()
-            return fuzzy_search(last_word, all_args)
-        return fuzzy_search(last_word, self._current['commands'])
+            if self.match_fuzzy:
+                return fuzzy_search(last_word, all_args)
+            else:
+                return substring_search(last_word, all_args)
+        if self.match_fuzzy:
+            return fuzzy_search(last_word, self._current['commands'])
+        else:
+            return substring_search(last_word, self._current['commands'])
 
     def _get_all_args(self):
         if self._current['arguments'] != self._global_options:

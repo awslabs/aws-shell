@@ -7,8 +7,9 @@ from setuptools import setup, find_packages
 
 requires = [
     'awscli>=1.8.9,<2.0.0',
-    'prompt-toolkit==0.50',
+    'prompt-toolkit==0.52',
     'boto3>=1.2.1',
+    'configobj>=5.0.6',
 ]
 
 
@@ -29,7 +30,8 @@ setup(
     url='https://github.com/jamesls/aws-shell',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
-    package_data={'awsshell': ['data/*/*.json']},
+    package_data={'awsshell': ['data/*/*.json',
+                               'awsshellrc']},
     install_requires=requires,
     entry_points={
         'console_scripts': [

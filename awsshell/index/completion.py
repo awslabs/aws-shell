@@ -10,7 +10,7 @@ a higher level overview.
 """
 import os
 
-from awsshell.utils import FSLayer, FileReadError
+from awsshell.utils import FSLayer, FileReadError, build_config_file_path
 
 
 class IndexLoadError(Exception):
@@ -23,8 +23,7 @@ class CompletionIndex(object):
     # The completion index can read/write to a cache dir
     # so that it doesn't have to recompute the completion cache
     # every time the CLI starts up.
-    DEFAULT_CACHE_DIR = os.path.join(
-        os.path.expanduser('~'), '.aws', 'shell', 'cache')
+    DEFAULT_CACHE_DIR = build_config_file_path('cache')
 
     def __init__(self, cache_dir=DEFAULT_CACHE_DIR, fslayer=None):
         self._cache_dir = cache_dir

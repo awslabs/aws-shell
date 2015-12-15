@@ -10,7 +10,7 @@ from prompt_toolkit.layout.menus import CompletionsMenu, \
     MultiColumnCompletionsMenu
 from prompt_toolkit.layout.processors import PasswordProcessor, \
     HighlightSearchProcessor, HighlightSelectionProcessor, \
-    ConditionalProcessor
+    ConditionalProcessor, AppendAutoSuggestion
 from prompt_toolkit.layout.prompt import DefaultPrompt
 from prompt_toolkit.layout.screen import Char
 from prompt_toolkit.layout.toolbars import ValidationToolbar, \
@@ -77,6 +77,8 @@ def create_default_layout(app, message='',
             HighlightSearchProcessor(preview_search=Always()),
             HasFocus(SEARCH_BUFFER)),
         HighlightSelectionProcessor(),
+        ConditionalProcessor(
+            AppendAutoSuggestion(), HasFocus(DEFAULT_BUFFER) & ~IsDone()),
         ConditionalProcessor(PasswordProcessor(), is_password)
     ]
 
@@ -106,6 +108,13 @@ def create_default_layout(app, message='',
             return LayoutDimension(min=8)
         else:
             return LayoutDimension()
+
+    def separator():
+        return ConditionalContainer(
+            content=Window(height=LayoutDimension.exact(1),
+                           content=FillControl(u'\u2500',
+                                               token=Token.Separator)),
+            filter=HasDocumentation(app) & ~IsDone())
 
     # Create and return Layout instance.
     return HSplit([
@@ -152,11 +161,7 @@ def create_default_layout(app, message='',
                 ]
             ),
         ]),
-        ConditionalContainer(
-            content=Window(height=LayoutDimension.exact(1),
-                           content=FillControl(u'\u2500',
-                                               token=Token.Separator)),
-            filter=HasDocumentation(app) & ~IsDone()),
+        separator(),
         ConditionalContainer(
             content=Window(
                 BufferControl(
@@ -165,6 +170,7 @@ def create_default_layout(app, message='',
                 height=LayoutDimension(max=15)),
             filter=HasDocumentation(app) & ~IsDone(),
         ),
+        separator(),
         ValidationToolbar(),
         SystemToolbar(),
 

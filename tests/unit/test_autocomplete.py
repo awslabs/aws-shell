@@ -18,6 +18,13 @@ def test_completes_service_names(index_data):
     assert completer.autocomplete('fi') == ['first']
 
 
+def test_completes_service_names_substring(index_data):
+    index_data['aws']['commands'] = ['foo', 'bar foo']
+    completer = AWSCLIModelCompleter(index_data)
+    completer.match_fuzzy = False
+    assert completer.autocomplete('fo') == ['foo']
+
+
 def test_completes_multiple_service_names(index_data):
     index_data['aws']['commands'] = ['abc', 'acd', 'b']
     completer = AWSCLIModelCompleter(index_data)
@@ -150,6 +157,15 @@ def test_autocompletes_argument_names(index_data):
     # to know if we're a top level argument or not.
     assert completer.autocomplete('-') == ['--query', '--debug']
     assert completer.autocomplete('--q') == ['--query']
+
+
+def test_autocompletes_argument_names_substring(index_data):
+    index_data['aws']['arguments'] = ['--foo', '--bar foo']
+    completer = AWSCLIModelCompleter(index_data)
+    completer.match_fuzzy = False
+    # These should only appear once in the output.  So we need
+    # to know if we're a top level argument or not.
+    assert completer.autocomplete('--f') == ['--foo']
 
 
 def test_autocompletes_global_and_service_args(index_data):
