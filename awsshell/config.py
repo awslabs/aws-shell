@@ -77,7 +77,7 @@ class Config(object):
             existing config file, if it exists.
         """
         expanded_config_path = os.path.expanduser(config_path)
-        if not overwrite and os.path.exists(config_path):
+        if not overwrite and os.path.isfile(config_path):
             return
         else:
             shutil.copyfile(template_path, config_path)
