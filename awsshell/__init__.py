@@ -3,8 +3,6 @@ from __future__ import unicode_literals, print_function
 import json
 import threading
 
-from prompt_toolkit.history import InMemoryHistory
-
 from awsshell import shellcomplete
 from awsshell import autocomplete
 from awsshell import app
@@ -61,8 +59,7 @@ def main():
         t.start()
     model_completer = autocomplete.AWSCLIModelCompleter(index_data)
     completer = shellcomplete.AWSShellCompleter(model_completer)
-    history = InMemoryHistory()
-    shell = app.create_aws_shell(completer, model_completer, history, doc_data)
+    shell = app.create_aws_shell(completer, model_completer, doc_data)
     shell.run()
 
 

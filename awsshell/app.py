@@ -17,19 +17,21 @@ from prompt_toolkit.interface import AbortAction, AcceptAction
 from prompt_toolkit.key_binding.manager import KeyBindingManager
 from prompt_toolkit.utils import Callback
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.history import InMemoryHistory, FileHistory
 
 from awsshell.ui import create_default_layout
 from awsshell.config import Config
 from awsshell.keys import KeyManager
 from awsshell.style import StyleFactory
 from awsshell.toolbar import Toolbar
+from awsshell.utils import build_config_file_path
 
 
 LOG = logging.getLogger(__name__)
 
 
-def create_aws_shell(completer, model_completer, history, docs):
-    return AWSShell(completer, model_completer, history, docs)
+def create_aws_shell(completer, model_completer, docs):
+    return AWSShell(completer, model_completer, docs)
 
 
 class InputInterrupt(Exception):
@@ -76,10 +78,11 @@ class AWSShell(object):
     :param theme: The pygments theme.
     """
 
-    def __init__(self, completer, model_completer, history, docs):
+    def __init__(self, completer, model_completer, docs):
         self.completer = completer
         self.model_completer = model_completer
-        self.history = history
+        self.memory_history = InMemoryHistory()
+        self.file_history = FileHistory(build_config_file_path('history'))
         self._cli = None
         self._docs = docs
         self.current_docs = u''
@@ -136,7 +139,7 @@ class AWSShell(object):
                     if text.startswith('.edit'):
                         # TODO: Use EDITOR env var.
                         all_commands = '\n'.join(
-                            ['aws ' + h for h in list(self.history)
+                            ['aws ' + h for h in list(self.memory_history)
                              if not h.startswith(('.', '!'))])
                     with tempfile.NamedTemporaryFile('w') as f:
                         f.write(all_commands)
@@ -149,6 +152,7 @@ class AWSShell(object):
                         full_cmd = text[1:]
                     else:
                         full_cmd = 'aws ' + text
+                        self.memory_history.append(full_cmd)
                     self.current_docs = u''
                     self.cli.buffers['clidocs'].reset(
                         initial_document=Document(self.current_docs,
@@ -294,7 +298,7 @@ class AWSShell(object):
         # event loop.
         loop = create_eventloop()
         app = self.create_application(self.completer,
-                                      self.history,
+                                      self.file_history,
                                       display_completions_in_columns)
         cli = CommandLineInterface(application=app, eventloop=loop)
         return cli

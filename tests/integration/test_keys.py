@@ -24,8 +24,7 @@ from awsshell.app import AWSShell, InputInterrupt
 class KeysTest(unittest.TestCase):
 
     def setUp(self):
-        self.aws_shell = AWSShell(None, mock.Mock(),
-                                  None, mock.Mock())
+        self.aws_shell = AWSShell(None, mock.Mock(), mock.Mock())
         self.processor = self.aws_shell.cli.input_processor
 
     def test_F2(self):
