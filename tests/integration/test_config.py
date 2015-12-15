@@ -26,8 +26,7 @@ class ConfigTest(unittest.TestCase):
             os.remove(build_config_file_path('test-awsshellrc'))
         except OSError:
             pass
-        self.aws_shell = AWSShell(None, mock.Mock(),
-                                  None, mock.Mock())
+        self.aws_shell = AWSShell(None, mock.Mock(), mock.Mock())
         self.aws_shell.model_completer.match_fuzzy = False
         self.aws_shell.enable_vi_bindings = False
         self.aws_shell.show_completion_columns = False
@@ -42,8 +41,7 @@ class ConfigTest(unittest.TestCase):
         assert self.aws_shell.theme == 'none'
 
     def test_config_on(self):
-        self.aws_shell = AWSShell(None, mock.Mock(),
-                                  None, mock.Mock())
+        self.aws_shell = AWSShell(None, mock.Mock(), mock.Mock())
         self.aws_shell.model_completer.match_fuzzy = True
         self.aws_shell.enable_vi_bindings = True
         self.aws_shell.show_completion_columns = True
