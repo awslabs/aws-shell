@@ -61,9 +61,19 @@ class EditHandler(object):
         else:
             return compat.default_editor()
 
-    def run(self, command, context):
+    def run(self, command, application):
+        """Open application's history buffer in an editor.
+
+        :type command: list
+        :param command: The dot command as a list split
+            on whitespace, e.g ``['.foo', 'arg1', 'arg2']``
+
+        :type application: AWSShell
+        :param application: The application object.
+
+        """
         all_commands = '\n'.join(
-            ['aws ' + h for h in list(context.history)
+            ['aws ' + h for h in list(application.history)
              if not h.startswith(('.', '!'))])
         with tempfile.NamedTemporaryFile('w') as f:
             f.write(all_commands)
@@ -82,27 +92,27 @@ class DotCommandHandler(object):
         self._output = output
         self._err = err
 
-    def handle_cmd(self, command, context):
+    def handle_cmd(self, command, application):
         """Handles running a given dot command from a user.
 
         :type command: str
         :param command: The full dot command string, e.g. ``.edit``,
             of ``.profile prod``.
 
-        :type context: AWSShell
-        :param context: The application object.
+        :type application: AWSShell
+        :param application: The application object.
 
         """
         parts = command.split()
         cmd_name = parts[0][1:]
         if cmd_name not in self.HANDLER_CLASSES:
-            self._unknown_cmd(parts, context)
+            self._unknown_cmd(parts, application)
         else:
             # Note we expect the class to support no-arg
             # instantiation.
-            self.HANDLER_CLASSES[cmd_name]().run(parts, context)
+            self.HANDLER_CLASSES[cmd_name]().run(parts, application)
 
-    def _unknown_cmd(self, cmd_parts, context):
+    def _unknown_cmd(self, cmd_parts, application):
         self._err.write("Unknown dot command: %s\n" % cmd_parts[0])
 
 
@@ -200,7 +210,7 @@ class AWSShell(object):
                 if text.startswith('.'):
                     # These are special commands.  The only one supported for
                     # now is .edit.
-                    self._dot_cmd.handle_cmd(text, context=self)
+                    self._dot_cmd.handle_cmd(text, application=self)
                 else:
                     if text.startswith('!'):
                         # Then run the rest as a normally shell command.
