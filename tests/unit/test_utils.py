@@ -6,6 +6,7 @@ import shutil
 from awsshell.utils import FSLayer
 from awsshell.utils import InMemoryFSLayer
 from awsshell.utils import FileReadError
+from awsshell.utils import temporary_file
 
 
 class TestFSLayer(unittest.TestCase):
@@ -64,3 +65,19 @@ class TestInMemoryFSLayer(unittest.TestCase):
     def test_file_does_not_exist_error(self):
         with self.assertRaises(FileReadError):
             self.fslayer.file_contents('/tmp/thisdoesnot-exist.asdf')
+
+
+class TestTemporaryFile(unittest.TestCase):
+    def test_can_use_as_context_manager(self):
+        with temporary_file('w') as f:
+            filename = f.name
+            f.write("foobar")
+            f.flush()
+            self.assertEqual(open(filename).read(), "foobar")
+
+    def test_is_removed_after_exiting_context(self):
+        with temporary_file('w') as f:
+            filename = f.name
+            f.write("foobar")
+            f.flush()
+        self.assertFalse(os.path.isfile(filename))
