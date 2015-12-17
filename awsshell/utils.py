@@ -2,6 +2,10 @@
 from __future__ import print_function
 import os
 import awscli
+import contextlib
+import tempfile
+import uuid
+import shutil
 
 from awsshell.compat import HTMLParser
 
@@ -20,6 +24,28 @@ def remove_html(html):
 
 def build_config_file_path(file_name):
     return os.path.join(os.path.expanduser('~'), '.aws', 'shell', file_name)
+
+
+@contextlib.contextmanager
+def temporary_file(mode):
+    """Cross platform temporary file creation.
+
+    This is an alternative to ``tempfile.NamedTemporaryFile`` that
+    also works on windows and avoids the "file being used by
+    another process" error.
+    """
+    tempdir = tempfile.gettempdir()
+    basename = 'tmpfile-%s' % (uuid.uuid4())
+    full_filename = os.path.join(tempdir, basename)
+    if 'w' not in mode:
+        # We need to create the file before we can open
+        # it in 'r' mode.
+        open(full_filename, 'w').close()
+    try:
+        with open(full_filename, mode) as f:
+            yield f
+    finally:
+        os.remove(f.name)
 
 
 class DataOnly(HTMLParser):

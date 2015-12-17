@@ -5,7 +5,6 @@ Main entry point to the AWS Shell.
 """
 from __future__ import unicode_literals
 import os
-import tempfile
 import subprocess
 import logging
 import sys
@@ -26,7 +25,7 @@ from awsshell.config import Config
 from awsshell.keys import KeyManager
 from awsshell.style import StyleFactory
 from awsshell.toolbar import Toolbar
-from awsshell.utils import build_config_file_path
+from awsshell.utils import build_config_file_path, temporary_file
 from awsshell import compat
 
 
@@ -75,7 +74,7 @@ class EditHandler(object):
         all_commands = '\n'.join(
             ['aws ' + h for h in list(application.history)
              if not h.startswith(('.', '!'))])
-        with tempfile.NamedTemporaryFile('w') as f:
+        with temporary_file('w') as f:
             f.write(all_commands)
             f.flush()
             editor = self._get_editor_command()
