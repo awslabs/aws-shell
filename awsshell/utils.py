@@ -34,15 +34,18 @@ def temporary_file(mode):
     also works on windows and avoids the "file being used by
     another process" error.
     """
-    tempdir = tempfile.mkdtemp()
+    tempdir = tempfile.gettempdir()
     basename = 'tmpfile-%s' % (uuid.uuid4())
     full_filename = os.path.join(tempdir, basename)
-    open(full_filename, 'w').close()
+    if 'w' not in mode:
+        # We need to create the file before we can open
+        # it in 'r' mode.
+        open(full_filename, 'w').close()
     try:
         with open(full_filename, mode) as f:
             yield f
     finally:
-        shutil.rmtree(tempdir)
+        os.remove(f.name)
 
 
 class DataOnly(HTMLParser):

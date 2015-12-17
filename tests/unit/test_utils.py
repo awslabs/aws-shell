@@ -81,3 +81,15 @@ class TestTemporaryFile(unittest.TestCase):
             f.write("foobar")
             f.flush()
         self.assertFalse(os.path.isfile(filename))
+
+    def test_can_open_in_read(self):
+        with temporary_file('r') as f:
+            filename = f.name
+            assert f.read() == ''
+            # Verify we can open the file again
+            # in another file descriptor.
+            with open(filename, 'w') as f2:
+                f2.write("foobar")
+            f.seek(0)
+            assert f.read() == "foobar"
+        self.assertFalse(os.path.isfile(filename))
