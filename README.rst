@@ -16,6 +16,22 @@ If you are not installing into a virtualenv you can run::
 
     $ sudo pip install aws-shell
 
+**Mac OS X (10.11 El Capitan) users**: There is a known issue with Apple and
+its included python package dependencies (more info at
+https://github.com/pypa/pip/issues/3165).
+We are investigating ways to fix this issue but in the meantime,
+to install the aws-shell, you can run:
+``sudo pip install aws-shell --upgrade --ignore-installed six``
+
+Once you've installed the aws-shell, you can now run::
+
+    $ aws-shell
+
+To exit the shell, press ``Ctrl-D``.
+
+Upgrading the aws-shell
+-----------------------
+
 If you want to upgrade to the latest version of the aws-shell,
 you can run::
 
@@ -24,12 +40,6 @@ you can run::
 You can also use this upgrade command whenever a new version of the AWS CLI is
 released that includes new services and API updates.  You will then be
 able to use these new services and API updates in the aws-shell.
-
-Once you've installed the aws-shell, you can now run::
-
-    $ aws-shell
-
-To exit the shell, press ``Ctrl-D``.
 
 Supported Python Versions
 -------------------------
