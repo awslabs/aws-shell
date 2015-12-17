@@ -1,0 +1,84 @@
+{
+  "operations": {
+    "AddTagsToStream": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DeleteStream": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DecreaseStreamRetentionPeriod": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DescribeStream": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "GetShardIterator": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "IncreaseStreamRetentionPeriod": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "ListTagsForStream": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "MergeShards": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "PutRecord": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "PutRecords": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "RemoveTagsFromStream": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "SplitShard": {
+      "StreamName": {
+        "resourceName": "Stream",
+        "resourceIdentifier": "Name"
+      }
+    }
+  },
+  "resources": {
+    "Stream": {
+      "operation": "ListStreams",
+      "resourceIdentifier": {
+        "Name": "StreamNames[]"
+      }
+    }
+  }
+}
