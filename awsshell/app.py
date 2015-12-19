@@ -239,8 +239,12 @@ class AWSShell(object):
         raise InputInterrupt
 
     def create_layout(self, display_completions_in_columns, toolbar):
+        from awsshell.lexer import ShellLexer
+        lexer = ShellLexer
+        if self.config_section['theme'] == 'none':
+            lexer = None
         return create_default_layout(
-            self, u'aws> ', reserve_space_for_menu=True,
+            self, u'aws> ', lexer=lexer, reserve_space_for_menu=True,
             display_completions_in_columns=display_completions_in_columns,
             get_bottom_toolbar_tokens=toolbar.handler)
 
