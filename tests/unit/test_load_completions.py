@@ -38,9 +38,11 @@ class LoadCompletionsTest(unittest.TestCase):
         self.completion_index.load_index = lambda x: DATA
 
     def test_load_completions(self):
-        commands, subcommands, args_opts, global_opts = \
-            self.completion_index.load_completions()
-        assert commands == ['devicefarm', 'foo']
-        assert subcommands == ['create-device-pool', 'bar']
-        assert args_opts == set(['--project-arn', '--name', '--baz'])
-        assert global_opts == ['--debug', '--endpoint-url']
+        assert self.completion_index.commands == [
+            'devicefarm', 'foo']
+        assert self.completion_index.subcommands == [
+            'create-device-pool', 'bar']
+        assert self.completion_index.global_opts == [
+            '--debug', '--endpoint-url']
+        assert self.completion_index.args_opts == set([
+            '--project-arn', '--name', '--baz'])
