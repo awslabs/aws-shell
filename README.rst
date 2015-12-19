@@ -23,6 +23,11 @@ We are investigating ways to fix this issue but in the meantime,
 to install the aws-shell, you can run:
 ``sudo pip install aws-shell --upgrade --ignore-installed six``
 
+**Windows Users**: You'll have to use Python 3.4 or higher.
+The aws-shell does not currently work on python2.  More
+info at: https://github.com/jonathanslenders/python-prompt-toolkit/issues/86
+
+
 Once you've installed the aws-shell, you can now run::
 
     $ aws-shell
@@ -44,7 +49,11 @@ able to use these new services and API updates in the aws-shell.
 Supported Python Versions
 -------------------------
 
-The aws-shell works on the same python versions supported by the AWS CLI:
+On Windows, the aws-shell works on:
+
+* 3.4.x and greater
+
+On non-Windows platforms, the aws-shell works on:
 
 * 2.6.5 and greater
 * 2.7.x and greater
