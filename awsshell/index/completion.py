@@ -57,6 +57,7 @@ class CompletionIndex(object):
         :type version_string: str
         :param version_string: The AWS CLI version, e.g "1.9.2".
 
+        :raises: :class:`IndexLoadError <exceptions.IndexLoadError>`
         """
         filename = self._filename_for_version(version_string)
         try:
@@ -78,6 +79,10 @@ class CompletionIndex(object):
             * global_opts
             * args_opts
         """
+        try:
+            index_str = self.load_index(utils.AWSCLI_VERSION)
+        except IndexLoadError:
+            return
         index_str = self.load_index(utils.AWSCLI_VERSION)
         index_data = json.loads(index_str)
         index_root = index_data['aws']
