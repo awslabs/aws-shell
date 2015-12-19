@@ -36,6 +36,7 @@ class LoadCompletionsTest(unittest.TestCase):
             '{"commands": [], "arguments": ["--baz"]}}}}}}'
         )
         self.completion_index.load_index = lambda x: DATA
+        self.completion_index.load_completions()
 
     def test_load_completions(self):
         assert self.completion_index.commands == [

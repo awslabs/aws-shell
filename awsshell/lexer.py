@@ -32,6 +32,7 @@ class ShellLexer(RegexLexer):
         pygments highlighting.
     """
     completion_index = CompletionIndex()
+    completion_index.load_completions()
     tokens = {
         'root': [
             # ec2, s3, elb...

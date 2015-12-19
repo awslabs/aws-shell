@@ -49,7 +49,6 @@ class CompletionIndex(object):
         self.subcommands = []
         self.global_opts = []
         self.args_opts = set()
-        self.load_completions()
 
     def load_index(self, version_string):
         """Load the completion index for a given CLI version.
