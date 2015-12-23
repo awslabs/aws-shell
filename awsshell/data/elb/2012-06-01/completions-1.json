@@ -1,0 +1,162 @@
+{
+  "operations": {
+    "AddTags": {
+      "LoadBalancerNames": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "ApplySecurityGroupsToLoadBalancer": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "AttachLoadBalancerToSubnets": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "ConfigureHealthCheck": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "CreateAppCookieStickinessPolicy": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "CreateLBCookieStickinessPolicy": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "CreateLoadBalancerPolicy": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DetachLoadBalancerFromSubnets": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DescribeInstanceHealth": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DeleteLoadBalancer": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DeleteLoadBalancerListeners": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DeleteLoadBalancerPolicy": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DescribeTags": {
+      "LoadBalancerNames": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DeregisterInstancesFromLoadBalancer": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DescribeLoadBalancerAttributes": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DescribeLoadBalancerPolicies": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DescribeLoadBalancers": {
+      "LoadBalancerNames": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "DisableAvailabilityZonesForLoadBalancer": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "EnableAvailabilityZonesForLoadBalancer": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "ModifyLoadBalancerAttributes": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "RegisterInstancesWithLoadBalancer": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "RemoveTags": {
+      "LoadBalancerNames": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "SetLoadBalancerListenerSSLCertificate": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "SetLoadBalancerPoliciesForBackendServer": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    },
+    "SetLoadBalancerPoliciesOfListener": {
+      "LoadBalancerName": {
+        "resourceName": "LoadBalancer",
+        "resourceIdentifier": "Name"
+      }
+    }
+  },
+  "resources": {
+    "LoadBalancer": {
+      "operation": "DescribeLoadBalancers",
+      "resourceIdentifier": {
+        "Name": "LoadBalancerDescriptions[].LoadBalancerName"
+      }
+    }
+  }
+}
