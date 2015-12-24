@@ -71,7 +71,7 @@ class FSLayer(object):
 
     """
     def file_contents(self, filename, binary=False):
-        """Returns the file for a given filename.
+        """Return the file for a given filename.
 
         If you want binary content use ``mode='rb'``.
 
@@ -87,7 +87,7 @@ class FSLayer(object):
             raise FileReadError(str(e))
 
     def file_exists(self, filename):
-        """Checks if a file exists.
+        """Check if a file exists.
 
         This method returns true if:
 

@@ -13,7 +13,7 @@
 
 
 def substring_search(word, collection):
-    """Finds all matches in the `collection` for the specified `word`.
+    """Find all matches in the `collection` for the specified `word`.
 
     If `word` is empty, returns all items in `collection`.
 

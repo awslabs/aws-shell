@@ -14,10 +14,11 @@ from pygments.token import Token
 
 
 class Toolbar(object):
-    """Shows information about the aws-shell in a tool bar.
+    """Show information about the aws-shell in a tool bar.
 
     :type handler: callable
     :param handler: Wraps the callable `get_toolbar_items`.
+
     """
 
     def __init__(self, get_match_fuzzy, get_enable_vi_bindings,
@@ -28,7 +29,7 @@ class Toolbar(object):
 
     def _create_toolbar_handler(self, get_match_fuzzy, get_enable_vi_bindings,
                                 get_show_completion_columns, get_show_help):
-        """Creates the toolbar handler.
+        """Create the toolbar handler.
 
         :type get_fuzzy_match: callable
         :param fuzzy_match: Gets the fuzzy matching config.
@@ -46,6 +47,7 @@ class Toolbar(object):
 
         :rtype: callable
         :returns: get_toolbar_items.
+
         """
         assert callable(get_match_fuzzy)
         assert callable(get_enable_vi_bindings)
@@ -53,7 +55,7 @@ class Toolbar(object):
         assert callable(get_show_help)
 
         def get_toolbar_items(_):
-            """Returns the toolbar items.
+            """Return the toolbar items.
 
             :type _: :class:`prompt_toolkit.Cli`
             :param _: (Unused)

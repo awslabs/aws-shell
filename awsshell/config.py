@@ -22,7 +22,7 @@ class Config(object):
     """Reads and writes the config template and user config file."""
 
     def load(self, config_template, config_file=None):
-        """Reads the config file if it exists, else reads the default config.
+        """Read the config file if it exists, else read the default config.
 
         Creates the user config file if it doesn't exist using the template.
 
@@ -45,7 +45,7 @@ class Config(object):
         return self._load_template_or_config(template_path, config_path)
 
     def _load_template_or_config(self, template_path, config_path):
-        """Loads the config file if it exists, else reads the default config.
+        """Load the config file if it exists, else read the default config.
 
         :type template_path: str
         :param template_path: The template config file path.
@@ -65,7 +65,7 @@ class Config(object):
 
     def _copy_template_to_config(self, template_path,
                                  config_path, overwrite=False):
-        """Writes the default config from a template.
+        """Write the default config from a template.
 
         :type template_path: str
         :param template_path: The template config file path.

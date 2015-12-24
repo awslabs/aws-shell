@@ -13,8 +13,7 @@ def load_doc_db(filename):
 
 
 class DocRetriever(object):
-    """Retrieves documentation for the AWS CLI.
-    """
+    """Retrieve documentation for the AWS CLI."""
     def __init__(self, doc_index):
         # Internally, most of the speedup comes from
         # the fact that this data is pre-rendered and

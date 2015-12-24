@@ -18,7 +18,7 @@ from prompt_toolkit.styles import default_style_extensions
 
 
 class StyleFactory(object):
-    """Provides styles for the autocomplete menu and the toolbar.
+    """Provide styles for the autocomplete menu and the toolbar.
 
     :type style: :class:`pygments.style.StyleMeta`
     :param style: Contains pygments style info.
@@ -28,7 +28,7 @@ class StyleFactory(object):
         self.style = self.style_factory(style_name)
 
     def style_factory(self, style_name):
-        """Retrieves the specified pygments style.
+        """Retrieve the specified pygments style.
 
         If the specified style is not found, the vim style is returned.
 

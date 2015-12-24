@@ -40,6 +40,7 @@ class InputInterrupt(Exception):
 
     Raising `InputInterrupt` is useful to force a cli rebuild, which is
     sometimes necessary in order for config changes to take effect.
+
     """
     pass
 
@@ -91,7 +92,7 @@ class DotCommandHandler(object):
         self._err = err
 
     def handle_cmd(self, command, application):
-        """Handles running a given dot command from a user.
+        """Handle running a given dot command from a user.
 
         :type command: str
         :param command: The full dot command string, e.g. ``.edit``,
@@ -115,7 +116,7 @@ class DotCommandHandler(object):
 
 
 class AWSShell(object):
-    """Encapsulates the ui, completer, command history, docs, and config.
+    """Encapsulate the ui, completer, command history, docs, and config.
 
     Runs the input event loop and delegates the command execution to either
     the `awscli` or the underlying shell.
@@ -147,6 +148,7 @@ class AWSShell(object):
 
     :type theme: str
     :param theme: The pygments theme.
+
     """
 
     def __init__(self, completer, model_completer, docs):
@@ -172,7 +174,7 @@ class AWSShell(object):
         self.load_config()
 
     def load_config(self):
-        """Loads the config from the config file or template."""
+        """Load the config from the config file or template."""
         config = Config()
         self.config_obj = config.load('awsshellrc')
         self.config_section = self.config_obj['aws-shell']
@@ -186,7 +188,7 @@ class AWSShell(object):
         self.theme = self.config_section['theme']
 
     def save_config(self):
-        """Saves the config to the config file."""
+        """Save the config to the config file."""
         self.config_section['match_fuzzy'] = self.model_completer.match_fuzzy
         self.config_section['enable_vi_bindings'] = self.enable_vi_bindings
         self.config_section['show_completion_columns'] = \
@@ -235,13 +237,14 @@ class AWSShell(object):
                     p.communicate()
 
     def stop_input_and_refresh_cli(self):
-        """Stops input by raising an `InputInterrupt`, forces a cli refresh.
+        """Stop input by raising an `InputInterrupt`, forces a cli refresh.
 
         The cli refresh is necessary because changing options such as key
         bindings, single vs multi column menu completions, and the help pane
         all require a rebuild.
 
         :raises: :class:`InputInterrupt <exceptions.InputInterrupt>`.
+
         """
         self.refresh_cli = True
         self.cli.request_redraw()
@@ -267,7 +270,7 @@ class AWSShell(object):
             accept_action=AcceptAction.RETURN_DOCUMENT)
 
     def create_key_manager(self):
-        """Creates the :class:`KeyManager`.
+        """Create the :class:`KeyManager`.
 
         The inputs to KeyManager are expected to be callable, so we can't
         use the standard @property and @attrib.setter for these attributes.
@@ -277,13 +280,14 @@ class AWSShell(object):
         :return: A KeyManager with callables to set the toolbar options.  Also
             includes the method stop_input_and_refresh_cli to ensure certain
             options take effect within the current session.
-        """
 
+        """
         def set_match_fuzzy(match_fuzzy):
             """Setter for fuzzy matching mode.
 
             :type match_fuzzy: bool
             :param match_fuzzy: The match fuzzy flag.
+
             """
             self.model_completer.match_fuzzy = match_fuzzy
 
@@ -295,6 +299,7 @@ class AWSShell(object):
 
             :type enable_vi_bindings: bool
             :param enable_vi_bindings: The enable Vi bindings flag.
+
             """
             self.enable_vi_bindings = enable_vi_bindings
 
@@ -304,6 +309,7 @@ class AWSShell(object):
             :type show_completion_columns: bool
             :param show_completion_columns: The show completions in
                 multiple columns flag.
+
             """
             self.show_completion_columns = show_completion_columns
 
@@ -312,6 +318,7 @@ class AWSShell(object):
 
             :type show_help: bool
             :param show_help: The show help flag.
+
             """
             self.show_help = show_help
 
