@@ -16,7 +16,9 @@ from prompt_toolkit.layout.screen import Char
 from prompt_toolkit.layout.toolbars import ValidationToolbar, \
     SystemToolbar, ArgToolbar, SearchToolbar
 from prompt_toolkit.layout.utils import explode_tokens
+from prompt_toolkit.layout.lexers import PygmentsLexer
 from pygments.token import Token
+from pygments.lexer import Lexer
 
 from awsshell.compat import text_type
 
@@ -65,6 +67,16 @@ def create_default_layout(app, message='',
 
     get_prompt_tokens_1, get_prompt_tokens_2 = _split_multiline_prompt(
         get_prompt_tokens)
+
+    # `lexer` is supposed to be a `Lexer` instance. But if a Pygments lexer
+    # class is given, turn it into a PygmentsLexer. (Important for
+    # backwards-compatibility.)
+    try:
+        if issubclass(lexer, Lexer):
+            lexer = PygmentsLexer(lexer)
+    except TypeError: # Happens when lexer is `None` or an instance of something else.
+        pass
+
     # Create processors list.
     # (DefaultPrompt should always be at the end.)
     input_processors = [
