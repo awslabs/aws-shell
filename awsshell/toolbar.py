@@ -87,15 +87,15 @@ class Toolbar(object):
                 show_help_cfg = 'OFF'
             return [
                 (match_fuzzy_token,
-                    ' [F2] Fuzzy: {0} '.format(match_fuzzy_cfg)),
+                 ' [F2] Fuzzy: {0} '.format(match_fuzzy_cfg)),
                 (enable_vi_bindings_token,
-                    ' [F3] Keys: {0} '.format(enable_vi_bindings_cfg)),
+                 ' [F3] Keys: {0} '.format(enable_vi_bindings_cfg)),
                 (show_columns_token,
-                    ' [F4] {0} Column '.format(show_columns_cfg)),
+                 ' [F4] {0} Column '.format(show_columns_cfg)),
                 (show_help_token,
-                    ' [F5] Help: {0} '.format(show_help_cfg)),
+                 ' [F5] Help: {0} '.format(show_help_cfg)),
                 (Token.Toolbar,
-                    ' [F10] Exit ')
+                 ' [F10] Exit ')
             ]
 
         return get_toolbar_items

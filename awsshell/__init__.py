@@ -48,8 +48,7 @@ def main():
     # generating, we regen the whole doc index.  Ideally we pick up
     # from where we left off.
     try:
-        db = docs.load_doc_db(doc_index_file)
-        db['__complete__']
+        docs.load_doc_db(doc_index_file)['__complete__']
     except KeyError:
         print("Creating doc index in the background. "
               "It will be a few minutes before all documentation is "

@@ -158,7 +158,17 @@ class AWSShell(object):
         self._docs = docs
         self.current_docs = u''
         self.refresh_cli = False
+        self.key_manager = None
         self._dot_cmd = DotCommandHandler()
+
+        # These attrs come from the config file.
+        self.config_obj = None
+        self.config_section = None
+        self.enable_vi_bindings = None
+        self.show_completion_columns = None
+        self.show_help = None
+        self.theme = None
+
         self.load_config()
 
     def load_config(self):

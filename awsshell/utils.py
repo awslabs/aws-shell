@@ -1,12 +1,14 @@
 """Utility module for misc aws shell functions."""
 from __future__ import print_function
 import os
-import awscli
 import contextlib
 import tempfile
 import uuid
 
+import awscli
+
 from awsshell.compat import HTMLParser
+
 
 AWSCLI_VERSION = awscli.__version__
 
