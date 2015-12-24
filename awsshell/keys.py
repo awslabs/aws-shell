@@ -27,11 +27,10 @@ class KeyManager(object):
     :param manager: A custom `KeyBindingManager`.
     """
 
-    def __init__(
-        self, get_match_fuzzy, set_match_fuzzy,
-        get_enable_vi_bindings, set_enable_vi_bindings,
-        get_show_completion_columns, set_show_completion_columns,
-        get_show_help, set_show_help, stop_input_and_refresh_cli):
+    def __init__(self, get_match_fuzzy, set_match_fuzzy,
+                 get_enable_vi_bindings, set_enable_vi_bindings,
+                 get_show_completion_columns, set_show_completion_columns,
+                 get_show_help, set_show_help, stop_input_and_refresh_cli):
         self.manager = None
         self._create_key_manager(
             get_match_fuzzy, set_match_fuzzy,
@@ -39,11 +38,12 @@ class KeyManager(object):
             get_show_completion_columns, set_show_completion_columns,
             get_show_help, set_show_help, stop_input_and_refresh_cli)
 
-    def _create_key_manager(
-        self, get_match_fuzzy, set_match_fuzzy,
-        get_enable_vi_bindings, set_enable_vi_bindings,
-        get_show_completion_columns, set_show_completion_columns,
-        get_show_help, set_show_help, stop_input_and_refresh_cli):
+    def _create_key_manager(self, get_match_fuzzy, set_match_fuzzy,
+                            get_enable_vi_bindings, set_enable_vi_bindings,
+                            get_show_completion_columns,
+                            set_show_completion_columns,
+                            get_show_help, set_show_help,
+                            stop_input_and_refresh_cli):
         """Creates and initializes the keybinding manager.
 
         :type get_fuzzy_match: callable

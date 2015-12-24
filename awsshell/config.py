@@ -39,7 +39,8 @@ class Config(object):
         if config_file is None:
             config_file = config_template
         config_path = build_config_file_path(config_file)
-        template_path = os.path.join(os.path.dirname(__file__), config_template)
+        template_path = os.path.join(os.path.dirname(__file__),
+                                     config_template)
         self._copy_template_to_config(template_path, config_path)
         return self._load_template_or_config(template_path, config_path)
 
@@ -78,7 +79,7 @@ class Config(object):
 
         :raises: :class:`OSError <exceptions.OSError>`
         """
-        expanded_config_path = os.path.expanduser(config_path)
+        config_path = os.path.expanduser(config_path)
         if not overwrite and os.path.isfile(config_path):
             return
         else:

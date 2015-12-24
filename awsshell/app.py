@@ -15,7 +15,6 @@ from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.filters import Always
 from prompt_toolkit.interface import CommandLineInterface, Application
 from prompt_toolkit.interface import AbortAction, AcceptAction
-from prompt_toolkit.key_binding.manager import KeyBindingManager
 from prompt_toolkit.utils import Callback
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import InMemoryHistory, FileHistory

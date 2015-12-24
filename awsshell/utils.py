@@ -5,7 +5,6 @@ import awscli
 import contextlib
 import tempfile
 import uuid
-import shutil
 
 from awsshell.compat import HTMLParser
 
