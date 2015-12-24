@@ -18,19 +18,25 @@ check:
 	#
 	#
 	#
-	###### PYLINT ######
-	# Python linter.
-	#
-	#
-	#
-	pylint --rcfile .pylintrc awsshell
-	#
-	#
-	#
 	# Proper docstring conventions according to pep257
 	#
 	#
-	pep257 --add-ignore=D100,D101,D102,D103,D104,D105
+	pep257 --add-ignore=D100,D101,D102,D103,D104,D105,D204
+	#
+	#
+	#
+	###### PYLINT ERRORS ONLY ######
+	#
+	#
+	#
+	pylint --rcfile .pylintrc -E awsshell
 
+pylint:
+	###### PYLINT ######
+	# Python linter.  This will generally not have clean output.
+	# So you'll need to manually verify this output.
+	#
+	#
+	pylint --rcfile .pylintrc awsshell
 coverage:
 	py.test --cov awsshell --cov-report term-missing tests/
