@@ -9,6 +9,7 @@ If you're interested in the heavy lifting of the autocompletion
 logic, see awsshell.autocomplete.
 
 """
+import os
 import logging
 from prompt_toolkit.completion import Completer, Completion
 from awsshell import fuzzy
@@ -31,12 +32,20 @@ class AWSShellCompleter(Completer):
             server_side_completer = self._create_server_side_completer()
         self._server_side_completer = server_side_completer
 
-    def _create_server_side_completer(self):
-        import boto3.session
+    def _create_server_side_completer(self, session=None):
+        import botocore.session
         from awsshell.resource import index
-        session = boto3.session.Session()
-        builder = index.ResourceIndexBuilder()
-        completer = index.ServerSideCompleter(session, builder)
+        if session is None:
+            session = botocore.session.Session()
+        loader = session.get_component('data_loader')
+        completions_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'data')
+        loader.search_paths.insert(0, completions_path)
+
+        client_creator = index.CachedClientCreator(session)
+        describer = index.CompleterDescriberCreator(loader)
+        completer = index.ServerSideCompleter(client_creator, describer)
         return completer
 
     @property
