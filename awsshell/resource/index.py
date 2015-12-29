@@ -20,6 +20,7 @@ from collections import namedtuple
 
 import jmespath
 from botocore import xform_name
+from botocore.exceptions import BotoCoreError
 
 LOG = logging.getLogger(__name__)
 
@@ -221,11 +222,21 @@ class ServerSideCompleter(object):
         # param='InstanceIds'.
         if service not in self._describer_creator.services_with_completions():
             return []
-        client = self._client_creator.create_client(service)
+        try:
+            client = self._client_creator.create_client(service)
+        except BotoCoreError as e:
+            # create_client() could raise an exception if the session
+            # isn't fully configured (say it's missing a region).
+            # However, we don't want to turn off all server side
+            # completions because it's still possible to create
+            # clients for some services without a region, e.g. IAM.
+            LOG.debug("Error when trying to create a client for %s",
+                      service, exc_info=True)
+            return []
         api_operation_name = client.meta.method_to_api_mapping.get(
             operation.replace('-', '_'))
         if api_operation_name is None:
-            return
+            return []
         # Now we need to convert the param name to the
         # casing used by the API.
         completer = self._describer_creator.create_completer_query(service)
@@ -235,7 +246,9 @@ class ServerSideCompleter(object):
             return
         try:
             response = getattr(client, xform_name(result.operation, '_'))()
-        except Exception:
+        except Exception as e:
+            LOG.debug("Error when calling %s.%s: %s", service,
+                      result.operation, e, exc_info=True)
             return
         results = jmespath.search(result.path, response)
         return results

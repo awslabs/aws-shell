@@ -1,6 +1,21 @@
 """Index and retrive information from the resource JSON."""
 import pytest
+import mock
+
+from botocore.exceptions import NoRegionError
+
 from awsshell.resource import index
+
+
+@pytest.fixture
+def describer_creator():
+    class FakeDescriberCreator(object):
+        SERVICES = ['ec2']
+
+        def services_with_completions(self):
+            return self.SERVICES
+
+    return FakeDescriberCreator()
 
 
 def test_build_from_has_many():
@@ -211,14 +226,42 @@ def test_can_create_service_completers_from_cache():
     assert factory.create_completer_query('ec2') == result
 
 
-def test_empty_results_returned_when_no_completion_data_exists():
-    class FakeDescriberCreator(object):
-        def services_with_completions(self):
-            return []
+def test_empty_results_returned_when_no_completion_data_exists(describer_creator):
+    describer_creator.SERVICES = []
 
     completer = index.ServerSideCompleter(
         client_creator=None,
-        describer_creator=FakeDescriberCreator()
+        describer_creator=describer_creator,
     )
     assert completer.retrieve_candidate_values(
         'ec2', 'run-instances', 'ImageId') == []
+
+
+def test_no_completions_when_cant_create_client(describer_creator):
+    client_creator = mock.Mock(spec=index.CachedClientCreator)
+    # This is raised when you don't have a region configured via config file
+    # env var or manually via a session.
+    client_creator.create_client.side_effect = NoRegionError()
+    completer = index.ServerSideCompleter(
+        client_creator=client_creator,
+        describer_creator=describer_creator)
+
+    assert completer.retrieve_candidate_values(
+        'ec2', 'foo', 'Bar') == []
+
+
+def test_no_completions_returned_on_unknown_operation(describer_creator):
+    client = mock.Mock()
+    client_creator = mock.Mock(spec=index.CachedClientCreator)
+    client_creator.create_client.return_value = client
+
+    client.meta.method_to_api_mapping = {
+        'describe_foo': 'DescribeFoo'
+    }
+
+    completer = index.ServerSideCompleter(
+        client_creator=client_creator,
+        describer_creator=describer_creator)
+
+    assert completer.retrieve_candidate_values(
+        'ec2', 'not_describe_foo', 'Bar') == []
