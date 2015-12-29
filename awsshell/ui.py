@@ -75,7 +75,8 @@ def create_default_layout(app, message='',
     try:
         if issubclass(lexer, Lexer):
             lexer = PygmentsLexer(lexer)
-    except TypeError: # Happens when lexer is `None` or an instance of something else.
+    except TypeError:
+        # Happens when lexer is `None` or an instance of something else.
         pass
 
     # Create processors list.
