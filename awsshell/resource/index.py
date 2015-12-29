@@ -4,7 +4,7 @@ The classes are organized as follows:
 
 * ResourceIndexBuilder - Takes a boto3 resource and converts into the
   index format we need to do server side completions.
-* CompleterQuery - Takes the index from ResourceIndexBuilder and looks
+* CompleterDescriber - Takes the index from ResourceIndexBuilder and looks
   up how to perform the autocompletion.  Note that this class does
   *not* actually do the autocompletion.  It merely tells you how
   you _would_ do the autocompletion if you made the appropriate
@@ -86,8 +86,18 @@ class ResourceIndexBuilder(object):
         return index
 
 
-class CompleterQuery(object):
-    """Describes how to autocomplete a resource."""
+class CompleterDescriber(object):
+    """Describes how to autocomplete a resource.
+
+    You give this class a service/operation/param and it will
+    describe to you how you can autocomplete values for the
+    provided parameter.
+
+    It's up to the caller to actually take that description
+    and make the appropriate service calls + filtering to
+    extract out the server side values.
+
+    """
     def __init__(self, resource_index):
         self._index = resource_index
 
@@ -126,68 +136,103 @@ class CompleterQuery(object):
                                 params={}, path=path)
 
 
+class CachedClientCreator(object):
+    def __init__(self, session):
+        #: A botocore.session.Session object.  Only the
+        #: create_client() method is used.
+        self._session = session
+        self._client_cache = {}
+
+    def create_client(self, service_name):
+        if service_name not in self._client_cache:
+            client = self._session.create_client(service_name)
+            self._client_cache[service_name] = client
+        return self._client_cache[service_name]
+
+
+class CompleterDescriberCreator(object):
+    """Create and cache CompleterDescriber objects."""
+    def __init__(self, loader):
+        #: A botocore.loader.Loader
+        self._loader = loader
+        self._describer_cache = {}
+        self._services_with_completions = None
+
+    def create_completer_query(self, service_name):
+        """Create a CompleterDescriber for a service.
+
+        :type service_name: str
+        :param service_name: The name of the service, e.g. 'ec2'
+
+        :return: A CompleterDescriber object.
+
+        """
+        if service_name not in self._describer_cache:
+            query = self._create_completer_query(service_name)
+            self._describer_cache[service_name] = query
+        return self._describer_cache[service_name]
+
+    def _create_completer_query(self, service_name):
+        completions_model = self._loader.load_service_model(
+            service_name, 'completions-1')
+        cq = CompleterDescriber({service_name: completions_model})
+        return cq
+
+    def services_with_completions(self):
+        if self._services_with_completions is not None:
+            return self._services_with_completions
+        self._services_with_completions = set(
+            self._loader.list_available_services(type_name='completions-1'))
+        return self._services_with_completions
+
+
 class ServerSideCompleter(object):
-    def __init__(self, session, builder):
+    def __init__(self, client_creator, describer_creator):
         # session is a boto3 session.
         # It is a public attribute as it is intended to be
         # changed if the profile changes.
-        self.session = session
-        self._loader = session._loader
-        self._builder = builder
-        self._client_cache = {}
-        self._completer_cache = {}
-        self._update_loader_paths()
-        self._services_with_completions = set(
-            self._loader.list_available_services(type_name='completions-1'))
-
-    def _update_loader_paths(self):
-        completions_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            'data')
-        self._loader.search_paths.insert(0, completions_path)
-
-    def _get_completer_for_service(self, service_name):
-        if service_name not in self._completer_cache:
-            api_version = self._loader.determine_latest_version(
-                service_name, 'completions-1')
-            completions_model = self._loader.load_service_model(
-                service_name, 'completions-1', api_version)
-            cq = CompleterQuery({service_name: completions_model})
-            self._completer_cache[service_name] = cq
-        return self._completer_cache[service_name]
-
-    def _get_client(self, service_name):
-        if service_name in self._client_cache:
-            return self._client_cache[service_name]
-        client = self.session.client(service_name)
-        self._client_cache[service_name] = client
-        return client
+        self._client_creator = client_creator
+        self._describer_creator = describer_creator
 
     def retrieve_candidate_values(self, service, operation, param):
-        if service not in self._services_with_completions:
-            return
+        """Retrieve server side completions.
+
+        :type service: str
+        :param service: The service name, e.g. 'ec2', 'iam'.
+
+        :type operation: str
+        :param operation: The operation name, in the casing
+            used by the CLI (words separated by hyphens), e.g.
+            'describe-instances', 'delete-user'.
+
+        :type param: str
+        :param param: The param name, as specified in the service
+            model, e.g. 'InstanceIds', 'UserName'.
+
+        :rtype: list
+        :return: A list of possible completions for the
+            service/operation/param combination.  If no
+            completions were found an empty list is returned.
+
+        """
         # Example call:
-        # service='ec2', operation='terminate-instances',
-        # param='--instance-ids'.
-        # We need to convert this to botocore syntax.
-        # First try to load the resource model.
-        LOG.debug("Called with: %s, %s, %s", service, operation, param)
-        # Now convert operation to the name used by botocore.
-        client = self._get_client(service)
+        # service='ec2',
+        # operation='terminate-instances',
+        # param='InstanceIds'.
+        if service not in self._describer_creator.services_with_completions():
+            return []
+        client = self._client_creator.create_client(service)
         api_operation_name = client.meta.method_to_api_mapping.get(
             operation.replace('-', '_'))
         if api_operation_name is None:
             return
         # Now we need to convert the param name to the
         # casing used by the API.
-        completer = self._get_completer_for_service(service)
+        completer = self._describer_creator.create_completer_query(service)
         result = completer.describe_autocomplete(
             service, api_operation_name, param)
         if result is None:
             return
-        # DEBUG:awsshell.resource.index:RESULTS:
-            # ServerCompletion(service=u'ec2', operation=u'DescribeInstances',
-            # params={}, path=u'Reservations[].Instances[].InstanceId')
         try:
             response = getattr(client, xform_name(result.operation, '_'))()
         except Exception:
