@@ -26,6 +26,10 @@ class AWSCLIModelCompleter(object):
         self.match_fuzzy = match_fuzzy
 
     @property
+    def global_arg_metadata(self):
+        return self._index[self._root_name]['argument_metadata']
+
+    @property
     def arg_metadata(self):
         # Returns the required arguments for the current level.
         return self._current.get('argument_metadata', {})

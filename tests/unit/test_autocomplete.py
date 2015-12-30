@@ -5,6 +5,7 @@ from awsshell.autocomplete import AWSCLIModelCompleter
 def index_data():
     return {
         'aws': {
+            'argument_metadata': {},
             'arguments': [],
             'commands': [],
             'children': {},
@@ -370,3 +371,12 @@ def test_can_handle_autocomplete_empty_string_twice(index_data):
     completer = AWSCLIModelCompleter(index_data)
     assert completer.autocomplete('') == []
     assert completer.autocomplete('') == []
+
+
+def test_global_arg_metadata_property(index_data):
+    index_data['aws']['argument_metadata'] = {
+        '--global1': {},
+        '--global2': {},
+    }
+    completer = AWSCLIModelCompleter(index_data)
+    assert '--global1' in completer.global_arg_metadata

@@ -78,6 +78,7 @@ class AWSShellCompleter(Completer):
         # prompt_toolkit.  We also try to enhance the metadata of the
         # completion by including docs and marking required fields.
         arg_meta = self._completer.arg_metadata
+        arg_meta.update(self._completer.global_arg_metadata)
         word_before_cursor = ''
         if text_before_cursor.strip():
             word_before_cursor = text_before_cursor.strip().split()[-1]
