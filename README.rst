@@ -219,6 +219,19 @@ variable before defaulting to ``notepad`` on Windows and
     aws> .edit
 
 
+.cd
+~~~
+
+You can change the current working directory of the aws-shell by using
+the ``.cd`` command::
+
+    aws> !pwd
+    /usr
+    aws> .cd /tmp
+    aws> !pwd
+    /tmp
+
+
 Executing Shell Commands
 ------------------------
 
