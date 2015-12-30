@@ -189,9 +189,6 @@ class CompleterDescriberCreator(object):
 
 class ServerSideCompleter(object):
     def __init__(self, client_creator, describer_creator):
-        # session is a boto3 session.
-        # It is a public attribute as it is intended to be
-        # changed if the profile changes.
         self._client_creator = client_creator
         self._describer_creator = describer_creator
 
