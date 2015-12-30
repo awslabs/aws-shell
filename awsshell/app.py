@@ -30,6 +30,7 @@ from awsshell import compat
 
 
 LOG = logging.getLogger(__name__)
+EXIT_REQUESTED = object()
 
 
 def create_aws_shell(completer, model_completer, docs):
@@ -82,9 +83,16 @@ class EditHandler(object):
             p.communicate()
 
 
+class ExitHandler(object):
+    def run(self, command, application):
+        return EXIT_REQUESTED
+
+
 class DotCommandHandler(object):
     HANDLER_CLASSES = {
         'edit': EditHandler,
+        'exit': ExitHandler,
+        'quit': ExitHandler,
     }
 
     def __init__(self, output=sys.stdout, err=sys.stderr):
@@ -109,7 +117,7 @@ class DotCommandHandler(object):
         else:
             # Note we expect the class to support no-arg
             # instantiation.
-            self.HANDLER_CLASSES[cmd_name]().run(parts, application)
+            return self.HANDLER_CLASSES[cmd_name]().run(parts, application)
 
     def _unknown_cmd(self, cmd_parts, application):
         self._err.write("Unknown dot command: %s\n" % cmd_parts[0])
@@ -204,12 +212,12 @@ class AWSShell(object):
                 self.save_config()
                 break
             else:
-                if text.strip() in ['quit', 'exit']:
-                    break
                 if text.startswith('.'):
                     # These are special commands.  The only one supported for
                     # now is .edit.
-                    self._dot_cmd.handle_cmd(text, application=self)
+                    result = self._dot_cmd.handle_cmd(text, application=self)
+                    if result is EXIT_REQUESTED:
+                        break
                 else:
                     if text.startswith('!'):
                         # Then run the rest as a normally shell command.
