@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function
 
 import json
+import argparse
 import threading
 
 from awsshell import shellcomplete
@@ -28,6 +29,11 @@ def load_index(filename):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--profile', help='The profile name to use '
+                        'when starting the AWS Shell.')
+    args = parser.parse_args()
+
     indexer = completion.CompletionIndex()
     try:
         index_str = indexer.load_index(utils.AWSCLI_VERSION)
@@ -59,6 +65,8 @@ def main():
     model_completer = autocomplete.AWSCLIModelCompleter(index_data)
     completer = shellcomplete.AWSShellCompleter(model_completer)
     shell = app.create_aws_shell(completer, model_completer, doc_data)
+    if args.profile:
+        shell.on_profile_change(args.profile)
     shell.run()
 
 

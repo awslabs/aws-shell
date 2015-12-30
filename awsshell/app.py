@@ -162,6 +162,7 @@ class AWSShell(object):
         self.refresh_cli = False
         self.key_manager = None
         self._dot_cmd = DotCommandHandler()
+        self._env = os.environ.copy()
 
         # These attrs come from the config file.
         self.config_obj = None
@@ -233,7 +234,7 @@ class AWSShell(object):
                         initial_document=Document(self.current_docs,
                                                   cursor_position=0))
                     self.cli.request_redraw()
-                    p = subprocess.Popen(full_cmd, shell=True)
+                    p = subprocess.Popen(full_cmd, shell=True, env=self._env)
                     p.communicate()
 
     def stop_input_and_refresh_cli(self):
@@ -386,3 +387,25 @@ class AWSShell(object):
                                       display_completions_in_columns)
         cli = CommandLineInterface(application=app, eventloop=loop)
         return cli
+
+    def on_profile_change(self, new_profile_name):
+        """Handler invoked when the user requests to use a new profile.
+
+        This will inform the necessary objects to use the new profile.
+        """
+        # There's only two things that need to know about new profile
+        # changes.
+        #
+        # First, the actual command runner.  If we want
+        # to use a different profile, it should ensure that the CLI
+        # commands that get run use the new profile (via the
+        # AWS_DEFAULT_PROFILE env var).
+        #
+        # Second, we also need to let the server side autocompleter know.
+        #
+        # Given this is easy to manage by hand, I don't think
+        # it's worth adding an event system or observers just yet.
+        # If this gets hard to manage, the complexity of those systems
+        # would be worth it.
+        self._env['AWS_DEFAULT_PROFILE'] = new_profile_name
+        self.completer.change_profile(new_profile_name)

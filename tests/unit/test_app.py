@@ -3,6 +3,7 @@ import mock
 
 
 from awsshell import app
+from awsshell import shellcomplete
 from awsshell import compat
 
 
@@ -42,3 +43,10 @@ def test_prints_error_message_on_unknown_dot_command(errstream):
     handler = app.DotCommandHandler(err=errstream)
     handler.handle_cmd(".unknown foo bar", None)
     assert errstream.getvalue() == "Unknown dot command: .unknown\n"
+
+
+def test_delegates_to_complete_changing_profile():
+    completer = mock.Mock(spec=shellcomplete.AWSShellCompleter)
+    shell = app.AWSShell(completer, mock.Mock(), mock.Mock())
+    shell.on_profile_change('mynewprofile')
+    assert completer.change_profile.call_args == mock.call('mynewprofile')
