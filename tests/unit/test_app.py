@@ -93,3 +93,26 @@ def test_delegates_to_complete_changing_profile():
     shell.profile = 'mynewprofile'
     assert completer.change_profile.call_args == mock.call('mynewprofile')
     assert shell.profile == 'mynewprofile'
+
+
+def test_cd_handler_can_chdir():
+    chdir = mock.Mock()
+    handler = app.ChangeDirHandler(chdir=chdir)
+    handler.run(['.cd', 'foo/bar'], None)
+    assert chdir.call_args == mock.call('foo/bar')
+
+
+def test_chdir_syntax_error_prints_err_msg(errstream):
+    chdir = mock.Mock()
+    handler = app.ChangeDirHandler(err=errstream, chdir=chdir)
+    handler.run(['.cd'], None)
+    assert 'invalid syntax' in errstream.getvalue()
+    assert not chdir.called
+
+
+def test_error_displayed_when_chdir_fails(errstream):
+    chdir = mock.Mock()
+    chdir.side_effect = OSError("FAILED")
+    handler = app.ChangeDirHandler(err=errstream, chdir=chdir)
+    handler.run(['.cd', 'foo'], None)
+    assert 'FAILED' in errstream.getvalue()

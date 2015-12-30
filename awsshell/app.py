@@ -45,6 +45,24 @@ class InputInterrupt(Exception):
     pass
 
 
+class ChangeDirHandler(object):
+    def __init__(self, output=sys.stdout, err=sys.stderr, chdir=os.chdir):
+        self._output = output
+        self._err = err
+        self._chdir = chdir
+
+    def run(self, command, application):
+        # command is a list of parsed commands
+        if len(command) != 2:
+            self._err.write("invalid syntax, must be: .cd dirname\n")
+            return
+        dirname = os.path.expandvars(os.path.expanduser(command[1]))
+        try:
+            self._chdir(dirname)
+        except OSError as e:
+            self._err.write("cd: %s\n" % e)
+
+
 class EditHandler(object):
     def __init__(self, popen_cls=None, env=None):
         if popen_cls is None:
@@ -121,6 +139,7 @@ class DotCommandHandler(object):
     HANDLER_CLASSES = {
         'edit': EditHandler,
         'profile': ProfileHandler,
+        'cd': ChangeDirHandler,
     }
 
     def __init__(self, output=sys.stdout, err=sys.stderr):
