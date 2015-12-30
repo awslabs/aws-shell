@@ -116,3 +116,19 @@ def test_error_displayed_when_chdir_fails(errstream):
     handler = app.ChangeDirHandler(err=errstream, chdir=chdir)
     handler.run(['.cd', 'foo'], None)
     assert 'FAILED' in errstream.getvalue()
+
+
+def test_exit_dot_command_exits_shell():
+    mock_prompter = mock.Mock()
+    # Simulate the user entering '.quit'
+    fake_document = mock.Mock()
+    fake_document.text = '.quit'
+    mock_prompter.run.return_value = fake_document
+    shell = app.AWSShell(mock.Mock(), mock.Mock(), mock.Mock())
+    shell.create_cli_interface = mock.Mock(return_value=mock_prompter)
+    shell.run()
+
+    # Should have only called run() once.  As soon as we
+    # see the .quit command, we immediately exit and stop prompting
+    # for more shell commands.
+    assert mock_prompter.run.call_count == 1
