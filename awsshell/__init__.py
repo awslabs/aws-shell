@@ -66,7 +66,7 @@ def main():
     completer = shellcomplete.AWSShellCompleter(model_completer)
     shell = app.create_aws_shell(completer, model_completer, doc_data)
     if args.profile:
-        shell.on_profile_change(args.profile)
+        shell.profile = args.profile
     shell.run()
 
 

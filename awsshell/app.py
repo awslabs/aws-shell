@@ -82,9 +82,45 @@ class EditHandler(object):
             p.communicate()
 
 
+class ProfileHandler(object):
+    USAGE = (
+        '.profile           # Print the current profile\n'
+        '.profile <name>    # Change the current profile\n'
+    )
+
+    def __init__(self, output=sys.stdout, err=sys.stderr):
+        self._output = output
+        self._err = err
+
+    def run(self, command, application):
+        """Get or set the profile.
+
+        If .profile is called with no args, the current profile
+        is displayed.  If the .profile command is called with a
+        single arg, then the current profile for the application
+        will be set to the new value.
+        """
+        if len(command) == 1:
+            profile = application.profile
+            if profile is None:
+                self._output.write(
+                    "Current shell profile: no profile configured\n"
+                    "You can change profiles using: .profile profile-name\n")
+            else:
+                self._output.write("Current shell profile: %s\n" % profile)
+        elif len(command) == 2:
+            new_profile_name = command[1]
+            application.profile = new_profile_name
+            self._output.write("Current shell profile changed to: %s\n" %
+                               new_profile_name)
+        else:
+            self._err.write("Usage:\n%s\n" % self.USAGE)
+
+
 class DotCommandHandler(object):
     HANDLER_CLASSES = {
         'edit': EditHandler,
+        'profile': ProfileHandler,
     }
 
     def __init__(self, output=sys.stdout, err=sys.stderr):
@@ -163,6 +199,7 @@ class AWSShell(object):
         self.key_manager = None
         self._dot_cmd = DotCommandHandler()
         self._env = os.environ.copy()
+        self._profile = None
 
         # These attrs come from the config file.
         self.config_obj = None
@@ -388,11 +425,12 @@ class AWSShell(object):
         cli = CommandLineInterface(application=app, eventloop=loop)
         return cli
 
-    def on_profile_change(self, new_profile_name):
-        """Handler invoked when the user requests to use a new profile.
+    @property
+    def profile(self):
+        return self._profile
 
-        This will inform the necessary objects to use the new profile.
-        """
+    @profile.setter
+    def profile(self, new_profile_name):
         # There's only two things that need to know about new profile
         # changes.
         #
@@ -409,3 +447,4 @@ class AWSShell(object):
         # would be worth it.
         self._env['AWS_DEFAULT_PROFILE'] = new_profile_name
         self.completer.change_profile(new_profile_name)
+        self._profile = new_profile_name
