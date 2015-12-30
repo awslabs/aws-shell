@@ -213,8 +213,9 @@ class AWSShell(object):
                 break
             else:
                 if text.startswith('.'):
-                    # These are special commands.  The only one supported for
-                    # now is .edit.
+                    # These are special commands (dot commands) that are
+                    # interpreted by the aws-shell directly and typically used
+                    # to modify some type of behavior in the aws-shell.
                     result = self._dot_cmd.handle_cmd(text, application=self)
                     if result is EXIT_REQUESTED:
                         break
