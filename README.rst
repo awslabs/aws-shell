@@ -245,6 +245,21 @@ variable before defaulting to ``notepad`` on Windows and
     aws> dynamodb list-tables
     aws> .edit
 
+Changing Profiles with .profile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can change the current AWS CLI profile used by the aws-shell
+by using the ``.profile`` dot command.  If you run the ``.profile``
+command with no arguments, the currently configured shell profile
+will be printed.
+
+::
+
+    aws> .profile demo
+    Current shell profile changed to: demo
+    aws> .profile
+    Current shell profile: demo
+
 
 Executing Shell Commands
 ------------------------
