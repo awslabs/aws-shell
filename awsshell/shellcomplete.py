@@ -11,7 +11,10 @@ logic, see awsshell.autocomplete.
 """
 import os
 import logging
+
+import botocore.session
 from prompt_toolkit.completion import Completer, Completion
+
 from awsshell import fuzzy
 
 
@@ -33,7 +36,6 @@ class AWSShellCompleter(Completer):
         self._server_side_completer = server_side_completer
 
     def _create_server_side_completer(self, session=None):
-        import botocore.session
         from awsshell.resource import index
         if session is None:
             session = botocore.session.Session()
@@ -47,6 +49,11 @@ class AWSShellCompleter(Completer):
         describer = index.CompleterDescriberCreator(loader)
         completer = index.ServerSideCompleter(client_creator, describer)
         return completer
+
+    def change_profile(self, profile_name):
+        """Change the profile used for server side completions."""
+        self._server_side_completer = self._create_server_side_completer(
+            session=botocore.session.Session(profile=profile_name))
 
     @property
     def completer(self):

@@ -95,6 +95,33 @@ you can try::
     TABLENAMES     Second
     TABLENAMES     Third
 
+Profiles
+--------
+
+The aws-shell supports AWS CLI profiles.  You have two options to use
+profiles.  First, you can provide a profile when you start the aws-shell::
+
+    $ aws-shell --profile prod
+    aws>
+
+When you do this all the server side completion as well as CLI commands
+you run will automatically use the ``prod`` profile.
+
+You can also change the current profile while you're in the aws-shell::
+
+    $ aws-shell
+    aws> .profile demo
+    Current shell profile changed to: demo
+
+You can also check what profile you've configured in the aws-shell using::
+
+    aws> .profile
+    Current shell profile: demo
+
+After changing your profile using the ``.profile`` dot command, all
+server side completion as well as CLI commands will automatically use
+the new profile you've configured.
+
 
 Features
 ========
@@ -217,6 +244,21 @@ variable before defaulting to ``notepad`` on Windows and
     aws> ec2 describe-instances
     aws> dynamodb list-tables
     aws> .edit
+
+Changing Profiles with .profile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can change the current AWS CLI profile used by the aws-shell
+by using the ``.profile`` dot command.  If you run the ``.profile``
+command with no arguments, the currently configured shell profile
+will be printed.
+
+::
+
+    aws> .profile demo
+    Current shell profile changed to: demo
+    aws> .profile
+    Current shell profile: demo
 
 
 Executing Shell Commands

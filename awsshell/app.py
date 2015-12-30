@@ -82,9 +82,45 @@ class EditHandler(object):
             p.communicate()
 
 
+class ProfileHandler(object):
+    USAGE = (
+        '.profile           # Print the current profile\n'
+        '.profile <name>    # Change the current profile\n'
+    )
+
+    def __init__(self, output=sys.stdout, err=sys.stderr):
+        self._output = output
+        self._err = err
+
+    def run(self, command, application):
+        """Get or set the profile.
+
+        If .profile is called with no args, the current profile
+        is displayed.  If the .profile command is called with a
+        single arg, then the current profile for the application
+        will be set to the new value.
+        """
+        if len(command) == 1:
+            profile = application.profile
+            if profile is None:
+                self._output.write(
+                    "Current shell profile: no profile configured\n"
+                    "You can change profiles using: .profile profile-name\n")
+            else:
+                self._output.write("Current shell profile: %s\n" % profile)
+        elif len(command) == 2:
+            new_profile_name = command[1]
+            application.profile = new_profile_name
+            self._output.write("Current shell profile changed to: %s\n" %
+                               new_profile_name)
+        else:
+            self._err.write("Usage:\n%s\n" % self.USAGE)
+
+
 class DotCommandHandler(object):
     HANDLER_CLASSES = {
         'edit': EditHandler,
+        'profile': ProfileHandler,
     }
 
     def __init__(self, output=sys.stdout, err=sys.stderr):
@@ -162,6 +198,8 @@ class AWSShell(object):
         self.refresh_cli = False
         self.key_manager = None
         self._dot_cmd = DotCommandHandler()
+        self._env = os.environ.copy()
+        self._profile = None
 
         # These attrs come from the config file.
         self.config_obj = None
@@ -233,7 +271,7 @@ class AWSShell(object):
                         initial_document=Document(self.current_docs,
                                                   cursor_position=0))
                     self.cli.request_redraw()
-                    p = subprocess.Popen(full_cmd, shell=True)
+                    p = subprocess.Popen(full_cmd, shell=True, env=self._env)
                     p.communicate()
 
     def stop_input_and_refresh_cli(self):
@@ -386,3 +424,27 @@ class AWSShell(object):
                                       display_completions_in_columns)
         cli = CommandLineInterface(application=app, eventloop=loop)
         return cli
+
+    @property
+    def profile(self):
+        return self._profile
+
+    @profile.setter
+    def profile(self, new_profile_name):
+        # There's only two things that need to know about new profile
+        # changes.
+        #
+        # First, the actual command runner.  If we want
+        # to use a different profile, it should ensure that the CLI
+        # commands that get run use the new profile (via the
+        # AWS_DEFAULT_PROFILE env var).
+        #
+        # Second, we also need to let the server side autocompleter know.
+        #
+        # Given this is easy to manage by hand, I don't think
+        # it's worth adding an event system or observers just yet.
+        # If this gets hard to manage, the complexity of those systems
+        # would be worth it.
+        self._env['AWS_DEFAULT_PROFILE'] = new_profile_name
+        self.completer.change_profile(new_profile_name)
+        self._profile = new_profile_name
