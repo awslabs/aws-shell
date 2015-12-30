@@ -7,5 +7,9 @@ env:
 sudo: false
 install:
   - travis_retry pip install tox
+  - if [[ $TOXENV == 'py27' ]]; then pip install -r requirements-dev.txt; pip install -e .; fi
 script:
   - tox
+  # We only need to run the lint/flake8 checks on one version of python
+  # So I've arbitrarily chosen python2.7.
+  - if [[ $TOXENV == 'py27' ]]; then make check; fi

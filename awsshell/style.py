@@ -18,7 +18,7 @@ from prompt_toolkit.styles import default_style_extensions
 
 
 class StyleFactory(object):
-    """Provides styles for the autocomplete menu and the toolbar.
+    """Provide styles for the autocomplete menu and the toolbar.
 
     :type style: :class:`pygments.style.StyleMeta`
     :param style: Contains pygments style info.
@@ -28,7 +28,7 @@ class StyleFactory(object):
         self.style = self.style_factory(style_name)
 
     def style_factory(self, style_name):
-        """Retrieves the specified pygments style.
+        """Retrieve the specified pygments style.
 
         If the specified style is not found, the vim style is returned.
 
@@ -53,21 +53,22 @@ class StyleFactory(object):
             styles = {}
             styles.update(style.styles)
             styles.update(default_style_extensions)
+            t = Token
             styles.update({
-                Token.Menu.Completions.Completion.Current: 'bg:#00aaaa #000000',
-                Token.Menu.Completions.Completion: 'bg:#008888 #ffffff',
-                Token.Menu.Completions.Meta.Current: 'bg:#00aaaa #000000',
-                Token.Menu.Completions.Meta: 'bg:#00aaaa #ffffff',
-                Token.Menu.Completions.ProgressButton: 'bg:#003333',
-                Token.Menu.Completions.ProgressBar: 'bg:#00aaaa',
-                Token.Toolbar: 'bg:#222222 #cccccc',
-                Token.Toolbar.Off: 'bg:#222222 #696969',
-                Token.Toolbar.On: 'bg:#222222 #ffffff',
-                Token.Toolbar.Search: 'noinherit bold',
-                Token.Toolbar.Search.Text: 'nobold',
-                Token.Toolbar.System: 'noinherit bold',
-                Token.Toolbar.Arg: 'noinherit bold',
-                Token.Toolbar.Arg.Text: 'nobold'
+                t.Menu.Completions.Completion.Current: 'bg:#00aaaa #000000',
+                t.Menu.Completions.Completion: 'bg:#008888 #ffffff',
+                t.Menu.Completions.Meta.Current: 'bg:#00aaaa #000000',
+                t.Menu.Completions.Meta: 'bg:#00aaaa #ffffff',
+                t.Menu.Completions.ProgressButton: 'bg:#003333',
+                t.Menu.Completions.ProgressBar: 'bg:#00aaaa',
+                t.Toolbar: 'bg:#222222 #cccccc',
+                t.Toolbar.Off: 'bg:#222222 #696969',
+                t.Toolbar.On: 'bg:#222222 #ffffff',
+                t.Toolbar.Search: 'noinherit bold',
+                t.Toolbar.Search.Text: 'nobold',
+                t.Toolbar.System: 'noinherit bold',
+                t.Toolbar.Arg: 'noinherit bold',
+                t.Toolbar.Arg.Text: 'nobold'
             })
 
         return CliStyle

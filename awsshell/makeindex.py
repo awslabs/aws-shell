@@ -122,7 +122,7 @@ def render_docs_for_cmd(help_command):
 
 
 def convert_rst_to_basic_text(contents):
-    """Converts restructured text to basic text output.
+    """Convert restructured text to basic text output.
 
     This function removes most of the decorations added
     in restructured text.

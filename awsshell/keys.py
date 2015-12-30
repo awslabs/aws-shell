@@ -27,11 +27,10 @@ class KeyManager(object):
     :param manager: A custom `KeyBindingManager`.
     """
 
-    def __init__(
-        self, get_match_fuzzy, set_match_fuzzy,
-        get_enable_vi_bindings, set_enable_vi_bindings,
-        get_show_completion_columns, set_show_completion_columns,
-        get_show_help, set_show_help, stop_input_and_refresh_cli):
+    def __init__(self, get_match_fuzzy, set_match_fuzzy,
+                 get_enable_vi_bindings, set_enable_vi_bindings,
+                 get_show_completion_columns, set_show_completion_columns,
+                 get_show_help, set_show_help, stop_input_and_refresh_cli):
         self.manager = None
         self._create_key_manager(
             get_match_fuzzy, set_match_fuzzy,
@@ -39,12 +38,13 @@ class KeyManager(object):
             get_show_completion_columns, set_show_completion_columns,
             get_show_help, set_show_help, stop_input_and_refresh_cli)
 
-    def _create_key_manager(
-        self, get_match_fuzzy, set_match_fuzzy,
-        get_enable_vi_bindings, set_enable_vi_bindings,
-        get_show_completion_columns, set_show_completion_columns,
-        get_show_help, set_show_help, stop_input_and_refresh_cli):
-        """Creates and initializes the keybinding manager.
+    def _create_key_manager(self, get_match_fuzzy, set_match_fuzzy,
+                            get_enable_vi_bindings, set_enable_vi_bindings,
+                            get_show_completion_columns,
+                            set_show_completion_columns,
+                            get_show_help, set_show_help,
+                            stop_input_and_refresh_cli):
+        """Create and initialize the keybinding manager.
 
         :type get_fuzzy_match: callable
         :param get_fuzzy_match: Gets the fuzzy matching config.
@@ -81,6 +81,7 @@ class KeyManager(object):
 
         :rtype: :class:`prompt_toolkit.KeyBindingManager`
         :return: A custom `KeyBindingManager`.
+
         """
         assert callable(get_match_fuzzy)
         assert callable(set_match_fuzzy)
@@ -101,51 +102,56 @@ class KeyManager(object):
 
         @self.manager.registry.add_binding(Keys.F2)
         def handle_f2(_):
-            """Enables/disables fuzzy matching.
+            """Toggle fuzzy matching.
 
             :type _: :class:`prompt_toolkit.Event`
             :param _: (Unused)
+
             """
             set_match_fuzzy(not get_match_fuzzy())
 
         @self.manager.registry.add_binding(Keys.F3)
         def handle_f3(_):
-            """Enables/disables Vi mode keybindings matching.
+            """Toggle Vi mode keybindings matching.
 
             Disabling Vi keybindings will enable Emacs keybindings.
 
             :type _: :class:`prompt_toolkit.Event`
             :param _: (Unused)
+
             """
             set_enable_vi_bindings(not get_enable_vi_bindings())
             stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(Keys.F4)
         def handle_f4(_):
-            """Enables/disables multiple column completions.
+            """Toggle multiple column completions.
 
             :type _: :class:`prompt_toolkit.Event`
             :param _: (Unused)
+
             """
             set_show_completion_columns(not get_show_completion_columns())
             stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(Keys.F5)
         def handle_f5(_):
-            """Shows/hides the help container.
+            """Toggle the help container.
 
             :type _: :class:`prompt_toolkit.Event`
             :param _: (Unused)
+
             """
             set_show_help(not get_show_help())
             stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(Keys.F10)
         def handle_f10(event):
-            """Quits when the `F10` key is pressed.
+            """Quit when the `F10` key is pressed.
 
             :type event: :class:`prompt_toolkit.Event`
             :param event: Contains info about the event, namely the cli
                 which is used for exiting the app.
+
             """
             event.cli.set_exit()

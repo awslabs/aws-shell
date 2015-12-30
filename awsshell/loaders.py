@@ -1,5 +1,4 @@
 import json
-import os
 
 from awsshell.utils import build_config_file_path
 

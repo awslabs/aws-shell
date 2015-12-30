@@ -10,9 +10,6 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import ast
-import os
-
 from pygments.lexer import RegexLexer
 from pygments.lexer import words
 from pygments.token import Keyword, Literal, Name, Operator, Text

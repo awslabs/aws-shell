@@ -92,7 +92,7 @@ class CompleterQuery(object):
         self._index = resource_index
 
     def describe_autocomplete(self, service, operation, param):
-        """
+        """Describe operation and args needed for server side completion.
 
         :type service: str
         :param service: The AWS service name.

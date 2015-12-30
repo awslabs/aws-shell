@@ -70,7 +70,7 @@ class CompletionIndex(object):
             self._cache_dir, 'completions-%s.json' % version_string)
 
     def load_completions(self):
-        """Loads completions from the completion index.
+        """Load completions from the completion index.
 
         Updates the following attributes:
             * commands

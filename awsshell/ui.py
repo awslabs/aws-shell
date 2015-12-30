@@ -34,6 +34,7 @@ def create_default_layout(app, message='',
                           extra_input_processors=None, multiline=False):
     """
     Generate default layout.
+
     Returns a ``Layout`` instance.
 
     :param message: Text to be used as prompt.
@@ -74,7 +75,8 @@ def create_default_layout(app, message='',
     try:
         if issubclass(lexer, Lexer):
             lexer = PygmentsLexer(lexer)
-    except TypeError: # Happens when lexer is `None` or an instance of something else.
+    except TypeError:
+        # Happens when lexer is `None` or an instance of something else.
         pass
 
     # Create processors list.
@@ -193,10 +195,12 @@ def create_default_layout(app, message='',
 
 
 def _split_multiline_prompt(get_prompt_tokens):
-    """
+    """Split prompt tokens into two multiline prompt token functions.
+
     Take a `get_prompt_tokens` function. and return two new functions instead.
     One that returns the tokens to be shown on the lines above the input, and
     another one with the tokens to be shown at the first line of the input.
+
     """
     def before(cli):
         result = []
