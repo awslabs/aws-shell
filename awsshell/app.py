@@ -65,13 +65,14 @@ class ChangeDirHandler(object):
 
 
 class EditHandler(object):
-    def __init__(self, popen_cls=None, env=None):
+    def __init__(self, popen_cls=None, env=None, err=sys.stderr):
         if popen_cls is None:
             popen_cls = subprocess.Popen
         self._popen_cls = popen_cls
         if env is None:
             env = os.environ
         self._env = env
+        self._err = err
 
     def _get_editor_command(self):
         if 'EDITOR' in self._env:
@@ -97,8 +98,14 @@ class EditHandler(object):
             f.write(all_commands)
             f.flush()
             editor = self._get_editor_command()
-            p = self._popen_cls([editor, f.name])
-            p.communicate()
+            try:
+                p = self._popen_cls([editor, f.name])
+                p.communicate()
+            except OSError:
+                self._err.write("Unable to launch editor: %s\n"
+                                "You can configure which editor to use by "
+                                "exporting the EDITOR environment variable.\n"
+                                % editor)
 
 
 class ProfileHandler(object):
