@@ -237,7 +237,7 @@ you've run since you first started your aws-shell session.
 You can run the ``.edit`` command to open all these commands in
 an editor.  The aws-shell will use the ``EDITOR`` environment
 variable before defaulting to ``notepad`` on Windows and
-``vim`` on other platforms.
+``vi`` on other platforms.
 
 ::
 
