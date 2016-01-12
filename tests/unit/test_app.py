@@ -39,6 +39,20 @@ def test_edit_handler():
     assert command_run[0] == 'my-editor'
 
 
+def test_error_msg_printed_on_error_handler(errstream):
+    env = {'EDITOR': 'my-editor'}
+    popen_cls = mock.Mock()
+    popen_cls.side_effect = OSError()
+    context = mock.Mock()
+    context.history = []
+    handler = app.EditHandler(popen_cls, env, errstream)
+    handler.run(['.edit'], context)
+
+    # Then we should not propagate an exception, and we
+    # should print a helpful error message.
+    assert 'Unable to launch editor: my-editor' in errstream.getvalue()
+
+
 def test_profile_handler_prints_profile():
     shell = mock.Mock(spec=app.AWSShell)
     shell.profile = 'myprofile'

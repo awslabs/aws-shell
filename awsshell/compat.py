@@ -24,4 +24,4 @@ if ON_WINDOWS:
         return 'notepad.exe'
 else:
     def default_editor():
-        return 'vim'
+        return 'vi'
