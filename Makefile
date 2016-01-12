@@ -7,7 +7,7 @@ check:
 	# No unused imports, no undefined vars,
 	# follow pep8, and max cyclomatic complexity of 15.
 	# I'd eventually like to lower this down to < 10.
-	flake8 --exclude awsshell/compat.py --max-complexity 15 awsshell/*.py
+	flake8 --ignore=E731,W503 --exclude awsshell/compat.py --max-complexity 15 awsshell/*.py
 	#
 	#
 	##### DOC8 ######

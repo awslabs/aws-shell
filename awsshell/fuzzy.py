@@ -73,7 +73,7 @@ def calculate_score(search_string, word):
         else:
             scale = 1 - (i / float(len(word)))
         score *= scale
-        word = word[i+1:]
+        word = word[i + 1:]
         search_index += 1
         if search_index >= len(search_string):
             break
