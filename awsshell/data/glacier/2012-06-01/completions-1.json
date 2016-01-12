@@ -55,7 +55,8 @@
     "Vault": {
       "operation": "ListVaults", 
       "resourceIdentifier": {
-        "AccountId": "accountId"
+        "AccountId": "accountId",
+        "Name": "VaultList[].VaultName"
       }
     }
   }
