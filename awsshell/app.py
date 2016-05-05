@@ -15,7 +15,6 @@ from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.filters import Always
 from prompt_toolkit.interface import CommandLineInterface, Application
 from prompt_toolkit.interface import AbortAction, AcceptAction
-from prompt_toolkit.utils import Callback
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import InMemoryHistory, FileHistory
 
@@ -279,7 +278,7 @@ class AWSShell(object):
     def run(self):
         while True:
             try:
-                document = self.cli.run()
+                document = self.cli.run(reset_current_buffer=True)
                 text = document.text
             except InputInterrupt:
                 pass
@@ -423,7 +422,7 @@ class AWSShell(object):
             buffer=self.create_buffer(completer, history),
             on_abort=AbortAction.RETRY,
             on_exit=AbortAction.RAISE_EXCEPTION,
-            on_input_timeout=Callback(self.on_input_timeout),
+            on_input_timeout=self.on_input_timeout,
             key_bindings_registry=self.key_manager.manager.registry,
         )
 
