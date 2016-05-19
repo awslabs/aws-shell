@@ -52,9 +52,5 @@ class KeysTest(unittest.TestCase):
             assert show_help != self.aws_shell.show_help
 
     def test_F10(self):
-        # Exiting from the test in this mock test environment will throw:
-        #   IOError: [Errno 25] Inappropriate ioctl for device
-        # In a non-mock test environment it would through a EOFError.
-        # TODO: Probably better to mock the call to event.cli.set_exit().
-        with self.assertRaises(IOError) as e:
-            self.processor.feed_key(KeyPress(Keys.F10, ''))
+        self.processor.feed_key(KeyPress(Keys.F10, ''))
+        assert self.aws_shell.cli.is_exiting
