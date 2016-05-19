@@ -10,6 +10,7 @@ requires = [
     'prompt-toolkit==0.52',
     'boto3>=1.2.1,<2.0.0',
     'configobj>=5.0.6,<6.0.0',
+    'Pygments>=2.1.3,<3.0.0',
 ]
 
 
