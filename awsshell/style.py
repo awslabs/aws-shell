@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from pygments.token import Token
-from pygments.style import Style
 from pygments.util import ClassNotFound
 from pygments.styles import get_style_by_name
 from prompt_toolkit.styles import default_style_extensions, style_from_dict
