@@ -41,3 +41,9 @@ def test_can_document_all_service_commands(cloudformation_command):
     assert 'aws.cloudformation.create-stack' in db
     assert 'aws.cloudformation.delete-stack' in db
     assert 'SYNOPSIS' in db['aws.cloudformation.create-stack']
+
+
+def test_can_index_a_command(cloudformation_command):
+    help_command = cloudformation_command.create_help_command()
+    index = makeindex.new_index()
+    makeindex.index_command(index, help_command)
