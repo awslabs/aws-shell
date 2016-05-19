@@ -39,8 +39,12 @@ def index_command(index_dict, help_command):
             metadata['minidoc'] = remove_html(
                 arg_obj.documentation.split('\n')[0])
         if SHORTHAND_DOC.supports_shorthand(arg_obj.argument_model):
+            service_name, op_name = help_command.event_class.rsplit('.', 1)
             example = SHORTHAND_DOC.generate_shorthand_example(
-                arg, arg_obj.argument_model)
+                cli_argument=arg_obj,
+                service_name=service_name,
+                operation_name=op_name,
+            )
             metadata['example'] = example
 
         index_dict['arguments'].append('--%s' % arg)
