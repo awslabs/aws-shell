@@ -9,6 +9,7 @@ import subprocess
 import logging
 import sys
 
+from prompt_toolkit.buffer_mapping import BufferMapping
 from prompt_toolkit.document import Document
 from prompt_toolkit.shortcuts import create_eventloop
 from prompt_toolkit.buffer import Buffer
@@ -18,6 +19,7 @@ from prompt_toolkit.interface import AbortAction, AcceptAction
 from prompt_toolkit.utils import Callback
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import InMemoryHistory, FileHistory
+from prompt_toolkit.styles import PygmentsStyle
 
 from awsshell.ui import create_default_layout
 from awsshell.config import Config
@@ -411,14 +413,14 @@ class AWSShell(object):
             lambda: self.show_completion_columns,
             lambda: self.show_help)
         style_factory = StyleFactory(self.theme)
-        buffers = {
+        buffers = BufferMapping({
             'clidocs': Buffer(read_only=True)
-        }
+        })
 
         return Application(
             layout=self.create_layout(display_completions_in_columns, toolbar),
             mouse_support=False,
-            style=style_factory.style,
+            style=PygmentsStyle(style_factory.style),
             buffers=buffers,
             buffer=self.create_buffer(completer, history),
             on_abort=AbortAction.RETRY,
