@@ -11,10 +11,9 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from pygments.token import Token
-from pygments.style import Style
 from pygments.util import ClassNotFound
 from pygments.styles import get_style_by_name
-from prompt_toolkit.styles import default_style_extensions
+from prompt_toolkit.styles import default_style_extensions, style_from_dict
 
 
 class StyleFactory(object):
@@ -43,32 +42,26 @@ class StyleFactory(object):
         except ClassNotFound:
             style = get_style_by_name('vim')
 
-        class CliStyle(Style):
-            """Provides styles for the autocomplete menu and the toolbar.
+        # Create a style dictionary.
+        styles = {}
+        styles.update(style.styles)
+        styles.update(default_style_extensions)
+        t = Token
+        styles.update({
+            t.Menu.Completions.Completion.Current: 'bg:#00aaaa #000000',
+            t.Menu.Completions.Completion: 'bg:#008888 #ffffff',
+            t.Menu.Completions.Meta.Current: 'bg:#00aaaa #000000',
+            t.Menu.Completions.Meta: 'bg:#00aaaa #ffffff',
+            t.Scrollbar.Button: 'bg:#003333',
+            t.Scrollbar: 'bg:#00aaaa',
+            t.Toolbar: 'bg:#222222 #cccccc',
+            t.Toolbar.Off: 'bg:#222222 #696969',
+            t.Toolbar.On: 'bg:#222222 #ffffff',
+            t.Toolbar.Search: 'noinherit bold',
+            t.Toolbar.Search.Text: 'nobold',
+            t.Toolbar.System: 'noinherit bold',
+            t.Toolbar.Arg: 'noinherit bold',
+            t.Toolbar.Arg.Text: 'nobold'
+        })
 
-            :type styles: dict
-            :param styles: Contains pygments style info.
-            """
-
-            styles = {}
-            styles.update(style.styles)
-            styles.update(default_style_extensions)
-            t = Token
-            styles.update({
-                t.Menu.Completions.Completion.Current: 'bg:#00aaaa #000000',
-                t.Menu.Completions.Completion: 'bg:#008888 #ffffff',
-                t.Menu.Completions.Meta.Current: 'bg:#00aaaa #000000',
-                t.Menu.Completions.Meta: 'bg:#00aaaa #ffffff',
-                t.Menu.Completions.ProgressButton: 'bg:#003333',
-                t.Menu.Completions.ProgressBar: 'bg:#00aaaa',
-                t.Toolbar: 'bg:#222222 #cccccc',
-                t.Toolbar.Off: 'bg:#222222 #696969',
-                t.Toolbar.On: 'bg:#222222 #ffffff',
-                t.Toolbar.Search: 'noinherit bold',
-                t.Toolbar.Search.Text: 'nobold',
-                t.Toolbar.System: 'noinherit bold',
-                t.Toolbar.Arg: 'noinherit bold',
-                t.Toolbar.Arg.Text: 'nobold'
-            })
-
-        return CliStyle
+        return style_from_dict(styles)
