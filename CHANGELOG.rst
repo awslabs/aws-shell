@@ -2,6 +2,14 @@
 CHANGELOG
 =========
 
+0.1.1
+=====
+
+* bugfix:AWS CLI: Fix issue with latest version of the AWS CLI
+  that would cause the AWS Shell to raise an exception on startup.
+  The minimum version of the AWS CLI has been bumped to 1.10.30.
+  (`issue 118 <https://github.com/awslabs/aws-shell/issues/118>`__)
+
 0.1.0
 =====
 
