@@ -27,30 +27,34 @@ class KeysTest(unittest.TestCase):
         self.aws_shell = AWSShell(None, mock.Mock(), mock.Mock())
         self.processor = self.aws_shell.cli.input_processor
 
+    def feed_key(self, key):
+        self.processor.feed(KeyPress(key, u''))
+        self.processor.process_keys()
+
     def test_F2(self):
         match_fuzzy = self.aws_shell.model_completer.match_fuzzy
-        self.processor.feed_key(KeyPress(Keys.F2, ''))
+        self.feed_key(Keys.F2)
         assert match_fuzzy != self.aws_shell.model_completer.match_fuzzy
 
     def test_F3(self):
         enable_vi_bindings = self.aws_shell.enable_vi_bindings
         with self.assertRaises(InputInterrupt):
-            self.processor.feed_key(KeyPress(Keys.F3, ''))
+            self.feed_key(Keys.F3)
             assert enable_vi_bindings != self.aws_shell.enable_vi_bindings
 
     def test_F4(self):
         show_completion_columns = self.aws_shell.show_completion_columns
         with self.assertRaises(InputInterrupt):
-            self.processor.feed_key(KeyPress(Keys.F4, ''))
+            self.feed_key(Keys.F4)
             assert show_completion_columns != \
                 self.aws_shell.show_completion_columns
 
     def test_F5(self):
         show_help = self.aws_shell.show_help
         with self.assertRaises(InputInterrupt):
-            self.processor.feed_key(KeyPress(Keys.F5, ''))
+            self.feed_key(Keys.F5)
             assert show_help != self.aws_shell.show_help
 
     def test_F10(self):
-        self.processor.feed_key(KeyPress(Keys.F10, ''))
+        self.feed_key(Keys.F10)
         assert self.aws_shell.cli.is_exiting
