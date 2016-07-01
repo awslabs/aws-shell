@@ -147,6 +147,11 @@ class ExitHandler(object):
         return EXIT_REQUESTED
 
 
+class WizardHandler(object):
+    def run(self, command, application):
+        raise Exception("TODO")
+
+
 class DotCommandHandler(object):
     HANDLER_CLASSES = {
         'edit': EditHandler,
@@ -154,6 +159,7 @@ class DotCommandHandler(object):
         'cd': ChangeDirHandler,
         'exit': ExitHandler,
         'quit': ExitHandler,
+        'wizard': WizardHandler,
     }
 
     def __init__(self, output=sys.stdout, err=sys.stderr):
