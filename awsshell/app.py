@@ -25,6 +25,7 @@ from awsshell.style import StyleFactory
 from awsshell.toolbar import Toolbar
 from awsshell.utils import build_config_file_path, temporary_file
 from awsshell import compat
+from awsshell.wizard import WizardLoader
 
 
 LOG = logging.getLogger(__name__)
@@ -148,8 +149,23 @@ class ExitHandler(object):
 
 
 class WizardHandler(object):
+    def __init__(self, output=sys.stdout, err=sys.stderr):
+        self._output = output
+        self._err = err
+        self._wizard_loader = WizardLoader()
+
     def run(self, command, application):
-        raise Exception("TODO")
+        """Run the specified wizard.
+
+        Delegates to the wizard loader which will search various paths to find
+        a wizard model with a matching name. Returns and executes the loaded
+        wizard.
+        """
+        if len(command) != 2:
+            self._err.write("invalid syntax, must be: .wizard wizname\n")
+            return
+        wizard = self._wizard_loader.load_wizard(command[1])
+        wizard.execute()
 
 
 class DotCommandHandler(object):
