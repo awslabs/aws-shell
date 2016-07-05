@@ -1,86 +1,105 @@
-import unittest
-from awsshell.wizard import Wizard
-from awsshell.wizard import Environment
-from awsshell.wizard import Stage
+import pytest
+from awsshell.wizard import Environment, Wizard
 
 
-class EnvironmentTest(unittest.TestCase):
+@pytest.fixture
+def env():
+    env = Environment()
+    env.store('env_var', {'epic': 'nice'})
+    return env
 
-    # Set up a sample environment
-    def setUp(self):
-        self.var = {'epic': 'nice'}
-        self.env = Environment()
-        self.env.store('env_var', self.var)
 
-    # Test that the environment properly stores the given var
-    def test_environment_store(self):
-        self.assertEqual(self.env._variables.get('env_var'), self.var)
-
+def test_environment_retrieve_and_store(env):
     # Test that the env can retrieve keys via jmespath queries
-    def test_environment_retrieve(self):
-        self.assertEqual(self.env.retrieve('env_var'), self.var)
-        self.assertEqual(self.env.retrieve('env_var.epic'), 'nice')
+    assert env.retrieve('env_var') == {'epic': 'nice'}
+    assert env.retrieve('env_var.epic') == 'nice'
 
 
-class StageTest(unittest.TestCase):
+def test_environment_to_string(env):
+    # Test that the env is properly converted into a formatted string
+    display_str = '{\n    "env_var": {\n        "epic": "nice"\n    }\n}'
+    assert str(env) == display_str
 
-    # Set up a sample stage
-    def setUp(self):
-        self.wiz = Wizard()
-        self.retrieval = {
-            'Type': 'Static',
-            'Resource': [
-                {'Option': 'Create new Api', 'Stage': 'CreateApi'},
-                {
-                    'Option': 'Generate new Api from swagger spec file',
-                    'Stage': 'NewSwaggerApi'
-                }
-            ]
-        }
-        self.interaction = {'ScreenType': 'SimpleSelect'},
-        self.resolution = {'Path': 'Stage', 'Key': 'CreationType'}
-        self.next_stage = {'Type': 'Variable', 'Name': 'CreationType'}
-        self.stage_spec = {
-            'Name': 'ApiSourceSwitch',
-            'Prompt': 'Prompting',
-            'Retrieval': self.retrieval,
-            'Interaction': self.interaction,
-            'Resolution': self.resolution,
-            'NextStage': self.next_stage
-        }
 
+def test_resolve_parameters():
+    # Test that env paramaters can be resolved for each key
+    env = Environment()
+    env.store('Epic', 'Nice')
+    env.store('Test', {'k': 'v'})
+    keys = {'a': 'Epic', 'b': 'Test.k'}
+    resolved = env.resolve_parameters(keys)
+    assert resolved == {'a': 'Nice', 'b': 'v'}
+
+
+@pytest.fixture
+def wizard_spec():
+    return {
+        'StartStage': 'TestStage',
+        'Stages': [
+            {
+                'Name': 'TestStage',
+                'Prompt': 'Prompting',
+                'Retrieval': {
+                    'Type': 'Static',
+                    'Resource': [
+                        {'Option': 'One', 'Stage': 'StageOne'},
+                        {'Option': 'Two', 'Stage': 'StageTwo'}
+                    ]
+                },
+                'Resolution': {'Path': 'Stage', 'Key': 'CreationType'},
+                'NextStage': {'Type': 'Variable', 'Name': 'CreationType'}
+            }
+        ]
+    }
+
+
+def test_from_spec(wizard_spec):
     # Test that the spec is translated to the correct attrs
-    def test_from_spec(self):
-        test_env = Environment()
-        stage = Stage(self.stage_spec, test_env)
-        self.assertEqual(stage.name, 'ApiSourceSwitch')
-        self.assertEqual(stage.prompt, 'Prompting')
-        self.assertEqual(stage.retrieval, self.retrieval)
-        self.assertEqual(stage.interaction, self.interaction)
-        self.assertEqual(stage.resolution, self.resolution)
-        self.assertEqual(stage.next_stage, self.next_stage)
+    wizard = Wizard(wizard_spec)
+    stage_spec = wizard_spec['Stages'][0]
+    stage = wizard.stages['TestStage']
+    assert stage.prompt == 'Prompting'
+    assert stage.name == 'TestStage'
+    assert stage.retrieval == stage_spec['Retrieval']
+    assert stage.next_stage == stage_spec['NextStage']
+    assert stage.resolution == stage_spec['Resolution']
+    assert not stage.interaction
 
-    # Test that static retrieval reads the data straight from the spec
-    def test_static_retrieval(self):
-        test_env = Environment()
-        stage = Stage(self.stage_spec, test_env)
-        ret = stage._handle_retrieval()
-        self.assertEqual(ret, self.retrieval['Resource'])
 
-    # Test that resolution properly puts the resolved value into the env
-    def test_handle_resolution(self):
-        test_env = Environment()
-        stage = Stage(self.stage_spec, test_env)
-        data = {'Stage': 'EpicNice'}
-        stage._handle_resolution(data)
-        self.assertEqual(test_env.retrieve('CreationType'), 'EpicNice')
+def test_static_retrieval(wizard_spec):
+    # Test that static retrieval reads the data from the spec and resolves into
+    # the wizard's environment under the correct key
+    wizard_spec['Stages'][0]['Resolution'] = {'Key': 'CreationType'}
+    wizard = Wizard(wizard_spec)
+    stage = wizard.stages['TestStage']
+    stage.execute()
+    assert stage.retrieval['Resource'] == wizard.env.retrieve('CreationType')
 
-    # Test that env paramaters can be resolved for the stage
-    def test_resolve_parameters(self):
-        test_env = Environment()
-        test_env.store('Epic', 'Nice')
-        test_env.store('Test', {'k': 'v'})
-        keys = {'a': 'Epic', 'b': 'Test.k'}
-        stage = Stage(self.stage_spec, test_env)
-        resolved = stage._resolve_parameters(keys)
-        self.assertEqual(resolved, {'a': 'Nice', 'b': 'v'})
+
+def test_static_retrieval_with_query(wizard_spec):
+    # Test that static retrieval reads the data and can apply a JMESpath query
+    wizard_spec['Stages'][0]['Retrieval']['Path'] = '[0].Stage'
+    wizard_spec['Stages'][0]['Resolution'] = {'Key': 'CreationType'}
+    wizard = Wizard(wizard_spec)
+    stage = wizard.stages['TestStage']
+    stage.execute()
+    assert wizard.env.retrieve('CreationType') == 'StageOne'
+
+
+def test_next_stage_resolution(wizard_spec):
+    # Test that the stage can resolve the next stage from env
+    wizard_spec['Stages'][0]['Retrieval']['Path'] = '[0]'
+    wizard = Wizard(wizard_spec)
+    stage = wizard.stages['TestStage']
+    stage.execute()
+    assert stage.get_next_stage() == 'StageOne'
+
+
+def test_next_stage_static(wizard_spec):
+    # Test that the stage can resolve static next stage
+    wizard_spec['Stages'][0]['NextStage'] = \
+        {'Type': 'Name', 'Name': 'NextStageName'}
+    wizard = Wizard(wizard_spec)
+    stage = wizard.stages['TestStage']
+    stage.execute()
+    assert stage.get_next_stage() == 'NextStageName'
