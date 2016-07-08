@@ -55,7 +55,7 @@ class ChangeDirHandler(object):
     def run(self, command, application):
         # command is a list of parsed commands
         if len(command) != 2:
-            self._err.write("invalid syntax, must be: .cd dirname\n")
+            self._err.write("Invalid syntax, must be: .cd dirname\n")
             return
         dirname = os.path.expandvars(os.path.expanduser(command[1]))
         try:
@@ -162,7 +162,7 @@ class WizardHandler(object):
         wizard.
         """
         if len(command) != 2:
-            self._err.write("invalid syntax, must be: .wizard wizname\n")
+            self._err.write("Invalid syntax, must be: .wizard wizname\n")
             return
         wizard = self._wizard_loader.load_wizard(command[1])
         wizard.execute()
