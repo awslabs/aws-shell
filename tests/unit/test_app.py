@@ -120,7 +120,7 @@ def test_chdir_syntax_error_prints_err_msg(errstream):
     chdir = mock.Mock()
     handler = app.ChangeDirHandler(err=errstream, chdir=chdir)
     handler.run(['.cd'], None)
-    assert 'invalid syntax' in errstream.getvalue()
+    assert 'Invalid syntax' in errstream.getvalue()
     assert not chdir.called
 
 
