@@ -212,7 +212,24 @@ def test_wizard_loader(wizard_spec):
 
 
 def test_wizard_loader_no_session(wizard_spec, loader):
+    # Test that the wizard loader still functions without a given session
     test_loader = WizardLoader()
     w1 = test_loader.create_wizard(wizard_spec)
     w2 = loader.create_wizard(wizard_spec)
     assert w1.start_stage == w2.start_stage
+
+
+def test_wizard_basic_interaction(wizard_spec):
+    # Test that the wizard calls the interaction's execute
+    inter = {'ScreenType': 'SomeScreen'}
+    opt = {'Option': 'Two', 'Stage': 'StageTwo'}
+    data = [{'Option': 'One', 'Stage': 'StageOne'}, opt]
+    i_loader = mock.Mock()
+    i_loader.create.return_value.execute.return_value = opt
+    wizard_spec['Stages'][0]['Interaction'] = inter
+    test_loader = WizardLoader(interaction_loader=i_loader)
+    wiz = test_loader.create_wizard(wizard_spec)
+    wiz.execute()
+    create = i_loader.create
+    create.assert_called_once_with(inter, 'Prompting')
+    create.return_value.execute.assert_called_once_with(data)

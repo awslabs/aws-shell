@@ -1,14 +1,15 @@
-import sys
 import json
 import jmespath
+
 import botocore.session
 from botocore import xform_name
+
 from awsshell.resource import index
+from awsshell.interaction import InteractionLoader
 
 
 class WizardException(Exception):
     """Base exception class for the Wizards."""
-    pass
 
 
 class WizardLoader(object):
@@ -18,17 +19,26 @@ class WizardLoader(object):
     Delegates to botocore for finding and loading the JSON models.
     """
 
-    def __init__(self, session=None):
+    def __init__(self, session=None, interaction_loader=None):
         """Initialize a wizard factory.
 
         :type session: :class:`botocore.session.Session`
         :param session: (Optional) The botocore session to be used when loading
         models and retrieving clients.
+
+        :type interaction_loader:
+            :class:`awsshell.interaction.InteractionLoader`
+        :param interaction_loader: (Optional) The InteractionLoader to be used
+        when converting Interaction models to their corresponding object.
         """
         self._session = session
         if session is None:
             self._session = botocore.session.Session()
         self._loader = self._session.get_component('data_loader')
+        self._cached_creator = index.CachedClientCreator(self._session)
+        self._interaction_loader = interaction_loader
+        if interaction_loader is None:
+            self._interaction_loader = InteractionLoader()
 
     def load_wizard(self, name):
         """Given a wizard's name, return an instance of that wizard.
@@ -59,48 +69,53 @@ class WizardLoader(object):
         start_stage = model.get('StartStage')
         if not start_stage:
             raise WizardException('Start stage not specified')
-        stages = model.get('Stages')
-        return Wizard(start_stage, stages, self._session)
+        env = Environment()
+        stages = self._load_stages(model.get('Stages'), env)
+        return Wizard(start_stage, stages, env)
+
+    def _load_stages(self, stages, env):
+        def load_stage(stage):
+            stage_attrs = {
+                'name': stage.get('Name'),
+                'prompt': stage.get('Prompt'),
+                'retrieval': stage.get('Retrieval'),
+                'next_stage': stage.get('NextStage'),
+                'resolution': stage.get('Resolution'),
+                'interaction': stage.get('Interaction'),
+            }
+            creator = self._cached_creator
+            loader = self._interaction_loader
+            return Stage(env, creator, loader, **stage_attrs)
+        return [load_stage(stage) for stage in stages]
 
 
 class Wizard(object):
     """Main wizard object. Contains main wizard driving logic."""
 
-    def __init__(self, start_stage, stages, session):
+    def __init__(self, start_stage, stages, environment):
         """Construct a new Wizard.
 
         :type start_stage: str
         :param start_stage: The name of the starting stage for the wizard.
 
-        :type stages: array of dict
-        :param stages: An array of stage models to generate stages from.
+        :type stages: list of :class:`Stage`
+        :param stages: A list of stage objects for this wizard.
 
-        :type session: :class:`botocore.session.Session`
-        :param session: The botocore session to be used when creating clients.
+        :type environment: :class:`Environment`
+        :param environmet: The environment for the wizard and stages
         """
-        self.env = Environment()
-        self._session = session
-        self._cached_creator = index.CachedClientCreator(self._session)
+        self.env = environment
         self.start_stage = start_stage
         self._load_stages(stages)
 
     def _load_stages(self, stages):
-        """Load the stages dictionary from the given array of stage models.
+        """Load the stages dictionary from the given list of stage objects.
 
-        :type stages: array of dict
-        :param stages: An array of stage models to be converted into objects.
+        :type stages: list of :class:`Stage`
+        :param stages: A list of stage models to be inserted into the map.
         """
         self.stages = {}
-        for stage_model in stages:
-            stage_attrs = {
-                'name': stage_model.get('Name'),
-                'prompt': stage_model.get('Prompt'),
-                'retrieval': stage_model.get('Retrieval'),
-                'next_stage': stage_model.get('NextStage'),
-                'resolution': stage_model.get('Resolution'),
-                'interaction': stage_model.get('Interaction'),
-            }
-            stage = Stage(self.env, self._cached_creator, **stage_attrs)
+        for stage in stages:
             self.stages[stage.name] = stage
 
     def execute(self):
@@ -115,16 +130,14 @@ class Wizard(object):
                 raise WizardException('Stage not found: %s' % current_stage)
             stage.execute()
             current_stage = stage.get_next_stage()
-        # TODO decouple wizard from all I/O
-        sys.stdout.write(str(self.env) + '\n')
-        sys.stdout.flush()
 
 
 class Stage(object):
     """The Stage object. Contains logic to run all steps of the stage."""
 
-    def __init__(self, env, creator, name=None, prompt=None, retrieval=None,
-                 next_stage=None, resolution=None, interaction=None):
+    def __init__(self, env, creator, interaction_loader, name=None,
+                 prompt=None, retrieval=None, next_stage=None, resolution=None,
+                 interaction=None):
         """Construct a new Stage object.
 
         :type env: :class:`Environment`
@@ -132,6 +145,10 @@ class Stage(object):
 
         :type creator: :class:`CachedClientCreator`
         :param creator: A botocore client creator that supports caching.
+
+        :type interaction_loader: :class:`InteractionLoader`
+        :param interaction_loader: The Interaction loader to be used when
+        performing interactions.
 
         :type name: str
         :param name: A unique identifier for the stage.
@@ -154,6 +171,7 @@ class Stage(object):
         """
         self._env = env
         self._cached_creator = creator
+        self._interaction_loader = interaction_loader
         self.name = name
         self.prompt = prompt
         self.retrieval = retrieval
@@ -161,10 +179,10 @@ class Stage(object):
         self.resolution = resolution
         self.interaction = interaction
 
-    def __handle_static_retrieval(self):
+    def _handle_static_retrieval(self):
         return self.retrieval.get('Resource')
 
-    def __handle_request_retrieval(self):
+    def _handle_request_retrieval(self):
         req = self.retrieval['Resource']
         # get client from wizard's cache
         client = self._cached_creator.create_client(req['Service'])
@@ -180,32 +198,26 @@ class Stage(object):
         return operation(**parameters)
 
     def _handle_retrieval(self):
-        # TODO decouple wizard from all I/O
-        sys.stdout.write(self.prompt + '\n')
-        sys.stdout.flush()
         # In case of no retrieval, empty dict
         if not self.retrieval:
             return {}
         elif self.retrieval['Type'] == 'Static':
-            data = self.__handle_static_retrieval()
+            data = self._handle_static_retrieval()
         elif self.retrieval['Type'] == 'Request':
-            data = self.__handle_request_retrieval()
+            data = self._handle_request_retrieval()
         # Apply JMESPath query if given
         if self.retrieval.get('Path'):
             data = jmespath.search(self.retrieval['Path'], data)
         return data
 
     def _handle_interaction(self, data):
-        # TODO actually implement this step
         # if no interaction step, just forward data
-        if not self.interaction:
+        if self.interaction is None:
             return data
-        elif self.interaction['ScreenType'] == 'SimpleSelect':
-            data = data[0]
-        elif self.interaction['ScreenType'] == 'SimplePrompt':
-            for field in data:
-                data[field] = 'random'
-        return data
+        else:
+            creator = self._interaction_loader.create
+            interaction = creator(self.interaction, self.prompt)
+            return interaction.execute(data)
 
     def _handle_resolution(self, data):
         if self.resolution:
@@ -226,9 +238,8 @@ class Stage(object):
         elif self.next_stage['Type'] == 'Variable':
             return self._env.retrieve(self.next_stage['Name'])
 
-    # Executes all three steps of the stage
     def execute(self):
-        """Execute all steps in the stage if they are present.
+        """Execute all three steps in the stage if they are present.
 
         1) Perform Retrieval.
         2) Perform Interaction on retrieved data.
