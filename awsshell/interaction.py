@@ -1,3 +1,4 @@
+import os
 import sys
 import jmespath
 
@@ -5,7 +6,9 @@ from six import with_metaclass
 from abc import ABCMeta, abstractmethod
 
 from prompt_toolkit import prompt
-from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.contrib.completers import WordCompleter, PathCompleter
+
+from awsshell.utils import FSLayer
 
 
 class InteractionException(Exception):
@@ -30,8 +33,30 @@ class Interaction(with_metaclass(ABCMeta, object)):
         """Execute the interaction, transforming the data in some way."""
 
 
+class FilePrompt(Interaction):
+    """Prompt the user to select a file.
+
+    Provide completions to the current path by suggesting files or directories
+    in the last directory of the current path. Upon selection returns the
+    contents of the file as the result of the interaction.
+    """
+
+    def __init__(self, model, prompt_msg, prompter=prompt):
+        super(FilePrompt, self).__init__(model, prompt_msg)
+        self._prompter = prompter
+
+    def get_path(self):
+        cmpltr = PathCompleter(expanduser=True)
+        selection = self._prompter('%s ' % self.prompt, completer=cmpltr)
+        return os.path.expanduser(selection)
+
+    def execute(self, data, fslayer=FSLayer()):
+        path = self.get_path()
+        return fslayer.file_contents(path)
+
+
 class SimpleSelect(Interaction):
-    """Displays a list of options, allowing the user to select one.
+    """Display a list of options, allowing the user to select one.
 
     Given a list of one or more items, display them in a dropdown selection
     menu and allows the user to pick one. If a path is present on the
@@ -64,7 +89,7 @@ class SimpleSelect(Interaction):
 
 
 class SimplePrompt(Interaction):
-    """Prompts the user to type in responses for each field.
+    """Prompt the user to type in responses for each field.
 
     Each key on the provided dict is considered a field and the user will be
     prompted for input for each key. The provided input replaces the value for
@@ -86,14 +111,15 @@ class SimplePrompt(Interaction):
 
 
 class InteractionLoader(object):
-    """An interaction loader. Creates interactions based on their name.
+    """An interaction loader. Create interactions based on their name.
 
     The class will maintain a dict of ScreenType to Interaction object so
     Interaction objects can be instantiated from their corresponding str.
     """
     _INTERACTIONS = {
         'SimpleSelect': SimpleSelect,
-        'SimplePrompt': SimplePrompt
+        'SimplePrompt': SimplePrompt,
+        'FilePrompt': FilePrompt
     }
 
     def __init__(self):
