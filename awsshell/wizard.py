@@ -86,8 +86,11 @@ class WizardLoader(object):
         # TODO possible naming collisions here, always pick first for now
         # Need to discuss and specify wizard invocation
         services = self._loader.list_available_services(type_name=name)
-        model = self._loader.load_service_model(services[0], name)
-        return self.create_wizard(model)
+        if len(services) == 0:
+            raise WizardException('Wizard with name %s does not exist' % name)
+        else:
+            model = self._loader.load_service_model(services[0], name)
+            return self.create_wizard(model)
 
     def create_wizard(self, model):
         """Given a wizard specification, return an instance of that wizard.

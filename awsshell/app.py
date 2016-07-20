@@ -26,7 +26,9 @@ from awsshell.style import StyleFactory
 from awsshell.toolbar import Toolbar
 from awsshell.utils import build_config_file_path, temporary_file
 from awsshell import compat
-from awsshell.wizard import WizardLoader
+from awsshell.interaction import InteractionException
+from awsshell.wizard import WizardLoader, WizardException
+from botocore.exceptions import ClientError
 
 
 LOG = logging.getLogger(__name__)
@@ -168,8 +170,17 @@ class WizardHandler(object):
         if len(command) != 2:
             self._err.write("Invalid syntax, must be: .wizard wizname\n")
             return
-        wizard = self._wizard_loader.load_wizard(command[1])
-        wizard.execute()
+        try:
+            wizard = self._wizard_loader.load_wizard(command[1])
+            wizard.execute()
+
+        except (ClientError) as err:
+            self._err.write("{0}\n".format(err))
+        except (WizardException, InteractionException) as err:
+            self._err.write("An error occurred: {0}\n".format(err))
+        # EOF or Ctrl-C in a wizard drop back to shell
+        except (KeyboardInterrupt, EOFError):
+            pass
 
 
 class DotCommandHandler(object):
