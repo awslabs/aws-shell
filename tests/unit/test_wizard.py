@@ -235,6 +235,16 @@ def test_wizard_loader(wizard_spec):
     assert w1.start_stage == w2.start_stage
 
 
+def test_wizard_loader_not_found():
+    mock_session = mock.Mock()
+    mock_loader = mock_session.get_component.return_value
+    mock_loader.list_available_services.return_value = []
+    loader = WizardLoader(mock_session)
+    with pytest.raises(WizardException) as we:
+        loader.load_wizard('wizname')
+    assert 'Wizard with name wizname does not exist' in str(we.value)
+
+
 def test_wizard_loader_no_session(wizard_spec, loader):
     # Test that the wizard loader still functions without a given session
     test_loader = WizardLoader()
