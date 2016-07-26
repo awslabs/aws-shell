@@ -26,9 +26,7 @@ from awsshell.style import StyleFactory
 from awsshell.toolbar import Toolbar
 from awsshell.utils import build_config_file_path, temporary_file
 from awsshell import compat
-from awsshell.interaction import InteractionException
-from awsshell.wizard import WizardLoader, WizardException
-from botocore.exceptions import ClientError
+from awsshell.wizard import WizardLoader
 
 
 LOG = logging.getLogger(__name__)
@@ -155,10 +153,11 @@ class ExitHandler(object):
 
 
 class WizardHandler(object):
-    def __init__(self, output=sys.stdout, err=sys.stderr):
+    def __init__(self, output=sys.stdout, err=sys.stderr,
+                 loader=WizardLoader()):
         self._output = output
         self._err = err
-        self._wizard_loader = WizardLoader()
+        self._wizard_loader = loader
 
     def run(self, command, application):
         """Run the specified wizard.
@@ -173,14 +172,12 @@ class WizardHandler(object):
         try:
             wizard = self._wizard_loader.load_wizard(command[1])
             wizard.execute()
-
-        except (ClientError) as err:
-            self._err.write("{0}\n".format(err))
-        except (WizardException, InteractionException) as err:
-            self._err.write("An error occurred: {0}\n".format(err))
-        # EOF or Ctrl-C in a wizard drop back to shell
+        # EOF or Ctrl-C in a wizard drop back to shell silently
         except (KeyboardInterrupt, EOFError):
             pass
+        # For any other exception, print it and return to shell
+        except Exception as err:
+            self._err.write("{0}\n".format(err))
 
 
 class DotCommandHandler(object):

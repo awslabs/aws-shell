@@ -6,6 +6,11 @@ from awsshell import app
 from awsshell import shellcomplete
 from awsshell import compat
 
+from awsshell.utils import FileReadError
+from awsshell.wizard import WizardException
+from awsshell.interaction import InteractionException
+from botocore.exceptions import ClientError, BotoCoreError
+
 
 @pytest.fixture
 def errstream():
@@ -14,6 +19,7 @@ def errstream():
 
 def test_can_dispatch_dot_commands():
     call_args = []
+
     class CustomHandler(object):
         def run(self, command, context):
             call_args.append((command, context))
@@ -183,3 +189,59 @@ def test_exit_dot_command_exits_shell():
     # see the .quit command, we immediately exit and stop prompting
     # for more shell commands.
     assert mock_prompter.run.call_count == 1
+
+
+def test_wizard_can_load_and_execute():
+    # Proper dot command syntax should load and run a wizard
+    mock_loader = mock.Mock()
+    mock_wizard = mock_loader.load_wizard.return_value
+    handler = app.WizardHandler(err=errstream, loader=mock_loader)
+    handler.run(['.wizard', 'wizname'], None)
+
+    assert mock_wizard.execute.call_count == 1
+    assert mock_loader.load_wizard.call_count == 1
+    mock_loader.load_wizard.assert_called_with('wizname')
+
+
+def test_wizard_syntax_error_prints_err_msg(errstream):
+    # Invalid wizard syntax should print error and not load a wizard
+    mock_loader = mock.Mock()
+    handler = app.WizardHandler(err=errstream, loader=mock_loader)
+    handler.run(['.wizard'], None)
+    assert 'Invalid syntax' in errstream.getvalue()
+    assert not mock_loader.load_wizard.called
+
+
+@pytest.mark.parametrize('err', [EOFError(), KeyboardInterrupt()])
+def test_wizard_handles_eof_interrupt(err, errstream):
+    # EOF and Keyboard should silently drop back to the shell
+    mock_loader = mock.Mock()
+    mock_loader.load_wizard.side_effect = err
+    handler = app.WizardHandler(err=errstream, loader=mock_loader)
+    try:
+        handler.run(['.wizard', 'name'], None)
+    except:
+        pytest.fail('No exception should have been thrown')
+    assert errstream.getvalue() == ''
+
+
+exceptions = [
+    BotoCoreError(),
+    FileReadError('error'),
+    WizardException('error'),
+    InteractionException('error'),
+    ClientError({'Error': {}}, 'Operation')
+]
+
+
+@pytest.mark.parametrize('err', exceptions)
+def test_wizard_handles_exceptions(err, errstream):
+    # Test that exceptions are caught and an error message is displayed
+    mock_loader = mock.Mock()
+    mock_loader.load_wizard.side_effect = err
+    handler = app.WizardHandler(err=errstream, loader=mock_loader)
+    try:
+        handler.run(['.wizard', 'name'], None)
+    except:
+        pytest.fail('No exception should have been thrown')
+    assert 'error' in errstream.getvalue()
