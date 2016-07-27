@@ -22,6 +22,18 @@ from prompt_toolkit.layout import Window, HSplit, FloatContainer, Float
 from prompt_toolkit.layout.containers import ScrollOffsets, \
     ConditionalContainer
 
+"""An implementation of a selection menu using prompt toolkit.
+
+This is very similar to the original prompt provided by prompt toolkit but has
+a few tweaks that are not possible through the parameters exposed by the
+library itself.  Selecting an option from a set of options is a different
+enough use case that the following features were required: forcing the
+selection of one of the options, not allowing the editing of options once
+selected, and showing the prompt without any input from the user. Additionally,
+it allows us to modify the layout and begin adding a meta information window
+similar to the shell's docs.
+"""
+
 
 class SelectMenuControl(UIControl):
     """Given a list, display that list as a drop down menu."""
@@ -84,7 +96,7 @@ class SelectMenuControl(UIControl):
         def get_line(i):
             c = self._options[i]
             is_current = (i == self._selection)
-            # Render the line as array of tokens for highlighting
+            # Render the line a list of tokens for highlighting
             return self._get_menu_item_tokens(c, is_current)
 
         return UIContent(
@@ -95,7 +107,7 @@ class SelectMenuControl(UIControl):
         )
 
     def _get_menu_item_tokens(self, option, is_current):
-        """Given an option generate the proper token list for highlighting."""
+        """Given an option, generate the proper token list for highlighting."""
         # highlight the current selection with a different token
         if is_current:
             token = self.token.Completion.Current
@@ -110,7 +122,7 @@ def create_select_menu_layout(msg, menu_control,
                               show_meta=False,
                               reserve_space_for_menu=True):
     """Construct a layout for the given message and menu control."""
-    def get_prompt_tokens(_):
+    def get_prompt_tokens(cli):
         return [(Token.Prompt, msg)]
 
     # Ensures that the menu has enough room to display it's options
@@ -151,7 +163,7 @@ def create_select_menu_layout(msg, menu_control,
         ]
     )
 
-    # Show meta information with the buffer isn't done and show_meta is True
+    # Show meta information when the buffer isn't done and show_meta is True
     meta_filter = ~IsDone() & to_simple_filter(show_meta)
     return HSplit([
         prompt_layout,
@@ -169,7 +181,7 @@ def create_select_menu_layout(msg, menu_control,
                 height=LayoutDimension(max=15),
                 content=BufferControl(
                     buffer_name='INFO',
-                    # TODO discuss pygments import voodoo
+                    # pygments dynamically exports, must use their helper
                     lexer=PygmentsLexer(find_lexer_class('JSON'))
                 )
             ),
@@ -181,53 +193,60 @@ class SelectMenuApplication(Application):
     """Wrap Application, providing the correct layout, keybindings, etc."""
 
     def __init__(self, message, options, *args, **kwargs):
-        self._menu_control = SelectMenuControl(options)
+        self.menu_control = SelectMenuControl(options)
 
-        self.kb_manager = KeyBindingManager(
-            enable_system_bindings=True,
-            enable_abort_and_exit_bindings=True
-        )
-        menu_control = self._menu_control
+        # create and apply needed key bindings
+        self._initialize_keys()
+        kwargs['key_bindings_registry'] = self.kb_manager.registry
+
+        # create and apply the default and info buffers
         options_meta = kwargs.pop('options_meta', None)
+        kwargs['buffers'] = self._initialize_buffers(options_meta)
 
+        # create and apply the new layout
+        kwargs['layout'] = create_select_menu_layout(
+            message,
+            self.menu_control,
+            show_meta=(options_meta is not None)
+        )
+
+        super(SelectMenuApplication, self).__init__(*args, **kwargs)
+
+    def _initialize_buffers(self, options_meta):
         # Return the currently selected option
         def return_selection(cli, buf):
-            cli.set_return_value(menu_control.get_selection())
+            cli.set_return_value(self.menu_control.get_selection())
 
         buffers = {}
 
-        def_buf = Buffer(
-            initial_document=Document(''),
+        default_buf = Buffer(
+            initial_document=Document(u''),
             accept_action=AcceptAction(return_selection)
         )
 
-        buffers[DEFAULT_BUFFER] = def_buf
+        buffers[DEFAULT_BUFFER] = default_buf
 
-        show_meta = options_meta is not None
         # Optionally show meta information if present
-        if show_meta:
+        if options_meta is not None:
             info_buf = Buffer(is_multiline=True)
             buffers['INFO'] = info_buf
 
             def selection_changed(cli):
                 info = options_meta[buffers[DEFAULT_BUFFER].text]
-                formatted_info = json.dumps(info, indent=4, sort_keys=True)
+                formatted_info = json.dumps(info, indent=4, sort_keys=True,
+                                            ensure_ascii=False)
                 buffers['INFO'].text = formatted_info
-            def_buf.on_text_changed += selection_changed
+            default_buf.on_text_changed += selection_changed
 
-        # Apply the correct buffers, key bindings, and layout before super call
-        kwargs['buffers'] = buffers
-        kwargs['key_bindings_registry'] = self.kb_manager.registry
-        kwargs['layout'] = create_select_menu_layout(
-            message,
-            menu_control,
-            show_meta=show_meta
+        return buffers
+
+    def _initialize_keys(self):
+        menu_control = self.menu_control
+        self.kb_manager = KeyBindingManager(
+            enable_system_bindings=True,
+            enable_abort_and_exit_bindings=True
         )
-        self._bind_keys(self.kb_manager.registry, self._menu_control)
-        super(SelectMenuApplication, self).__init__(*args, **kwargs)
-
-    def _bind_keys(self, registry, menu_control):
-        handle = registry.add_binding
+        handle = self.kb_manager.registry.add_binding
 
         @handle(Keys.F10)
         def handle_f10(event):
@@ -251,6 +270,7 @@ class SelectMenuApplication(Application):
                 buff.accept_action.validate_and_handle(event.cli, buff)
 
         @handle(Keys.Any)
+        # explicitly rebind backspace to override previous bindings
         @handle(Keys.Backspace)
         def _(_):
             pass
@@ -258,5 +278,6 @@ class SelectMenuApplication(Application):
 
 def select_prompt(message, options, *args, **kwargs):
     """Construct and run the select menu application, returning the result."""
+    runner = kwargs.pop('runner', run_application)
     app = SelectMenuApplication(message, options, *args, **kwargs)
-    return run_application(app)
+    return runner(app)
