@@ -50,6 +50,9 @@ class SelectMenuControl(UIControl):
         self.height = len(options)
         self._selection = None
 
+    def get_index(self):
+        return self._selection
+
     def get_selection(self):
         """Return the currently selected option, if there is one."""
         if self._selection is not None:
@@ -77,6 +80,7 @@ class SelectMenuControl(UIControl):
 
     def _insert_text(self, event):
         if event is not None:
+            event.current_buffer.reset()
             event.current_buffer.document = Document(self.get_selection())
 
     def preferred_width(self, cli, max_available_width):
@@ -121,7 +125,27 @@ class SelectMenuControl(UIControl):
 def create_select_menu_layout(msg, menu_control,
                               show_meta=False,
                               reserve_space_for_menu=True):
-    """Construct a layout for the given message and menu control."""
+    """Construct a layout for the given message and menu control.
+
+    :type msg: str
+    :param msg: The message to be used when showing the prompt.
+
+    :type msg: :class:`SelectMenuControl`
+    :param msg: The menu controller that manages the state and rendering of the
+    currently selected option.
+
+    :type show_meta: bool
+    :param show_meta: (Optional) Whether or not the meta information should be
+    displayed below the prompt.
+
+    :type reserve_space_for_menu: bool
+    :param reserve_space_for_menu: (Optional) Whether or not the prompt should
+    force that there be enough lines for the completion menu to completely
+    render.
+
+    :rtype: :class:`prompt_toolkit.layout.containers.Container`
+    :return: The layout to be used for a select menu prompt.
+    """
     def get_prompt_tokens(cli):
         return [(Token.Prompt, msg)]
 
@@ -201,7 +225,7 @@ class SelectMenuApplication(Application):
 
         # create and apply the default and info buffers
         options_meta = kwargs.pop('options_meta', None)
-        kwargs['buffers'] = self._initialize_buffers(options_meta)
+        kwargs['buffers'] = self._initialize_buffers(options, options_meta)
 
         # create and apply the new layout
         kwargs['layout'] = create_select_menu_layout(
@@ -212,10 +236,12 @@ class SelectMenuApplication(Application):
 
         super(SelectMenuApplication, self).__init__(*args, **kwargs)
 
-    def _initialize_buffers(self, options_meta):
+    def _initialize_buffers(self, options, options_meta):
         # Return the currently selected option
         def return_selection(cli, buf):
-            cli.set_return_value(self.menu_control.get_selection())
+            selection = self.menu_control.get_selection()
+            index = self.menu_control.get_index()
+            cli.set_return_value((selection, index))
 
         buffers = {}
 
@@ -228,11 +254,13 @@ class SelectMenuApplication(Application):
 
         # Optionally show meta information if present
         if options_meta is not None:
+            assert len(options) == len(options_meta)
             info_buf = Buffer(is_multiline=True)
             buffers['INFO'] = info_buf
 
             def selection_changed(cli):
-                info = options_meta[buffers[DEFAULT_BUFFER].text]
+                index = self.menu_control.get_index()
+                info = options_meta[index]
                 formatted_info = json.dumps(info, indent=4, sort_keys=True,
                                             ensure_ascii=False)
                 buffers['INFO'].text = formatted_info
@@ -277,7 +305,22 @@ class SelectMenuApplication(Application):
 
 
 def select_prompt(message, options, *args, **kwargs):
-    """Construct and run the select menu application, returning the result."""
+    """Construct and run the select menu application, returning the result.
+
+    :type message: str
+    :param message: The message to be used when showing the prompt.
+
+    :type options: list of str
+    :param options: The options to be displayed in the drop down list.
+
+    :type options_meta: list of dict
+    :param options_meta: (Optional) List of detailed objects for each option in
+    the list. This list is parallel to options and must equal in length.
+
+    :rtype: tuple of (str, int)
+    :return: The tuple containing the selected option, and its index in the
+    list of options.
+    """
     runner = kwargs.pop('runner', run_application)
     app = SelectMenuApplication(message, options, *args, **kwargs)
     return runner(app)

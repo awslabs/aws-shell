@@ -75,11 +75,12 @@ class SimpleSelect(Interaction):
             raise InteractionException('SimpleSelect expects a non-empty list')
         if self._model.get('Path') is not None:
             display_data = jmespath.search(self._model['Path'], data)
-            option_dict = dict(zip(display_data, data))
-            selected = self._prompter('%s ' % self.prompt, display_data)
-            return option_dict[selected]
+            result = self._prompter('%s ' % self.prompt, display_data)
+            (selected, index) = result
+            return data[index]
         else:
-            return self._prompter('%s ' % self.prompt, data)
+            (selected, index) = self._prompter('%s ' % self.prompt, data)
+            return selected
 
 
 class SimplePrompt(Interaction):
