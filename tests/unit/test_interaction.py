@@ -79,7 +79,7 @@ def test_simple_select():
     prompt = mock.Mock()
     selector = SimpleSelect({}, 'one or two?', prompt)
     options = ['one', 'two']
-    prompt.return_value = options[1]
+    prompt.return_value = (options[1], 1)
     xformed = selector.execute(options)
     assert prompt.call_count == 1
     assert xformed == options[1]
@@ -92,7 +92,7 @@ def test_simple_select_with_path():
     model = {'Path': '[].a'}
     simple_selector = SimpleSelect(model, 'Promptingu', prompt)
     options = [{'a': '1', 'b': 'one'}, {'a': '2', 'b': 'two'}]
-    prompt.return_value = '2'
+    prompt.return_value = ('2', 1)
     xformed = simple_selector.execute(options)
     assert prompt.call_count == 1
     assert xformed == options[1]

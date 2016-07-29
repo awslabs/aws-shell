@@ -88,7 +88,7 @@ def test_select_menu_application_accept(cli):
     # move selection down then accept
     feed_key(cli, Keys.Down)
     feed_key(cli, Keys.ControlJ)
-    assert cli.return_value() == '1'
+    assert cli.return_value() == ('1', 0)
 
 
 def test_select_menu_application_any(cli):
@@ -104,7 +104,7 @@ def test_select_menu_application_any(cli):
 
 def test_select_menu_application_with_meta(pipe_input, make_cli):
     # test that selecting an option when theres info will render it
-    meta = {'opt': {'key': u'val'}}
+    meta = [{'key': u'val'}]
     app = SelectMenuApplication(u'prompt', [u'opt'], options_meta=meta)
     cli = make_cli(app=app, cli_input=pipe_input)
     feed_key(cli, Keys.Down)
