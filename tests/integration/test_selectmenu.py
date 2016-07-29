@@ -64,7 +64,7 @@ def test_select_menu_application_accept(cli):
     # move selection down then accept
     feed_key(cli, Keys.Down)
     feed_key(cli, Keys.ControlJ)
-    assert cli.return_value() == '1'
+    assert cli.return_value() == ('1', 0)
 
 
 def test_select_menu_application_any(cli):
@@ -80,8 +80,23 @@ def test_select_menu_application_any(cli):
 
 def test_select_menu_application_with_meta():
     # test that selecting an option when theres info will render it
-    meta = {'opt': {'key': u'val'}}
+    meta = [{'key': u'val'}]
     app = SelectMenuApplication(u'prompt', [u'opt'], options_meta=meta)
     cli = CommandLineInterface(application=app, eventloop=create_eventloop())
     feed_key(cli, Keys.Down)
     assert cli.application.buffers['INFO'].text == '{\n    "key": "val"\n}'
+
+
+def test_select_menu_duplicate_option_with_meta():
+    options = [u'one', u'one']
+    meta = [{'key': u'1'}, {'key': u'2'}]
+    app = SelectMenuApplication(u'prompt', options, options_meta=meta)
+    cli = CommandLineInterface(application=app, eventloop=create_eventloop())
+    feed_key(cli, Keys.Down)
+    assert cli.application.buffers['INFO'].text == '{\n    "key": "1"\n}'
+    feed_key(cli, Keys.ControlJ)
+    assert cli.return_value() == ('one', 0)
+    feed_key(cli, Keys.Down)
+    assert cli.application.buffers['INFO'].text == '{\n    "key": "2"\n}'
+    feed_key(cli, Keys.ControlJ)
+    assert cli.return_value() == ('one', 1)
