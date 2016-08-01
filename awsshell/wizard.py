@@ -111,6 +111,7 @@ class Wizard(object):
         self.env = environment
         self.start_stage = start_stage
         self._load_stages(stages)
+        self._stage_history = []
 
     def _load_stages(self, stages):
         """Load the stages dictionary from the given list of stage objects.
@@ -123,11 +124,11 @@ class Wizard(object):
             self.stages[stage.name] = stage
 
     def _select_stage_prompt(self):
-        stages = [s.name for (s, _) in self.env._stage_history]
+        stages = [s.name for (s, _) in self._stage_history]
         selector = SimpleSelect({}, 'Select a Stage to return to: ')
-        current_stage = selector.execute(stages)
-        self.env.pop_stages(stages.index(current_stage))
-        return current_stage
+        selected_stage = selector.execute(stages)
+        self._pop_stages(stages.index(selected_stage))
+        return selected_stage
 
     def execute(self):
         """Run the wizard. Execute Stages until a final stage is reached.
@@ -140,6 +141,7 @@ class Wizard(object):
             if not stage:
                 raise WizardException('Stage not found: %s' % current_stage)
             try:
+                self._push_stage(stage)
                 stage.execute()
                 current_stage = stage.get_next_stage()
             except EOFError:
@@ -147,10 +149,17 @@ class Wizard(object):
             except Exception as e:
                 sys.stdout.write('{0}\n'.format(e))
                 sys.stdout.flush()
-                if confirm('Select a previous stage? (y/n) '):
+                if confirm(u'Select a previous stage? (y/n) '):
                     current_stage = self._select_stage_prompt()
                 else:
                     raise
+
+    def _push_stage(self, stage):
+        self._stage_history.append((stage, copy.deepcopy(self.env)))
+
+    def _pop_stages(self, stage_index):
+        self.env.update(self._stage_history[stage_index][1])
+        self._stage_history = self._stage_history[:stage_index]
 
 
 class Stage(object):
@@ -266,7 +275,6 @@ class Stage(object):
         2) Perform Interaction on retrieved data.
         3) Perform Resolution to store data in the environment.
         """
-        self._env.push_stage(self)
         retrieved_options = self._handle_retrieval()
         selected_data = self._handle_interaction(retrieved_options)
         self._handle_resolution(selected_data)
@@ -275,12 +283,15 @@ class Stage(object):
 class Environment(object):
     """Store vars into a dict and retrives them with JMESPath queries."""
 
-    def __init__(self, stage_history=[]):
+    def __init__(self):
         self._variables = {}
-        self._stage_history = stage_history
 
     def __str__(self):
         return json.dumps(self._variables, indent=4, sort_keys=True)
+
+    def update(self, environment):
+        assert isinstance(environment, Environment)
+        self._variables = environment._variables
 
     def store(self, key, val):
         """Store a variable under the given key.
@@ -318,10 +329,3 @@ class Environment(object):
         for key in keys:
             resolved_dict[key] = self.retrieve(keys[key])
         return resolved_dict
-
-    def push_stage(self, stage):
-        self._stage_history.append((stage, copy.deepcopy(self._variables)))
-
-    def pop_stages(self, stage_index):
-        self._variables = self._stage_history[stage_index][1]
-        self._stage_history = self._stage_history[:stage_index]
