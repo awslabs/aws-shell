@@ -3,6 +3,8 @@ import pytest
 
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.token import Token
+from prompt_toolkit.input import PipeInput
+from prompt_toolkit.output import DummyOutput
 from prompt_toolkit.document import Document
 from prompt_toolkit.enums import DEFAULT_BUFFER
 from prompt_toolkit.shortcuts import create_eventloop
@@ -13,9 +15,31 @@ from awsshell.selectmenu import SelectMenuApplication
 
 
 @pytest.fixture
-def cli():
+def make_cli():
     app = SelectMenuApplication(u'prompt', [u'1', u'2', u'3'])
-    return CommandLineInterface(application=app, eventloop=create_eventloop())
+
+    def generator(app=app, cli_input=None, output=DummyOutput()):
+        return CommandLineInterface(
+                application=app,
+                input=cli_input,
+                output=output,
+                eventloop=create_eventloop()
+        )
+    return generator
+
+
+@pytest.yield_fixture
+def pipe_input():
+    pipe = PipeInput()
+    try:
+        yield pipe
+    finally:
+        pipe.close()
+
+
+@pytest.yield_fixture
+def cli(pipe_input, make_cli):
+    yield make_cli(cli_input=pipe_input)
 
 
 def feed_key(cli, key, data=u''):
@@ -78,10 +102,25 @@ def test_select_menu_application_any(cli):
     assert buf.text == 'abc'
 
 
-def test_select_menu_application_with_meta():
+def test_select_menu_application_with_meta(pipe_input, make_cli):
     # test that selecting an option when theres info will render it
     meta = {'opt': {'key': u'val'}}
     app = SelectMenuApplication(u'prompt', [u'opt'], options_meta=meta)
-    cli = CommandLineInterface(application=app, eventloop=create_eventloop())
+    cli = make_cli(app=app, cli_input=pipe_input)
     feed_key(cli, Keys.Down)
     assert cli.application.buffers['INFO'].text == '{\n    "key": "val"\n}'
+
+
+def test_select_menu_duplicate_option_with_meta(pipe_input, make_cli):
+    options = [u'one', u'one']
+    meta = [{'key': u'1'}, {'key': u'2'}]
+    app = SelectMenuApplication(u'prompt', options, options_meta=meta)
+    cli = make_cli(app=app, cli_input=pipe_input)
+    feed_key(cli, Keys.Down)
+    assert cli.application.buffers['INFO'].text == '{\n    "key": "1"\n}'
+    feed_key(cli, Keys.ControlJ)
+    assert cli.return_value() == ('one', 0)
+    feed_key(cli, Keys.Down)
+    assert cli.application.buffers['INFO'].text == '{\n    "key": "2"\n}'
+    feed_key(cli, Keys.ControlJ)
+    assert cli.return_value() == ('one', 1)
