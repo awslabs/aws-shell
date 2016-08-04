@@ -11,11 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import mock
-import sys
 
+from prompt_toolkit.input import PipeInput
+from prompt_toolkit.output import DummyOutput
 from prompt_toolkit.key_binding.input_processor import KeyPress
 from prompt_toolkit.keys import Keys
-from prompt_toolkit.interface import CommandLineInterface
 
 from tests.compat import unittest
 from awsshell.app import AWSShell, InputInterrupt
@@ -24,8 +24,14 @@ from awsshell.app import AWSShell, InputInterrupt
 class KeysTest(unittest.TestCase):
 
     def setUp(self):
-        self.aws_shell = AWSShell(None, mock.Mock(), mock.Mock())
+        self.input = PipeInput()
+        output = DummyOutput()
+        self.aws_shell = AWSShell(None, mock.Mock(), mock.Mock(),
+                                  input=self.input, output=output)
         self.processor = self.aws_shell.cli.input_processor
+
+    def tearDown(self):
+        self.input.close()
 
     def feed_key(self, key):
         self.processor.feed(KeyPress(key, u''))

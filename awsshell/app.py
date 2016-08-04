@@ -220,7 +220,8 @@ class AWSShell(object):
 
     """
 
-    def __init__(self, completer, model_completer, docs):
+    def __init__(self, completer, model_completer, docs,
+                 input=None, output=None):
         self.completer = completer
         self.model_completer = model_completer
         self.history = InMemoryHistory()
@@ -233,6 +234,8 @@ class AWSShell(object):
         self._dot_cmd = DotCommandHandler()
         self._env = os.environ.copy()
         self._profile = None
+        self._input = input
+        self._output = output
 
         # These attrs come from the config file.
         self.config_obj = None
@@ -456,7 +459,8 @@ class AWSShell(object):
         app = self.create_application(self.completer,
                                       self.file_history,
                                       display_completions_in_columns)
-        cli = CommandLineInterface(application=app, eventloop=loop)
+        cli = CommandLineInterface(application=app, eventloop=loop,
+                                   input=self._input, output=self._output)
         return cli
 
     @property
