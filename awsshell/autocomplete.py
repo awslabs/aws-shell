@@ -20,7 +20,7 @@ class AWSCLIModelCompleter(object):
         self._current = index_data[self._root_name]
         self._last_position = 0
         self._current_line = ''
-        self._prev_line = ''
+        self._prev_word = ''
         self.last_option = ''
         # This will get populated as a command is completed.
         self.cmd_path = [self._current_name]
@@ -58,20 +58,20 @@ class AWSCLIModelCompleter(object):
             return self._handle_backspace()
         elif not line:
             return []
-        elif not self._current_line.startswith(self._prev_line):
+        elif not line.split()[-1].startswith(self._prev_word):
             return self._complete_from_full_parse()
 
         # This position is important.  We only update _last_position
-        # and _prev_line after we've checked the special cases above
+        # and _prev_word after we've checked the special cases above
         # where these values matter.
         self._last_position = len(line)
-        self._prev_line = self._current_line
+        self._prev_word = line.split()[-1]
         if line and not line.strip():
             # Special case, the user hits a space on a new line so
             # we autocomplete all the top level commands.
             return self._current['commands']
 
-        last_word = line.split()[-1]
+        last_word = self._prev_word
         if last_word in self.arg_metadata or last_word in self._global_options:
             # The last thing we completed was an argument, record
             # this as self.last_arg
