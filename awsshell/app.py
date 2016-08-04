@@ -234,6 +234,7 @@ class AWSShell(object):
         self._dot_cmd = DotCommandHandler()
         self._env = os.environ.copy()
         self._profile = None
+        self.prompt_tokens = u'aws> '
         self._input = input
         self._output = output
 
@@ -282,7 +283,10 @@ class AWSShell(object):
         while True:
             try:
                 document = self.cli.run(reset_current_buffer=True)
-                text = document.text
+                if self.model_completer.context and isinstance(self.model_completer.context, list):
+                    text = " ".join(self.model_completer.context) + " " + document.text
+                else:
+                    text = document.text
             except InputInterrupt:
                 pass
             except (KeyboardInterrupt, EOFError):
@@ -300,6 +304,25 @@ class AWSShell(object):
                     if text.startswith('!'):
                         # Then run the rest as a normally shell command.
                         full_cmd = text[1:]
+                    elif text.startswith('@') and len(text.split()) == 1:
+                        # Add word as context to completions
+                        self.model_completer.context.append(text.split()[0].strip('@'))
+                        self.model_completer.reset()
+                        self.prompt_tokens = u'aws ' + ' '.join(self.model_completer.context) + u' > '
+                        self.refresh_cli = True
+                        self.cli.request_redraw()
+                        continue
+                    elif 'exit' in text.split():
+                        # Remove most recently added context
+                        if self.model_completer.context:
+                            self.model_completer.context.pop()
+                            if self.model_completer.context:
+                                self.prompt_tokens = u'aws ' + ' '.join(self.model_completer.context) + u' > '
+                            else:
+                                self.prompt_tokens = u'aws > '
+                            self.refresh_cli = True
+                            self.cli.request_redraw()
+                        continue
                     else:
                         full_cmd = 'aws ' + text
                         self.history.append(full_cmd)
@@ -331,7 +354,7 @@ class AWSShell(object):
         if self.config_section['theme'] == 'none':
             lexer = None
         return create_default_layout(
-            self, u'aws> ', lexer=lexer, reserve_space_for_menu=True,
+            self, self.prompt_tokens, lexer=lexer, reserve_space_for_menu=True,
             display_completions_in_columns=display_completions_in_columns,
             get_bottom_toolbar_tokens=toolbar.handler)
 

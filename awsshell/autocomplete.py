@@ -24,6 +24,7 @@ class AWSCLIModelCompleter(object):
         # This will get populated as a command is completed.
         self.cmd_path = [self._current_name]
         self.match_fuzzy = match_fuzzy
+        self.context = []
         self._cache_all_args = []
 
     @property
@@ -43,6 +44,15 @@ class AWSCLIModelCompleter(object):
         self._last_position = 0
         self.last_option = ''
         self.cmd_path = [self._current_name]
+        for context in self.context:
+            next_command = self._current['children'].get(context)
+            if not next_command:
+                self.context.remove(context)
+                self.reset()
+                return
+            self._current = next_command
+            self._current_name = context
+            self.cmd_path.append(self._current_name)
         self._cache_all_args = []
 
     def autocomplete(self, line):
