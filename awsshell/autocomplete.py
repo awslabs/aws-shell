@@ -24,6 +24,7 @@ class AWSCLIModelCompleter(object):
         # This will get populated as a command is completed.
         self.cmd_path = [self._current_name]
         self.match_fuzzy = match_fuzzy
+        self._cache_all_args = []
 
     @property
     def global_arg_metadata(self):
@@ -42,6 +43,7 @@ class AWSCLIModelCompleter(object):
         self._last_position = 0
         self.last_option = ''
         self.cmd_path = [self._current_name]
+        self._cache_all_args = []
 
     def autocomplete(self, line):
         """Given a line, return a list of suggestions."""
@@ -57,7 +59,9 @@ class AWSCLIModelCompleter(object):
             return self._handle_backspace()
         elif not line:
             return []
-        elif current_length != self._last_position + 1:
+        elif self._last_position == 0 and current_length > 2:
+            return self._complete_from_full_parse()
+        elif current_length != self._last_position + 1 and '--' in line:
             return self._complete_from_full_parse()
 
         # This position is important.  We only update the _last_position
@@ -75,6 +79,7 @@ class AWSCLIModelCompleter(object):
             # this as self.last_arg
             self.last_option = last_word
         if line[-1] == ' ':
+            self._cache_all_args = []
             # At this point the user has autocompleted a command
             # or an argument and has hit space.  If they've
             # just completed a command, we need to change the
@@ -101,14 +106,12 @@ class AWSCLIModelCompleter(object):
             # in either of the above two cases.
             return self._current['commands'][:]
         elif last_word.startswith('-'):
-            # TODO: cache this for the duration of the current context.
-            # We don't need to recompute this until the args are
-            # different.
-            all_args = self._get_all_args()
+            if not self._cache_all_args:
+                self._cache_all_args = self._get_all_args()
             if self.match_fuzzy:
-                return fuzzy_search(last_word, all_args)
+                return fuzzy_search(last_word, self._cache_all_args)
             else:
-                return substring_search(last_word, all_args)
+                return substring_search(last_word, self._cache_all_args)
         if self.match_fuzzy:
             return fuzzy_search(last_word, self._current['commands'])
         else:
