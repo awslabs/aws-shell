@@ -234,9 +234,9 @@ class AWSShell(object):
         self._dot_cmd = DotCommandHandler()
         self._env = os.environ.copy()
         self._profile = None
-        self.prompt_tokens = u'aws> '
         self._input = input
         self._output = output
+        self.prompt_tokens = u'aws > '
 
         # These attrs come from the config file.
         self.config_obj = None
@@ -272,6 +272,22 @@ class AWSShell(object):
         self.config_section['theme'] = self.theme
         self.config_obj.write()
 
+    def add_context(self, text):
+        self.model_completer.context.append(
+            text.split()[0].strip('@'))
+        self.model_completer.reset()
+        self.prompt_tokens = u'aws ' + ' '.join(
+            self.model_completer.context) + u' > '
+        self.refresh_cli = True
+        self.cli.request_redraw()
+
+    def remove_context(self):
+        self.model_completer.context.pop()
+        self.prompt_tokens = u'aws ' + ' '.join(
+            self.model_completer.context) + u' > '
+        self.refresh_cli = True
+        self.cli.request_redraw()
+
     @property
     def cli(self):
         if self._cli is None or self.refresh_cli:
@@ -283,17 +299,21 @@ class AWSShell(object):
         while True:
             try:
                 document = self.cli.run(reset_current_buffer=True)
-                if self.model_completer.context and isinstance(self.model_completer.context, list):
-                    text = " ".join(self.model_completer.context) + " " + document.text
+                if self.model_completer.context and isinstance(
+                        self.model_completer.context, list):
+                    text = " ".join(self.model_completer.context) + \
+                        " " + document.text
+                    original_text = document.text
                 else:
                     text = document.text
+                    original_text = text
             except InputInterrupt:
                 pass
             except (KeyboardInterrupt, EOFError):
                 self.save_config()
                 break
             else:
-                if text.startswith('.'):
+                if original_text.startswith('.'):
                     # These are special commands (dot commands) that are
                     # interpreted by the aws-shell directly and typically used
                     # to modify some type of behavior in the aws-shell.
@@ -301,27 +321,17 @@ class AWSShell(object):
                     if result is EXIT_REQUESTED:
                         break
                 else:
-                    if text.startswith('!'):
-                        # Then run the rest as a normally shell command.
+                    if original_text.startswith('!'):
+                        # Then run the rest as a normal shell command.
                         full_cmd = text[1:]
-                    elif text.startswith('@') and len(text.split()) == 1:
+                    elif original_text.startswith('@'):
                         # Add word as context to completions
-                        self.model_completer.context.append(text.split()[0].strip('@'))
-                        self.model_completer.reset()
-                        self.prompt_tokens = u'aws ' + ' '.join(self.model_completer.context) + u' > '
-                        self.refresh_cli = True
-                        self.cli.request_redraw()
+                        self.add_context(text)
                         continue
-                    elif 'exit' in text.split():
+                    elif original_text == 'exit' and\
+                            self.model_completer.context:
                         # Remove most recently added context
-                        if self.model_completer.context:
-                            self.model_completer.context.pop()
-                            if self.model_completer.context:
-                                self.prompt_tokens = u'aws ' + ' '.join(self.model_completer.context) + u' > '
-                            else:
-                                self.prompt_tokens = u'aws > '
-                            self.refresh_cli = True
-                            self.cli.request_redraw()
+                        self.remove_context()
                         continue
                     else:
                         full_cmd = 'aws ' + text

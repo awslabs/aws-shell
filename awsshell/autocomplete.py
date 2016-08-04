@@ -69,9 +69,10 @@ class AWSCLIModelCompleter(object):
             return self._handle_backspace()
         elif not line:
             return []
-        elif self._last_position == 0 and current_length > 2:
-            return self._complete_from_full_parse()
-        elif current_length != self._last_position + 1 and '--' in line:
+        elif (self._last_position == 0 and
+                current_length > 2) or (
+                current_length != self._last_position + 1
+                and '--' in line):
             return self._complete_from_full_parse()
 
         # This position is important.  We only update the _last_position
