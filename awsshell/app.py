@@ -17,6 +17,7 @@ from prompt_toolkit.interface import CommandLineInterface, Application
 from prompt_toolkit.interface import AbortAction, AcceptAction
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import InMemoryHistory, FileHistory
+from prompt_toolkit.enums import EditingMode
 
 from awsshell.ui import create_default_layout
 from awsshell.config import Config
@@ -417,7 +418,13 @@ class AWSShell(object):
             'clidocs': Buffer(read_only=True)
         }
 
+        if self.enable_vi_bindings:
+            editing_mode = EditingMode.VI
+        else:
+            editing_mode = EditingMode.EMACS
+
         return Application(
+            editing_mode=editing_mode,
             layout=self.create_layout(display_completions_in_columns, toolbar),
             mouse_support=False,
             style=style_factory.style,

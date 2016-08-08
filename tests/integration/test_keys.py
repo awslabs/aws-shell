@@ -46,20 +46,20 @@ class KeysTest(unittest.TestCase):
         enable_vi_bindings = self.aws_shell.enable_vi_bindings
         with self.assertRaises(InputInterrupt):
             self.feed_key(Keys.F3)
-            assert enable_vi_bindings != self.aws_shell.enable_vi_bindings
+        assert enable_vi_bindings != self.aws_shell.enable_vi_bindings
 
     def test_F4(self):
         show_completion_columns = self.aws_shell.show_completion_columns
         with self.assertRaises(InputInterrupt):
             self.feed_key(Keys.F4)
-            assert show_completion_columns != \
-                self.aws_shell.show_completion_columns
+        assert show_completion_columns != \
+            self.aws_shell.show_completion_columns
 
     def test_F5(self):
         show_help = self.aws_shell.show_help
         with self.assertRaises(InputInterrupt):
             self.feed_key(Keys.F5)
-            assert show_help != self.aws_shell.show_help
+        assert show_help != self.aws_shell.show_help
 
     def test_F10(self):
         self.feed_key(Keys.F10)
