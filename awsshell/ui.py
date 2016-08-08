@@ -155,7 +155,9 @@ def create_default_layout(app, message='',
                         lexer=lexer,
                         # Enable preview_search, we want to have immediate
                         # feedback in reverse-i-search mode.
-                        preview_search=Always()),
+                        preview_search=Always(),
+                        focus_on_click=True,
+                    ),
                     get_height=get_height,
                 ),
                 [
@@ -179,7 +181,8 @@ def create_default_layout(app, message='',
         ConditionalContainer(
             content=Window(
                 BufferControl(
-                    buffer_name='clidocs',
+                    focus_on_click=True,
+                    buffer_name=u'clidocs',
                 ),
                 height=LayoutDimension(max=15)),
             filter=HasDocumentation(app) & ~IsDone(),

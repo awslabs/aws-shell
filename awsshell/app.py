@@ -426,7 +426,7 @@ class AWSShell(object):
         return Application(
             editing_mode=editing_mode,
             layout=self.create_layout(display_completions_in_columns, toolbar),
-            mouse_support=False,
+            mouse_support=True,
             style=style_factory.style,
             buffers=buffers,
             buffer=self.create_buffer(completer, history),
@@ -454,8 +454,18 @@ class AWSShell(object):
                 self.current_docs = self._docs.extract_description(key_name)
         else:
             self.current_docs = u''
+
+        position = cli.buffers['clidocs'].document.cursor_position
+        # if the docs to be displayed have changed, reset position to 0
+        if cli.buffers['clidocs'].text != self.current_docs:
+            position = 0
+
         cli.buffers['clidocs'].reset(
-            initial_document=Document(self.current_docs, cursor_position=0))
+            initial_document=Document(
+                self.current_docs,
+                cursor_position=position
+            )
+        )
         cli.request_redraw()
 
     def create_cli_interface(self, display_completions_in_columns):

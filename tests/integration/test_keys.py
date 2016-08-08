@@ -61,6 +61,11 @@ class KeysTest(unittest.TestCase):
             self.feed_key(Keys.F5)
         assert show_help != self.aws_shell.show_help
 
+    def test_F9(self):
+        assert self.aws_shell.cli.current_buffer_name == u'DEFAULT_BUFFER'
+        self.feed_key(Keys.F9)
+        assert self.aws_shell.cli.current_buffer_name == u'clidocs'
+
     def test_F10(self):
         self.feed_key(Keys.F10)
         assert self.aws_shell.cli.is_exiting
