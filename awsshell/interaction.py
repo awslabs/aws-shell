@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod
 
 from prompt_toolkit import prompt
 from prompt_toolkit.contrib.completers import PathCompleter
-from awsshell.utils import FSLayer
+from awsshell.utils import FSLayer, FileReadError
 from awsshell.selectmenu import select_prompt
 
 
@@ -52,7 +52,10 @@ class FilePrompt(Interaction):
 
     def execute(self, data, fslayer=FSLayer()):
         path = self.get_path()
-        return fslayer.file_contents(path)
+        try:
+            return fslayer.file_contents(path)
+        except FileReadError:
+            raise InteractionException('Error reading file: %s' % path)
 
 
 class SimpleSelect(Interaction):
