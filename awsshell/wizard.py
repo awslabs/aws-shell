@@ -5,11 +5,37 @@ import jmespath
 
 import botocore.session
 from botocore import xform_name
+from botocore.exceptions import BotoCoreError, ClientError
 
 from awsshell.resource import index
-from awsshell.interaction import InteractionLoader, SimpleSelect
+from awsshell.selectmenu import select_prompt
+from awsshell.interaction import InteractionLoader, InteractionException
 
 from prompt_toolkit.shortcuts import confirm
+
+
+def stage_error_handler(error, stages, confirm=confirm, prompt=select_prompt):
+    managed_errors = (
+        ClientError,
+        BotoCoreError,
+        WizardException,
+        InteractionException,
+    )
+
+    def _select_stage_prompt():
+        return prompt(u'Select a Stage to return to: ', stages)
+
+    if isinstance(error, EOFError):
+        return _select_stage_prompt()
+    elif isinstance(error, managed_errors):
+        sys.stdout.write('{0}\n'.format(error))
+        sys.stdout.flush()
+        if confirm(u'Select a previous stage? (y/n) '):
+            return _select_stage_prompt()
+        else:
+            raise KeyboardInterrupt()
+    else:
+        raise error
 
 
 class WizardException(Exception):
@@ -23,7 +49,8 @@ class WizardLoader(object):
     Delegates to botocore for finding and loading the JSON models.
     """
 
-    def __init__(self, session=None, interaction_loader=None):
+    def __init__(self, session=None, interaction_loader=None,
+                 error_handler=None):
         """Initialize a wizard factory.
 
         :type session: :class:`botocore.session.Session`
@@ -43,6 +70,9 @@ class WizardLoader(object):
         self._interaction_loader = interaction_loader
         if interaction_loader is None:
             self._interaction_loader = InteractionLoader()
+        self._error_handler = error_handler
+        if error_handler is None:
+            self._error_handler = stage_error_handler
 
     def load_wizard(self, name):
         """Given a wizard's name, return an instance of that wizard.
@@ -75,7 +105,7 @@ class WizardLoader(object):
             raise WizardException('Start stage not specified')
         env = Environment()
         stages = self._load_stages(model.get('Stages'), env)
-        return Wizard(start_stage, stages, env)
+        return Wizard(start_stage, stages, env, self._error_handler)
 
     def _load_stages(self, stages, env):
         def load_stage(stage):
@@ -96,7 +126,7 @@ class WizardLoader(object):
 class Wizard(object):
     """Main wizard object. Contains main wizard driving logic."""
 
-    def __init__(self, start_stage, stages, environment):
+    def __init__(self, start_stage, stages, environment, error_handler):
         """Construct a new Wizard.
 
         :type start_stage: str
@@ -107,11 +137,19 @@ class Wizard(object):
 
         :type environment: :class:`Environment`
         :param environmet: The environment for the wizard and stages
+
+        :type error_handler: callable
+        :param error_handler: A function that given an error and list of stages
+        can potentially determine the stage to recover to. This function should
+        return a tuple being (stage_name, index).
         """
+        assert callable(error_handler)
+
         self.env = environment
         self.start_stage = start_stage
         self._load_stages(stages)
         self._stage_history = []
+        self._error_handler = error_handler
 
     def _load_stages(self, stages):
         """Load the stages dictionary from the given list of stage objects.
@@ -122,13 +160,6 @@ class Wizard(object):
         self.stages = {}
         for stage in stages:
             self.stages[stage.name] = stage
-
-    def _select_stage_prompt(self):
-        stages = [s.name for (s, _) in self._stage_history]
-        selector = SimpleSelect({}, 'Select a Stage to return to: ')
-        selected_stage = selector.execute(stages)
-        self._pop_stages(stages.index(selected_stage))
-        return selected_stage
 
     def execute(self):
         """Run the wizard. Execute Stages until a final stage is reached.
@@ -144,15 +175,11 @@ class Wizard(object):
                 self._push_stage(stage)
                 stage.execute()
                 current_stage = stage.get_next_stage()
-            except EOFError:
-                current_stage = self._select_stage_prompt()
-            except Exception as e:
-                sys.stdout.write('{0}\n'.format(e))
-                sys.stdout.flush()
-                if confirm(u'Select a previous stage? (y/n) '):
-                    current_stage = self._select_stage_prompt()
-                else:
-                    raise
+            except Exception as err:
+                stages = [s.name for (s, _) in self._stage_history]
+                (stage, index) = self._error_handler(err, stages)
+                self._pop_stages(index)
+                current_stage = stage
 
     def _push_stage(self, stage):
         self._stage_history.append((stage, copy.deepcopy(self.env)))
@@ -238,6 +265,7 @@ class Stage(object):
         # Apply JMESPath query if given
         if self.retrieval.get('Path'):
             data = jmespath.search(self.retrieval['Path'], data)
+
         return data
 
     def _handle_interaction(self, data):
