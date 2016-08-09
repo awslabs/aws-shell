@@ -1,7 +1,7 @@
 import mock
 import pytest
 
-from awsshell.utils import InMemoryFSLayer, FileReadError
+from awsshell.utils import InMemoryFSLayer
 from awsshell.interaction import InteractionLoader, InteractionException
 from awsshell.interaction import SimpleSelect, SimplePrompt, FilePrompt
 
@@ -70,7 +70,7 @@ def test_file_prompt_nonexistent_file(temp_fs):
     prompt = mock.Mock()
     file_prompt = FilePrompt({}, 'msg', prompt)
     prompt.return_value = '/some/notafile'
-    with pytest.raises(FileReadError):
+    with pytest.raises(InteractionException):
         file_prompt.execute({}, fslayer=temp_fs)
 
 
