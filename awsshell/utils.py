@@ -1,15 +1,18 @@
 """Utility module for misc aws shell functions."""
 from __future__ import print_function
 import os
+import six
 import contextlib
 import tempfile
 import uuid
+import logging
 
 import awscli
 
 from awsshell.compat import HTMLParser
 
 
+LOG = logging.getLogger(__name__)
 AWSCLI_VERSION = awscli.__version__
 
 
@@ -118,3 +121,24 @@ class InMemoryFSLayer(object):
 
     def file_exists(self, filename):
         return filename in self._file_mapping
+
+
+def _attempt_decode(string, encoding):
+    try:
+        return string.decode(encoding)
+    except UnicodeError as error:
+        LOG.debug('Failed to decode: %s', error)
+        return string
+
+
+def force_unicode(obj, encoding='utf8'):
+    """Recursively search lists and dicts for strings to encode as unicode."""
+    if isinstance(obj, dict):
+        for key in obj:
+            obj[key] = force_unicode(obj[key])
+    elif isinstance(obj, list):
+        obj = [force_unicode(val) for val in obj]
+    elif isinstance(obj, six.string_types):
+        if not isinstance(obj, six.text_type):
+            obj = _attempt_decode(obj, encoding)
+    return obj
