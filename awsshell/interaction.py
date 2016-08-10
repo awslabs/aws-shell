@@ -2,13 +2,17 @@ import os
 import sys
 import jmespath
 
-from six import with_metaclass
 from abc import ABCMeta, abstractmethod
+from six import with_metaclass, string_types
 
 from prompt_toolkit import prompt
+from prompt_toolkit.completion import Completer, Completion
+from prompt_toolkit.contrib.validators.base import SentenceValidator
 from prompt_toolkit.contrib.completers import PathCompleter
+
 from awsshell.utils import FSLayer, FileReadError
 from awsshell.selectmenu import select_prompt
+from awsshell.fuzzy import fuzzy_search
 
 
 class InteractionException(Exception):
@@ -108,6 +112,61 @@ class SimplePrompt(Interaction):
         return data
 
 
+class FuzzyCompleter(Completer):
+    """Filters the completion list by doing a fuzzy search with the input."""
+
+    def __init__(self, corpus, meta_dict={}):
+        self.corpus = list(corpus)
+        self.meta_dict = meta_dict
+        assert all(isinstance(w, string_types) for w in self.corpus)
+
+    def get_completions(self, document, complete_event):
+        text = document.text_before_cursor
+        if len(text) == 0:
+            matches = self.corpus
+        else:
+            matches = fuzzy_search(text, self.corpus)
+        for match in matches:
+            display_meta = self.meta_dict.get(match)
+            yield Completion(match, -len(text), display_meta=display_meta)
+
+
+class FuzzySelect(Interaction):
+    """Typing will apply a case senstive fuzzy filter to the options.
+
+    Show completions based on the given list of options, allowing the user to
+    type to begin filtering the options with a fuzzy search. The prompt will
+    also validate that the input is from the list and will reject all other
+    inputs.
+    """
+
+    def __init__(self, model, prompt_msg, prompter=prompt):
+        super(FuzzySelect, self).__init__(model, prompt_msg)
+        self._prompter = prompter
+        self._validator_opts = {
+            'move_cursor_to_end': True,
+            'error_message': 'Invalid Selection: Must choose from the list'
+        }
+
+    def execute(self, data):
+        if not isinstance(data, list) or len(data) < 1:
+            raise InteractionException('FuzzySelect expects a non-empty list')
+        if self._model.get('Path') is not None:
+            # This will not handle duplicate strings as options
+            display_data = jmespath.search(self._model['Path'], data)
+            option_dict = dict(zip(display_data, data))
+            completer = FuzzyCompleter(display_data)
+            validator = SentenceValidator(display_data, **self._validator_opts)
+            selection = self._prompter(self.prompt, completer=completer,
+                                       validator=validator)
+            return option_dict[selection]
+        else:
+            completer = FuzzyCompleter(data)
+            validator = SentenceValidator(data, **self._validator_opts)
+            return self._prompter(self.prompt, completer=completer,
+                                  validator=validator)
+
+
 class InteractionLoader(object):
     """An interaction loader. Create interactions based on their name.
 
@@ -115,6 +174,7 @@ class InteractionLoader(object):
     Interaction objects can be instantiated from their corresponding str.
     """
     _INTERACTIONS = {
+        'FuzzySelect': FuzzySelect,
         'SimpleSelect': SimpleSelect,
         'SimplePrompt': SimplePrompt,
         'FilePrompt': FilePrompt
