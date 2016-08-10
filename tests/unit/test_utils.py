@@ -2,11 +2,14 @@ from tests import unittest
 import os
 import tempfile
 import shutil
+import six
+import pytest
 
 from awsshell.utils import FSLayer
 from awsshell.utils import InMemoryFSLayer
 from awsshell.utils import FileReadError
 from awsshell.utils import temporary_file
+from awsshell.utils import force_unicode
 
 
 class TestFSLayer(unittest.TestCase):
@@ -93,3 +96,34 @@ class TestTemporaryFile(unittest.TestCase):
             f.seek(0)
             assert f.read() == "foobar"
         self.assertFalse(os.path.isfile(filename))
+
+
+strings = ['', u'', 'some text', u'some text', 'yu\u3086', u'yu\u3086']
+
+
+@pytest.mark.parametrize('text', strings)
+def test_force_unicode(text):
+    unicode_text = force_unicode(text)
+    assert unicode_text == text
+    assert isinstance(unicode_text, six.text_type)
+
+
+def test_force_unicode_binary():
+    # should fail decoding and remain unchanged
+    blob = '\x81'
+    result = force_unicode(blob)
+    assert result is blob
+
+
+def test_force_unicode_recursion():
+    obj = {
+        'a': ['string'],
+        'b': {'str': 'yu\u3086'},
+        'c': '\x81',
+    }
+
+    clean_obj = force_unicode(obj)
+    assert isinstance(clean_obj['a'][0], six.text_type)
+    assert isinstance(clean_obj['b']['str'], six.text_type)
+    assert clean_obj['c'] is obj['c']
+    assert obj == clean_obj
