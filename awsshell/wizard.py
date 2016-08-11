@@ -250,16 +250,25 @@ class Stage(object):
         req = self.retrieval['Resource']
         # get client from wizard's cache
         client = self._cached_creator.create_client(req['Service'])
-        # get the operation from the client
-        operation = getattr(client, xform_name(req['Operation']))
+        operation_name = xform_name(req['Operation'])
         # get any parameters
         parameters = req.get('Parameters', {})
         env_parameters = \
             self._env.resolve_parameters(req.get('EnvParameters', {}))
-        # union of parameters and env_parameters, conflicts favor env_params
+        # union of parameters and env_parameters, conflicts favor env params
         parameters = dict(parameters, **env_parameters)
-        # execute operation passing all parameters
-        return operation(**parameters)
+        # if the operation supports pagination, load all results upfront
+        if client.can_paginate(operation_name):
+            # get paginator and create iterator
+            paginator = client.get_paginator(operation_name)
+            page_iterator = paginator.paginate(**parameters)
+            # scroll through all pages combining them
+            return page_iterator.build_full_result()
+        else:
+            # get the operation from the client
+            operation = getattr(client, operation_name)
+            # execute operation passing all parameters
+            return operation(**parameters)
 
     def _handle_retrieval(self):
         # In case of no retrieval, empty dict
