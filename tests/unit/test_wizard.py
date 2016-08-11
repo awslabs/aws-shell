@@ -1,5 +1,6 @@
 import mock
 import pytest
+from botocore.session import Session
 from awsshell.utils import FileReadError
 from awsshell.wizard import stage_error_handler
 from awsshell.interaction import InteractionException
@@ -138,7 +139,8 @@ def test_static_retrieval_with_query(wizard_spec, loader):
 
 def test_request_retrieval(wizard_spec_request):
     # Tests that retrieval requests are parsed and call the correct operation
-    mock_session = mock.Mock()
+    mock_session = mock.Mock(spec=Session)
+    mock_session.create_client.return_value.can_paginate.return_value = False
     mock_request = mock_session.create_client.return_value.create_rest_api
     mock_request.return_value = {'id': 'api id', 'name': 'random name'}
 
@@ -146,6 +148,23 @@ def test_request_retrieval(wizard_spec_request):
     wizard = loader.create_wizard(wizard_spec_request)
     wizard.execute()
     mock_request.assert_called_once_with(param='value', name='new api name')
+
+
+def test_request_retrieval_paginate(wizard_spec_request):
+    # Tests that retrieval requests are parsed and call the correct operation
+    mock_session = mock.Mock(spec=Session)
+    mock_client = mock_session.create_client.return_value
+    mock_client.can_paginate.return_value = True
+    mock_paginator = mock_client.get_paginator.return_value
+    mock_iterator = mock_paginator.paginate.return_value
+    result = {'id': 'api id', 'name': 'random name'}
+    mock_iterator.build_full_result.return_value = result
+    paginate = mock_paginator.paginate
+
+    loader = WizardLoader(mock_session)
+    wizard = loader.create_wizard(wizard_spec_request)
+    wizard.execute()
+    paginate.assert_called_once_with(param='value', name='new api name')
 
 
 def test_next_stage_resolution(wizard_spec, loader):
