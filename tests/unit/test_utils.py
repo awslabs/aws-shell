@@ -1,6 +1,7 @@
 from tests import unittest
 import os
 import tempfile
+import datetime
 import shutil
 import six
 import pytest
@@ -10,6 +11,7 @@ from awsshell.utils import InMemoryFSLayer
 from awsshell.utils import FileReadError
 from awsshell.utils import temporary_file
 from awsshell.utils import force_unicode
+from awsshell.utils import format_json
 
 
 class TestFSLayer(unittest.TestCase):
@@ -127,3 +129,8 @@ def test_force_unicode_recursion():
     assert isinstance(clean_obj['b']['str'], six.text_type)
     assert clean_obj['c'] is obj['c']
     assert obj == clean_obj
+
+
+def test_format_json():
+    data = {'Key': datetime.datetime(2016, 12, 12)}
+    assert format_json(data) == '{\n    "Key": "2016-12-12T00:00:00"\n}'

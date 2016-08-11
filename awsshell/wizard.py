@@ -1,6 +1,5 @@
 import sys
 import copy
-import json
 import logging
 import jmespath
 
@@ -9,7 +8,7 @@ from botocore import xform_name
 from botocore.exceptions import BotoCoreError, ClientError
 
 from awsshell.resource import index
-from awsshell.utils import force_unicode
+from awsshell.utils import force_unicode, format_json
 from awsshell.selectmenu import select_prompt
 from awsshell.interaction import InteractionLoader, InteractionException
 
@@ -348,7 +347,7 @@ class Environment(object):
         self._variables = {}
 
     def __str__(self):
-        return json.dumps(self._variables, indent=4, sort_keys=True)
+        return format_json(self._variables)
 
     def update(self, environment):
         assert isinstance(environment, Environment)
