@@ -35,7 +35,7 @@ def stage_error_handler(error, stages, confirm=confirm, prompt=select_prompt):
         else:
             raise KeyboardInterrupt()
     else:
-        raise error
+        return None
 
 
 class WizardException(Exception):
@@ -177,7 +177,10 @@ class Wizard(object):
                 current_stage = stage.get_next_stage()
             except Exception as err:
                 stages = [s.name for (s, _) in self._stage_history]
-                (stage, index) = self._error_handler(err, stages)
+                recovery = self._error_handler(err, stages)
+                if recovery is None:
+                    raise
+                (stage, index) = recovery
                 self._pop_stages(index)
                 current_stage = stage
 
