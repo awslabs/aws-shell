@@ -309,5 +309,5 @@ def test_stage_exception_handler_other(error_class):
     prompt = mock.Mock()
     confirm = mock.Mock()
     err = error_class()
-    with pytest.raises(error_class):
-        stage_error_handler(err, ['stage'], confirm=confirm, prompt=prompt)
+    res = stage_error_handler(err, ['stage'], confirm=confirm, prompt=prompt)
+    assert res is None
