@@ -1,11 +1,41 @@
+import sys
+import copy
 import json
 import jmespath
 
 import botocore.session
 from botocore import xform_name
+from botocore.exceptions import BotoCoreError, ClientError
 
 from awsshell.resource import index
-from awsshell.interaction import InteractionLoader
+from awsshell.selectmenu import select_prompt
+from awsshell.interaction import InteractionLoader, InteractionException
+
+from prompt_toolkit.shortcuts import confirm
+
+
+def stage_error_handler(error, stages, confirm=confirm, prompt=select_prompt):
+    managed_errors = (
+        ClientError,
+        BotoCoreError,
+        WizardException,
+        InteractionException,
+    )
+
+    def _select_stage_prompt():
+        return prompt(u'Select a Stage to return to: ', stages)
+
+    if isinstance(error, EOFError):
+        return _select_stage_prompt()
+    elif isinstance(error, managed_errors):
+        sys.stdout.write('{0}\n'.format(error))
+        sys.stdout.flush()
+        if confirm(u'Select a previous stage? (y/n) '):
+            return _select_stage_prompt()
+        else:
+            raise KeyboardInterrupt()
+    else:
+        return None
 
 
 class WizardException(Exception):
@@ -19,7 +49,8 @@ class WizardLoader(object):
     Delegates to botocore for finding and loading the JSON models.
     """
 
-    def __init__(self, session=None, interaction_loader=None):
+    def __init__(self, session=None, interaction_loader=None,
+                 error_handler=None):
         """Initialize a wizard factory.
 
         :type session: :class:`botocore.session.Session`
@@ -39,6 +70,9 @@ class WizardLoader(object):
         self._interaction_loader = interaction_loader
         if interaction_loader is None:
             self._interaction_loader = InteractionLoader()
+        self._error_handler = error_handler
+        if error_handler is None:
+            self._error_handler = stage_error_handler
 
     def load_wizard(self, name):
         """Given a wizard's name, return an instance of that wizard.
@@ -71,7 +105,7 @@ class WizardLoader(object):
             raise WizardException('Start stage not specified')
         env = Environment()
         stages = self._load_stages(model.get('Stages'), env)
-        return Wizard(start_stage, stages, env)
+        return Wizard(start_stage, stages, env, self._error_handler)
 
     def _load_stages(self, stages, env):
         def load_stage(stage):
@@ -92,7 +126,7 @@ class WizardLoader(object):
 class Wizard(object):
     """Main wizard object. Contains main wizard driving logic."""
 
-    def __init__(self, start_stage, stages, environment):
+    def __init__(self, start_stage, stages, environment, error_handler):
         """Construct a new Wizard.
 
         :type start_stage: str
@@ -103,10 +137,19 @@ class Wizard(object):
 
         :type environment: :class:`Environment`
         :param environmet: The environment for the wizard and stages
+
+        :type error_handler: callable
+        :param error_handler: A function that given an error and list of stages
+        can potentially determine the stage to recover to. This function should
+        return a tuple being (stage_name, index).
         """
+        assert callable(error_handler)
+
         self.env = environment
         self.start_stage = start_stage
         self._load_stages(stages)
+        self._stage_history = []
+        self._error_handler = error_handler
 
     def _load_stages(self, stages):
         """Load the stages dictionary from the given list of stage objects.
@@ -128,8 +171,25 @@ class Wizard(object):
             stage = self.stages.get(current_stage)
             if not stage:
                 raise WizardException('Stage not found: %s' % current_stage)
-            stage.execute()
-            current_stage = stage.get_next_stage()
+            try:
+                self._push_stage(stage)
+                stage.execute()
+                current_stage = stage.get_next_stage()
+            except Exception as err:
+                stages = [s.name for (s, _) in self._stage_history]
+                recovery = self._error_handler(err, stages)
+                if recovery is None:
+                    raise
+                (stage, index) = recovery
+                self._pop_stages(index)
+                current_stage = stage
+
+    def _push_stage(self, stage):
+        self._stage_history.append((stage, copy.deepcopy(self.env)))
+
+    def _pop_stages(self, stage_index):
+        self.env.update(self._stage_history[stage_index][1])
+        self._stage_history = self._stage_history[:stage_index]
 
 
 class Stage(object):
@@ -208,6 +268,7 @@ class Stage(object):
         # Apply JMESPath query if given
         if self.retrieval.get('Path'):
             data = jmespath.search(self.retrieval['Path'], data)
+
         return data
 
     def _handle_interaction(self, data):
@@ -259,6 +320,10 @@ class Environment(object):
     def __str__(self):
         return json.dumps(self._variables, indent=4, sort_keys=True)
 
+    def update(self, environment):
+        assert isinstance(environment, Environment)
+        self._variables = environment._variables
+
     def store(self, key, val):
         """Store a variable under the given key.
 
@@ -291,6 +356,7 @@ class Environment(object):
         :rtype: dict
         :return: The dict of with all of the paths resolved to their values.
         """
+        resolved_dict = {}
         for key in keys:
-            keys[key] = self.retrieve(keys[key])
-        return keys
+            resolved_dict[key] = self.retrieve(keys[key])
+        return resolved_dict
