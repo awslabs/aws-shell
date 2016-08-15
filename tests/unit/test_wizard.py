@@ -1,5 +1,9 @@
 import mock
 import pytest
+from awsshell.utils import FileReadError
+from awsshell.wizard import stage_error_handler
+from awsshell.interaction import InteractionException
+from botocore.exceptions import ClientError, BotoCoreError
 from awsshell.wizard import Environment, WizardLoader, WizardException
 
 
@@ -174,6 +178,26 @@ def test_basic_full_execution(wizard_spec, loader):
     assert str(wizard.env) == display_str
 
 
+def test_basic_full_execution_error(wizard_spec):
+    # Test that the wizard can handle exceptions in stage execution
+    session = mock.Mock()
+    error_handler = mock.Mock()
+    error_handler.return_value = ('TestStage', 0)
+    loader = WizardLoader(session, error_handler=error_handler)
+    wizard_spec['Stages'][0]['NextStage'] = \
+        {'Type': 'Name', 'Name': 'StageTwo'}
+    wizard_spec['Stages'][0]['Resolution']['Path'] = '[0].Stage'
+    stage_three = {'Name': 'StageThree', 'Prompt': 'Text'}
+    wizard = loader.create_wizard(wizard_spec)
+    # force an exception once, let it recover, re-run
+    error = WizardException()
+    wizard.stages['StageTwo'].execute = mock.Mock(side_effect=[error, {}])
+    wizard.execute()
+    # assert error handler was called
+    assert error_handler.call_count == 1
+    assert wizard.stages['StageTwo'].execute.call_count == 2
+
+
 def test_missing_start_stage(wizard_spec, loader):
     # Test that the loader throws an error if the spec is missing start stage
     wizard_spec['StartStage'] = None
@@ -233,3 +257,47 @@ def test_wizard_basic_interaction(wizard_spec):
     create = i_loader.create
     create.assert_called_once_with(inter, 'Prompting')
     create.return_value.execute.assert_called_once_with(data)
+
+
+exceptions = [
+    BotoCoreError(),
+    WizardException('error'),
+    InteractionException('error'),
+    ClientError({'Error': {}}, 'Operation')
+]
+
+
+@pytest.mark.parametrize('err', exceptions)
+@pytest.mark.parametrize('accept_confirm', [True, False])
+def test_stage_exception_handler(err, accept_confirm):
+    # Verify known exceptions will confirm retry and prompt
+    confirm = mock.Mock()
+    confirm.return_value = accept_confirm
+    prompt = mock.Mock()
+    stages = ['stage1', 'stage2']
+    try:
+        stage_error_handler(err, stages, confirm=confirm, prompt=prompt)
+        assert accept_confirm
+        assert prompt.call_count == 1
+    except KeyboardInterrupt:
+        assert not accept_confirm
+        assert prompt.call_count == 0
+
+
+def test_stage_exception_handler_eof():
+    # Verify EOFError directly calls the prompt
+    prompt = mock.Mock()
+    confirm = mock.Mock()
+    stage_error_handler(EOFError(), ['stage'], confirm=confirm, prompt=prompt)
+    assert confirm.call_count == 0
+    assert prompt.call_count == 1
+
+
+@pytest.mark.parametrize('error_class', [FileReadError, Exception])
+def test_stage_exception_handler_other(error_class):
+    # Verify other exceptions are re-raised
+    prompt = mock.Mock()
+    confirm = mock.Mock()
+    err = error_class()
+    res = stage_error_handler(err, ['stage'], confirm=confirm, prompt=prompt)
+    assert res is None
