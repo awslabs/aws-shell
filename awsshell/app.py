@@ -149,10 +149,11 @@ class ExitHandler(object):
 
 
 class WizardHandler(object):
-    def __init__(self, output=sys.stdout, err=sys.stderr):
+    def __init__(self, output=sys.stdout, err=sys.stderr,
+                 loader=WizardLoader()):
         self._output = output
         self._err = err
-        self._wizard_loader = WizardLoader()
+        self._wizard_loader = loader
 
     def run(self, command, application):
         """Run the specified wizard.
@@ -164,8 +165,15 @@ class WizardHandler(object):
         if len(command) != 2:
             self._err.write("Invalid syntax, must be: .wizard wizname\n")
             return
-        wizard = self._wizard_loader.load_wizard(command[1])
-        wizard.execute()
+        try:
+            wizard = self._wizard_loader.load_wizard(command[1])
+            wizard.execute()
+        # EOF or Ctrl-C in a wizard drop back to shell silently
+        except (KeyboardInterrupt, EOFError):
+            pass
+        # For any other exception, print it and return to shell
+        except Exception as err:
+            self._err.write("{0}\n".format(err))
 
 
 class DotCommandHandler(object):
