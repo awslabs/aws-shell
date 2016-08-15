@@ -8,6 +8,7 @@ from botocore import xform_name
 from botocore.exceptions import BotoCoreError, ClientError
 
 from awsshell.resource import index
+from awsshell.utils import force_unicode
 from awsshell.selectmenu import select_prompt
 from awsshell.interaction import InteractionLoader, InteractionException
 
@@ -275,13 +276,14 @@ class Stage(object):
         return data
 
     def _handle_interaction(self, data):
+
         # if no interaction step, just forward data
         if self.interaction is None:
             return data
         else:
             creator = self._interaction_loader.create
             interaction = creator(self.interaction, self.prompt)
-            return interaction.execute(data)
+            return interaction.execute(force_unicode(data))
 
     def _handle_resolution(self, data):
         if self.resolution:
