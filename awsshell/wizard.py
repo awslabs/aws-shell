@@ -123,7 +123,7 @@ class WizardLoader(object):
             }
             creator = self._cached_creator
             loader = self._interaction_loader
-            return Stage(env, creator, loader, **stage_attrs)
+            return Stage(env, creator, loader, self, **stage_attrs)
         return [load_stage(stage) for stage in stages]
 
 
@@ -177,8 +177,10 @@ class Wizard(object):
                 raise WizardException('Stage not found: %s' % current_stage)
             try:
                 self._push_stage(stage)
-                stage.execute()
+                stage_data = stage.execute()
                 current_stage = stage.get_next_stage()
+                if current_stage is None:
+                    return stage_data
             except Exception as err:
                 stages = [s.name for (s, _) in self._stage_history]
                 recovery = self._error_handler(err, stages)
@@ -199,9 +201,9 @@ class Wizard(object):
 class Stage(object):
     """The Stage object. Contains logic to run all steps of the stage."""
 
-    def __init__(self, env, creator, interaction_loader, name=None,
-                 prompt=None, retrieval=None, next_stage=None, resolution=None,
-                 interaction=None):
+    def __init__(self, env, creator, interaction_loader, wizard_loader,
+                 name=None, prompt=None, retrieval=None, next_stage=None,
+                 resolution=None, interaction=None):
         """Construct a new Stage object.
 
         :type env: :class:`Environment`
@@ -235,6 +237,7 @@ class Stage(object):
         """
         self._env = env
         self._cached_creator = creator
+        self._wizard_loader = wizard_loader
         self._interaction_loader = interaction_loader
         self.name = name
         self.prompt = prompt
@@ -270,6 +273,11 @@ class Stage(object):
             # execute operation passing all parameters
             return operation(**parameters)
 
+    def _handle_wizard_delegation(self):
+        wizard_name = self.retrieval['Resource']
+        wizard = self._wizard_loader.load_wizard(wizard_name)
+        return wizard.execute()
+
     def _handle_retrieval(self):
         # In case of no retrieval, empty dict
         if not self.retrieval:
@@ -278,6 +286,8 @@ class Stage(object):
             data = self._handle_static_retrieval()
         elif self.retrieval['Type'] == 'Request':
             data = self._handle_request_retrieval()
+        elif self.retrieval['Type'] == 'Wizard':
+            data = self._handle_wizard_delegation()
         # Apply JMESPath query if given
         if self.retrieval.get('Path'):
             data = jmespath.search(self.retrieval['Path'], data)
@@ -285,7 +295,6 @@ class Stage(object):
         return data
 
     def _handle_interaction(self, data):
-
         # if no interaction step, just forward data
         if self.interaction is None:
             return data
@@ -299,6 +308,7 @@ class Stage(object):
             if self.resolution.get('Path'):
                 data = jmespath.search(self.resolution['Path'], data)
             self._env.store(self.resolution['Key'], data)
+        return data
 
     def get_next_stage(self):
         """Resolve the next stage name for the stage after this one.
@@ -322,7 +332,8 @@ class Stage(object):
         """
         retrieved_options = self._handle_retrieval()
         selected_data = self._handle_interaction(retrieved_options)
-        self._handle_resolution(selected_data)
+        resolved_data = self._handle_resolution(selected_data)
+        return resolved_data
 
 
 class Environment(object):
