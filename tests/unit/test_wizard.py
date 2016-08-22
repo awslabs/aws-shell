@@ -40,6 +40,12 @@ def test_resolve_parameters():
     assert resolved == {'a': 'Nice', 'b': 'v'}
 
 
+def test_resolve_parameters_drops_none(env):
+    keys = {'a': 'bad.query', 'b': 'env_var.epic'}
+    resolved = env.resolve_parameters(keys)
+    assert resolved == {'b': 'nice'}
+
+
 @pytest.fixture
 def loader(wizard_spec):
     session = mock.Mock()
