@@ -200,20 +200,20 @@ def test_basic_full_execution(wizard_spec, loader):
 def test_basic_full_execution_error(wizard_spec):
     # Test that the wizard can handle exceptions in stage execution
     session = mock.Mock()
-    error_handler = mock.Mock()
-    error_handler.return_value = ('TestStage', 0)
+    error_handler = mock.Mock(side_effect=[('TestStage', 0), None])
     loader = WizardLoader(session, error_handler=error_handler)
     wizard_spec['Stages'][0]['NextStage'] = \
         {'Type': 'Name', 'Name': 'StageTwo'}
     wizard_spec['Stages'][0]['Resolution']['Path'] = '[0].Stage'
     stage_three = {'Name': 'StageThree', 'Prompt': 'Text'}
     wizard = loader.create_wizard(wizard_spec)
-    # force an exception once, let it recover, re-run
-    error = WizardException()
-    wizard.stages['StageTwo'].execute = mock.Mock(side_effect=[error, {}])
-    wizard.execute()
-    # assert error handler was called
-    assert error_handler.call_count == 1
+    # force two exceptions, recover once then fail to recover
+    errors = [WizardException(), TypeError()]
+    wizard.stages['StageTwo'].execute = mock.Mock(side_effect=errors)
+    with pytest.raises(TypeError):
+        wizard.execute()
+    # assert error handler was called twice
+    assert error_handler.call_count == 2
     assert wizard.stages['StageTwo'].execute.call_count == 2
 
 
@@ -286,6 +286,44 @@ def test_wizard_basic_interaction(wizard_spec):
     create = i_loader.create
     create.assert_called_once_with(inter, 'Prompting')
     create.return_value.execute.assert_called_once_with(data)
+
+
+def test_wizard_basic_delegation(wizard_spec):
+    mock_session = mock.Mock(spec=Session)
+    mock_loader = mock.Mock(spec=WizardLoader)
+    loader = WizardLoader(mock_session, delegation_loader=mock_loader)
+    main_spec = {
+        "StartStage": "One",
+        "Stages": [
+            {
+                "Name": "One",
+                "Prompt": "stage one",
+                "Retrieval": {
+                    "Type": "Wizard",
+                    "Resource": "SubWizard",
+                    "Path": "FromSub"
+                }
+            }
+        ]
+    }
+    wizard = loader.create_wizard(main_spec)
+    sub_spec = {
+        "StartStage": "SubOne",
+        "Stages": [
+            {
+                "Name": "SubOne",
+                "Prompt": "stage one",
+                "Retrieval": {
+                    "Type": "Static",
+                    "Resource": {"FromSub": "Result from sub"}
+                }
+            }
+        ]
+    }
+    mock_loader.load_wizard.return_value = loader.create_wizard(sub_spec)
+    result = wizard.execute()
+    mock_loader.load_wizard.assert_called_once_with('SubWizard')
+    assert result == 'Result from sub'
 
 
 exceptions = [

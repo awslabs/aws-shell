@@ -51,7 +51,7 @@ class WizardLoader(object):
     """
 
     def __init__(self, session=None, interaction_loader=None,
-                 error_handler=None):
+                 error_handler=None, delegation_loader=None):
         """Initialize a wizard factory.
 
         :type session: :class:`botocore.session.Session`
@@ -71,6 +71,10 @@ class WizardLoader(object):
         self._interaction_loader = interaction_loader
         if interaction_loader is None:
             self._interaction_loader = InteractionLoader()
+        if delegation_loader is None:
+            self._delegation_loader = self
+        else:
+            self._delegation_loader = delegation_loader
         self._error_handler = error_handler
         if error_handler is None:
             self._error_handler = stage_error_handler
@@ -111,20 +115,22 @@ class WizardLoader(object):
         stages = self._load_stages(model.get('Stages'), env)
         return Wizard(start_stage, stages, env, self._error_handler)
 
+    def _load_stage(self, stage, env):
+        stage_attrs = {
+            'name': stage.get('Name'),
+            'prompt': stage.get('Prompt'),
+            'retrieval': stage.get('Retrieval'),
+            'next_stage': stage.get('NextStage'),
+            'resolution': stage.get('Resolution'),
+            'interaction': stage.get('Interaction'),
+        }
+        creator = self._cached_creator
+        interaction = self._interaction_loader
+        delegation = self._delegation_loader
+        return Stage(env, creator, interaction, delegation, **stage_attrs)
+
     def _load_stages(self, stages, env):
-        def load_stage(stage):
-            stage_attrs = {
-                'name': stage.get('Name'),
-                'prompt': stage.get('Prompt'),
-                'retrieval': stage.get('Retrieval'),
-                'next_stage': stage.get('NextStage'),
-                'resolution': stage.get('Resolution'),
-                'interaction': stage.get('Interaction'),
-            }
-            creator = self._cached_creator
-            loader = self._interaction_loader
-            return Stage(env, creator, loader, self, **stage_attrs)
-        return [load_stage(stage) for stage in stages]
+        return [self._load_stage(stage, env) for stage in stages]
 
 
 class Wizard(object):
