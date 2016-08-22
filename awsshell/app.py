@@ -153,11 +153,12 @@ class ExitHandler(object):
 
 
 class WizardHandler(object):
-    def __init__(self, output=sys.stdout, err=sys.stderr,
-                 loader=WizardLoader()):
+    def __init__(self, output=sys.stdout, err=sys.stderr, loader=None):
         self._output = output
         self._err = err
         self._wizard_loader = loader
+        if self._wizard_loader is None:
+            self._wizard_loader = WizardLoader()
 
     def run(self, command, application):
         """Run the specified wizard.
