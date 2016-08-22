@@ -1,6 +1,7 @@
 import sys
 import copy
 import json
+import logging
 import jmespath
 
 import botocore.session
@@ -13,6 +14,9 @@ from awsshell.selectmenu import select_prompt
 from awsshell.interaction import InteractionLoader, InteractionException
 
 from prompt_toolkit.shortcuts import confirm
+
+
+LOG = logging.getLogger(__name__)
 
 
 def stage_error_handler(error, stages, confirm=confirm, prompt=select_prompt):
@@ -372,5 +376,10 @@ class Environment(object):
         """
         resolved_dict = {}
         for key in keys:
-            resolved_dict[key] = self.retrieve(keys[key])
+            retrieved = self.retrieve(keys[key])
+            if retrieved is not None:
+                resolved_dict[key] = retrieved
+            else:
+                LOG.debug("Query failed (%s), dropped key: %s", keys[key], key)
+
         return resolved_dict
