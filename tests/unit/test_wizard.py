@@ -3,9 +3,10 @@ import pytest
 import botocore.session
 
 from botocore.loaders import Loader
+from botocore import model
 from botocore.session import Session
 from awsshell.utils import FileReadError
-from awsshell.wizard import stage_error_handler
+from awsshell.wizard import stage_error_handler, ParamCoercion
 from awsshell.interaction import InteractionException
 from botocore.exceptions import ClientError, BotoCoreError
 from awsshell.wizard import Environment, WizardLoader, WizardException
@@ -383,3 +384,60 @@ def test_stage_exception_handler_other(error_class):
     err = error_class()
     res = stage_error_handler(err, ['stage'], confirm=confirm, prompt=prompt)
     assert res is None
+
+
+@pytest.fixture
+def test_shape():
+    shapes = {
+        "TestShape": {
+            "type": "structure",
+            "members": {
+                "Huge": {"shape": "Long"},
+                "Map": {"shape": "TestMap"},
+                "Scale": {"shape": "Double"},
+                "Count": {"shape": "Integer"},
+                "Items": {"shape": "TestList"}
+            }
+        },
+        "TestList": {
+            "type": "list",
+            "member": {
+                "shape": "Float"
+            }
+        },
+        "TestMap": {
+            "type": "map",
+            "key": {"shape": "Double"},
+            "value": {"shape": "Integer"}
+        },
+        "Long": {"type": "long"},
+        "Float": {"type": "float"},
+        "Double": {"type": "double"},
+        "String": {"type": "string"},
+        "Integer": {"type": "integer"}
+    }
+    return model.ShapeResolver(shapes).get_shape_by_name('TestShape')
+
+
+def test_param_coercion_numbers(test_shape):
+    # verify coercion will convert strings to numbers according to shape
+    params = {
+        "Count": "5",
+        "Scale": "2.3",
+        "Items": ["5", "3.14"],
+        "Huge": "92233720368547758070",
+        "Map": {"2": "12"}
+    }
+    coerced = ParamCoercion().coerce(params, test_shape)
+    assert isinstance(coerced['Count'], int)
+    assert isinstance(coerced['Scale'], float)
+    assert all(isinstance(item, float) for item in coerced['Items'])
+    assert coerced['Map'][2] == 12
+    assert coerced['Huge'] == 92233720368547758070
+
+
+def test_param_coercion_failure(test_shape):
+    # verify coercion leaves the field the same when it fails
+    params = {"Count": "fifty"}
+    coerced = ParamCoercion().coerce(params, test_shape)
+    assert coerced["Count"] == params["Count"]

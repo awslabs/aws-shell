@@ -1,3 +1,4 @@
+import six
 import sys
 import copy
 import logging
@@ -16,6 +17,87 @@ from prompt_toolkit.shortcuts import confirm
 
 
 LOG = logging.getLogger(__name__)
+
+
+class ParamCoercion(object):
+    """This class coerces string parameters into the correct type.
+
+    By default this converts strings to numerical values if the input
+    parameters model indicates that the field should be a number. This is to
+    compensate for the fact that values taken in from prompts will always be
+    strings and avoids having to create specific interactions for simple
+    conversions or having to specify the type in the wizard specification.
+    """
+
+    _DEFAULT_DICT = {
+        'integer': int,
+        'float': float,
+        'double': float,
+        'long': int
+    }
+
+    def __init__(self, type_dict=_DEFAULT_DICT):
+        """Initialize a ParamCoercion object.
+
+        :type type_dict: dict
+        :param type_dict: (Optional) A dictionary of converstions. Keys are
+        strings representing the shape type name and the values are callables
+        that given a string will return an instance of an appropriate type for
+        that shape type. Defaults to only coerce numbers.
+        """
+        self._type_dict = type_dict
+
+    def coerce(self, params, shape):
+        """Coerce the params according to the given shape.
+
+        :type params: dict
+        :param params: The parameters to be given to an operation call.
+
+        :type shape: :class:`botocore.model.Shape`
+        :param shape: The input shape for the desired operation.
+
+        :rtype: dict
+        :return: The coerced version of the params.
+        """
+        name = shape.type_name
+        if isinstance(params, dict) and name == 'structure':
+            return self._coerce_structure(params, shape)
+        elif isinstance(params, dict) and name == 'map':
+            return self._coerce_map(params, shape)
+        elif isinstance(params, (list, tuple)) and name == 'list':
+            return self._coerce_list(params, shape)
+        elif isinstance(params, six.string_types) and name in self._type_dict:
+            target_type = self._type_dict[shape.type_name]
+            return self._coerce_field(params, target_type)
+        return params
+
+    def _coerce_structure(self, params, shape):
+        members = shape.members
+        coerced = {}
+        for param in members:
+            if param in params:
+                coerced[param] = self.coerce(params[param], members[param])
+        return coerced
+
+    def _coerce_map(self, params, shape):
+        coerced = {}
+        for key, value in params.items():
+            coerced_key = self.coerce(key, shape.key)
+            coerced[coerced_key] = self.coerce(value, shape.value)
+        return coerced
+
+    def _coerce_list(self, list_param, shape):
+        member_shape = shape.member
+        coerced_list = []
+        for item in list_param:
+            coerced_list.append(self.coerce(item, member_shape))
+        return coerced_list
+
+    def _coerce_field(self, value, target_type):
+        try:
+            return target_type(value)
+        except ValueError:
+            return value
 
 
 def stage_error_handler(error, stages, confirm=confirm, prompt=select_prompt):
@@ -264,6 +346,8 @@ class Stage(object):
             self._env.resolve_parameters(req.get('EnvParameters', {}))
         # union of parameters and env_parameters, conflicts favor env params
         parameters = dict(parameters, **env_parameters)
+        model = client.meta.service_model.operation_model(req['Operation'])
+        parameters = ParamCoercion().coerce(parameters, model.input_shape)
         # if the operation supports pagination, load all results upfront
         if client.can_paginate(operation_name):
             # get paginator and create iterator
