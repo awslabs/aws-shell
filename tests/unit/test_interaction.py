@@ -2,8 +2,11 @@ import mock
 import pytest
 
 from awsshell.utils import InMemoryFSLayer
+from prompt_toolkit.buffer import Document
+from prompt_toolkit.contrib.validators.base import Validator, ValidationError
 from awsshell.interaction import InteractionLoader, InteractionException
 from awsshell.interaction import SimpleSelect, SimplePrompt, FilePrompt
+from awsshell.interaction import FuzzyCompleter, FuzzySelect
 
 
 @pytest.fixture
@@ -98,14 +101,15 @@ def test_simple_select_with_path():
     assert xformed == options[1]
 
 
-def test_simple_select_bad_data(simple_selector):
-    # Test that simple select throws exceptions when given bad data
+@pytest.mark.parametrize('selector', [simple_selector(), FuzzySelect({}, u'')])
+def test_simple_select_bad_data(selector):
+    # Test that a selector select throws exceptions when given bad data
     with pytest.raises(InteractionException) as ie:
-        simple_selector.execute({})
-    assert 'SimpleSelect expects a non-empty list' in str(ie.value)
+        selector.execute({})
+    assert 'expects a non-empty list' in str(ie.value)
     with pytest.raises(InteractionException) as ie:
-        simple_selector.execute([])
-    assert 'SimpleSelect expects a non-empty list' in str(ie.value)
+        selector.execute([])
+    assert 'expects a non-empty list' in str(ie.value)
 
 
 def test_simple_prompt():
@@ -126,3 +130,53 @@ def test_simple_prompt_bad_data(simple_prompt):
     with pytest.raises(InteractionException) as ie:
         simple_prompt.execute([])
     assert 'SimplePrompt expects a dict as data' in str(ie.value)
+
+
+def test_fuzzy_completer():
+    def to_list(candidates):
+        return [c.text for c in candidates]
+
+    corpus = ['A word', 'Awo', 'A b c']
+    document = Document(text=u'')
+    completer = FuzzyCompleter(corpus)
+    candidates = completer.get_completions(document, None)
+    assert to_list(candidates) == corpus
+    document = Document(text=u'Awo')
+    candidates = completer.get_completions(document, None)
+    assert to_list(candidates) == ['Awo', 'A word']
+
+
+def test_fuzzy_select():
+    # Verify that SimpleSelect calls prompt and it returns a selection
+    prompt = mock.Mock()
+    selector = FuzzySelect({}, 'one or two?', prompt)
+    options = ['one', 'two']
+    prompt.return_value = options[1]
+    xformed = selector.execute(options)
+    assert prompt.call_count == 1
+    assert xformed == options[1]
+    args, kwargs = prompt.call_args
+    validator = kwargs['validator']
+    assert isinstance(kwargs['validator'], Validator)
+    with pytest.raises(ValidationError):
+        document = Document(text=u'three')
+        validator.validate(document)
+
+
+def test_fuzzy_select_with_path():
+    # Verify that FuzzySelect calls prompt and it returns the corresponding
+    # item derived from the path.
+    prompt = mock.Mock()
+    model = {'Path': '[].a'}
+    fuzzy_selector = FuzzySelect(model, 'Promptingu', prompt)
+    options = [{'a': '1', 'b': 'one'}, {'a': '2', 'b': 'two'}]
+    prompt.return_value = '2'
+    xformed = fuzzy_selector.execute(options)
+    assert prompt.call_count == 1
+    assert xformed == options[1]
+    args, kwargs = prompt.call_args
+    validator = kwargs['validator']
+    assert isinstance(kwargs['validator'], Validator)
+    with pytest.raises(ValidationError):
+        document = Document(text=u'3')
+        validator.validate(document)
