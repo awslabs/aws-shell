@@ -1,5 +1,8 @@
 import mock
 import pytest
+import botocore.session
+
+from botocore.loaders import Loader
 from botocore.session import Session
 from awsshell.utils import FileReadError
 from awsshell.wizard import stage_error_handler
@@ -289,9 +292,6 @@ def test_wizard_basic_interaction(wizard_spec):
 
 
 def test_wizard_basic_delegation(wizard_spec):
-    mock_session = mock.Mock(spec=Session)
-    mock_loader = mock.Mock(spec=WizardLoader)
-    loader = WizardLoader(mock_session, delegation_loader=mock_loader)
     main_spec = {
         "StartStage": "One",
         "Stages": [
@@ -306,7 +306,6 @@ def test_wizard_basic_delegation(wizard_spec):
             }
         ]
     }
-    wizard = loader.create_wizard(main_spec)
     sub_spec = {
         "StartStage": "SubOne",
         "Stages": [
@@ -320,9 +319,19 @@ def test_wizard_basic_delegation(wizard_spec):
             }
         ]
     }
-    mock_loader.load_wizard.return_value = loader.create_wizard(sub_spec)
+
+    mock_loader = mock.Mock(spec=Loader)
+    mock_loader.list_available_services.return_value = ['wizards']
+    mock_load_model = mock_loader.load_service_model
+    mock_load_model.return_value = sub_spec
+
+    session = botocore.session.get_session()
+    session.register_component('data_loader', mock_loader)
+    loader = WizardLoader(session)
+    wizard = loader.create_wizard(main_spec)
+
     result = wizard.execute()
-    mock_loader.load_wizard.assert_called_once_with('SubWizard')
+    mock_load_model.assert_called_once_with('wizards', 'SubWizard')
     assert result == 'Result from sub'
 
 

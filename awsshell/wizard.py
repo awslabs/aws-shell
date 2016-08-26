@@ -51,7 +51,7 @@ class WizardLoader(object):
     """
 
     def __init__(self, session=None, interaction_loader=None,
-                 error_handler=None, delegation_loader=None):
+                 error_handler=None):
         """Initialize a wizard factory.
 
         :type session: :class:`botocore.session.Session`
@@ -71,10 +71,6 @@ class WizardLoader(object):
         self._interaction_loader = interaction_loader
         if interaction_loader is None:
             self._interaction_loader = InteractionLoader()
-        if delegation_loader is None:
-            self._delegation_loader = self
-        else:
-            self._delegation_loader = delegation_loader
         self._error_handler = error_handler
         if error_handler is None:
             self._error_handler = stage_error_handler
@@ -126,8 +122,7 @@ class WizardLoader(object):
         }
         creator = self._cached_creator
         interaction = self._interaction_loader
-        delegation = self._delegation_loader
-        return Stage(env, creator, interaction, delegation, **stage_attrs)
+        return Stage(env, creator, interaction, self, **stage_attrs)
 
     def _load_stages(self, stages, env):
         return [self._load_stage(stage, env) for stage in stages]
