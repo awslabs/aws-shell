@@ -154,10 +154,11 @@ def test_exit_dot_command_exits_shell():
     assert mock_prompter.run.call_count == 1
 
 
-def test_wizard_can_load_and_execute():
+def test_wizard_can_load_and_execute(errstream):
     # Proper dot command syntax should load and run a wizard
     mock_loader = mock.Mock()
     mock_wizard = mock_loader.load_wizard.return_value
+    mock_wizard.execute.return_value = {}
     handler = app.WizardHandler(err=errstream, loader=mock_loader)
     handler.run(['.wizard', 'wizname'], None)
 
