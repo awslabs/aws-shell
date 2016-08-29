@@ -9,6 +9,8 @@ import subprocess
 import logging
 import sys
 
+import botocore.session
+
 from prompt_toolkit.document import Document
 from prompt_toolkit.shortcuts import create_eventloop
 from prompt_toolkit.buffer import Buffer
@@ -158,7 +160,17 @@ class WizardHandler(object):
         self._err = err
         self._wizard_loader = loader
         if self._wizard_loader is None:
-            self._wizard_loader = WizardLoader()
+            session = self._initalize_session()
+            self._wizard_loader = WizardLoader(session=session)
+
+    def _initalize_session(self):
+        """Get a session and append the data directory to search paths."""
+        session = botocore.session.get_session()
+        data_loader = session.get_component('data_loader')
+        shell_root_dir = os.path.dirname(os.path.abspath(__file__))
+        data_path = os.path.join(shell_root_dir, 'data')
+        data_loader.search_paths.append(data_path)
+        return session
 
     def run(self, command, application):
         """Run the specified wizard.
