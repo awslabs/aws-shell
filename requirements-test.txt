@@ -1,5 +1,6 @@
-pytest==2.8.2
-pytest-cov==2.2.0
+# TODO update this to: pytest==3.0.2 it should include the patch
+-e git://github.com/pytest-dev/pytest.git@9c45d6cd83fdc7d336377526bdfb6fc0123d29c0#egg=pytest
+pytest-cov==2.3.1
 mock==1.3.0
 tox==2.2.1
 configobj==5.0.6
