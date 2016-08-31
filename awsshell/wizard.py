@@ -147,6 +147,10 @@ class WizardLoader(object):
             :class:`awsshell.interaction.InteractionLoader`
         :param interaction_loader: (Optional) The InteractionLoader to be used
         when converting Interaction models to their corresponding object.
+
+        :type error_handler: callable
+        :param error_handler: (Optional) The error handler to be used when
+        executing wizards.
         """
         self._session = session
         if session is None:
@@ -301,6 +305,10 @@ class Stage(object):
         :type interaction_loader: :class:`InteractionLoader`
         :param interaction_loader: The Interaction loader to be used when
         performing interactions.
+
+        :type wizard_loader: :class:`WizardLoader`
+        :param wizard_loader: The Wizard Loader to be used when a stage needs
+        to delegate to a sub-wizard.
 
         :type name: str
         :param name: A unique identifier for the stage.
