@@ -1,0 +1,73 @@
+{
+  "StartStage": "CIDRPrompt",
+  "Stages": [
+    {
+      "Name": "CIDRPrompt",
+      "Prompt": "Enter subnet IP address block (e.g., 10.0.0.0/24)",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": {"CIDR": ""}
+      },
+
+      "Interaction": { "ScreenType": "SimplePrompt" },
+      "Resolution": { "Path": "CIDR", "Key": "CIDR" },
+      "NextStage": { "Type": "Name", "Name": "ZoneSwitch" }
+    },
+    {
+      "Name": "ZoneSwitch",
+      "Prompt": "Would you like to specify an availability zone?",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "No Preference", "Stage": "GetVPC"},
+          { "Option": "Select availability zone", "Stage": "SelectZone"}
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "ZoneSwitch" },
+      "NextStage": { "Type": "Variable", "Name": "ZoneSwitch" }
+    },
+    {
+      "Name": "SelectZone",
+      "Prompt": "Select the desired zone: ",
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "DescribeAvailabilityZones"
+        },
+        "Path": "AvailabilityZones"
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].ZoneName" },
+      "Resolution": { "Path": "ZoneName", "Key": "ZoneName" },
+      "NextStage": { "Type": "Name", "Name": "GetVPC" }
+    },
+    {
+      "Name": "GetVPC",
+      "Prompt": "Getting VPC to use...",
+
+      "Retrieval": { "Type": "Wizard", "Resource": "get-vpc" },
+      "Resolution": { "Path": "VpcId", "Key": "VpcId" },
+      "NextStage": { "Type": "Name", "Name": "CreateSubnet" }
+    },
+    {
+      "Name": "CreateSubnet",
+      "Prompt": "Creating Subnet...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "CreateSubnet",
+          "Parameters": { "DryRun": false },
+          "EnvParameters": {
+              "VpcId": "VpcId",
+              "CidrBlock": "CIDR",
+              "AvailabilityZone": "ZoneName"
+          }
+        }
+      }
+    }
+  ]
+}

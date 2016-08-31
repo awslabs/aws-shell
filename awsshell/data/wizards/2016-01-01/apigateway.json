@@ -1,0 +1,101 @@
+{
+  "StartStage": "ApiSourceSwitch",
+  "Stages": [
+    {
+      "Name": "ApiSourceSwitch",
+      "Prompt": "What is the source for the new Api?",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "Create new Api", "Stage": "CreateApi"},
+          { "Option": "Generate new Api from swagger spec file", "Stage": "NewSwaggerApi"}
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": {
+        "Path": "Stage",
+        "Key": "CreationType"
+      },
+      "NextStage": { "Type": "Variable", "Name": "CreationType" }
+    },
+    {
+      "Name": "NewSwaggerApi",
+      "Prompt": "Enter the path to the JSON swagger spec file",
+      "Interaction": { "ScreenType": "FilePrompt" },
+      "Resolution": { "Key": "SwaggerBlob" },
+      "NextStage": { "Type": "Name", "Name": "ImportApiRequest" }
+    },
+    {
+      "Name": "ImportApiRequest",
+      "Prompt": "Importing Api from swagger spec...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "apigateway",
+          "Operation": "ImportRestApi",
+          "Parameters": { "failOnWarnings": true },
+          "EnvParameters": { "body": "SwaggerBlob" }
+        }
+      }
+    },
+    {
+      "Name": "CreateApi",
+      "Prompt": "Api Name and Description",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": { "name": "", "description": "" }
+      },
+      "Interaction": { "ScreenType": "SimplePrompt" },
+      "Resolution": { "Key": "Details" },
+      "NextStage": { "Type": "Name", "Name": "CloneSwitch" }
+    },
+    {
+      "Name": "CloneSwitch",
+      "Prompt": "Create new empty Api or clone from existing?",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "Create new Api", "Stage": "CreateApiRequest" },
+          { "Option": "Clone existing Api", "Stage": "GetApiList" }
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "CloneType" },
+      "NextStage": { "Type": "Variable", "Name": "CloneType" }
+    },
+    {
+      "Name": "GetApiList",
+      "Prompt": "Select an Api to clone",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "apigateway",
+          "Operation": "GetRestApis"
+        },
+        "Path": "items"
+      },
+      "Interaction": { "ScreenType": "InfoSelect", "Path": "[].name" },
+      "Resolution": { "Path": "id", "Key": "ApiId" },
+      "NextStage": { "Type": "Name", "Name": "CreateApiRequest" }
+    },
+    {
+      "Name": "CreateApiRequest",
+      "Prompt": "Creating new Api...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "apigateway",
+          "Operation": "CreateRestApi",
+          "EnvParameters": {
+              "cloneFrom": "ApiId",
+              "name": "Details.name",
+              "description": "Details.description"
+          }
+        }
+      }
+    }
+  ]
+}

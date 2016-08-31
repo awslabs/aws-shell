@@ -1,0 +1,161 @@
+{
+  "StartStage": "GetAMI",
+  "Stages": [
+    {
+      "Name": "GetAMI",
+      "Prompt": "Getting AMI to use...",
+
+      "Retrieval": { "Type": "Wizard", "Resource": "select-ami" },
+      "Resolution": { "Path": "ImageId", "Key": "ImageId" },
+      "NextStage": { "Type": "Name", "Name": "InstanceDetails" }
+    },
+
+    {
+      "Name": "InstanceDetails",
+      "Prompt": "Enter minimum and maximium number of instances",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": { "MinCount": "", "MaxCount": "" }
+      },
+      "Interaction": { "ScreenType": "SimplePrompt" },
+      "Resolution": { "Key": "Details" },
+      "NextStage": { "Type": "Name", "Name": "SelectInstanceType" }
+    },
+
+    {
+      "Name": "SelectInstanceType",
+      "Prompt": "Select Instance Type: ",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": ["t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large"]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect" },
+      "Resolution": { "Key": "InstanceType" },
+      "NextStage": { "Type": "Name", "Name": "SelectProfileSwitch" }
+    },
+
+    {
+      "Name": "SelectProfileSwitch",
+      "Prompt": "Would you like to specify an IAM Instance Profile? ",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "Do not use profile", "Stage": "SelectSubnetSwitch"},
+          { "Option": "Select a profile", "Stage": "GetInstanceProfile"}
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "ProfileSwitch" },
+      "NextStage": { "Type": "Variable", "Name": "ProfileSwitch" }
+    },
+    {
+      "Name": "GetInstanceProfile",
+      "Prompt": "Getting Instance Profile to use...",
+
+      "Retrieval": { "Type": "Wizard", "Resource": "get-instance-profile" },
+      "Resolution": { "Key": "Profile" },
+      "NextStage": { "Type": "Name", "Name": "SelectSubnetSwitch" }
+    },
+
+    {
+      "Name": "SelectSubnetSwitch",
+      "Prompt": "Would you like to specify a Subnet? ",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "Use Default", "Stage": "SecurityGroupSwitch"},
+          { "Option": "Select a Subnet", "Stage": "GetSubnet"}
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "SubnetSwitch" },
+      "NextStage": { "Type": "Variable", "Name": "SubnetSwitch" }
+    },
+    {
+      "Name": "GetSubnet",
+      "Prompt": "Getting Subnet to use...",
+
+      "Retrieval": { "Type": "Wizard", "Resource": "get-subnet" },
+      "Resolution": { "Path": "SubnetId", "Key": "SubnetId" },
+      "NextStage": { "Type": "Name", "Name": "SecurityGroupSwitch" }
+    },
+
+    {
+      "Name": "SecurityGroupSwitch",
+      "Prompt": "Would you like to specify a Security Group? ",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "Use Default", "Stage": "KeySwitch"},
+          { "Option": "Select a Security Group", "Stage": "GetSecurityGroup"}
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "GroupSwitch" },
+      "NextStage": { "Type": "Variable", "Name": "GroupSwitch" }
+    },
+    {
+      "Name": "GetSecurityGroup",
+      "Prompt": "Getting Security Group to use...",
+
+      "Retrieval": { "Type": "Wizard", "Resource": "get-security-group" },
+      "Resolution": { "Path": "GroupId", "Key": "GroupId" },
+      "NextStage": { "Type": "Name", "Name": "KeySwitch" }
+    },
+
+    {
+      "Name": "KeySwitch",
+      "Prompt": "Would you like to attach a Key Pair?",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "Do not attach", "Stage": "LaunchInstance"},
+          { "Option": "Select a Key Pair", "Stage": "GetKeyPair"}
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "GroupSwitch" },
+      "NextStage": { "Type": "Variable", "Name": "GroupSwitch" }
+    },
+    {
+      "Name": "GetKeyPair",
+      "Prompt": "Select Key Pair to use: ",
+
+      "Retrieval": {
+          "Type": "Request",
+          "Resource": {
+            "Service": "ec2",
+            "Operation": "DescribeKeyPairs"
+          },
+          "Path": "KeyPairs"
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].KeyName" },
+      "Resolution": { "Path": "KeyName", "Key": "KeyName" },
+      "NextStage": { "Type": "Name", "Name": "LaunchInstance" }
+    },
+
+    {
+      "Name": "LaunchInstance",
+      "Prompt": "Launching instance...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "RunInstances",
+          "Parameters": { "DryRun": true },
+          "EnvParameters": {
+              "ImageId": "ImageId",
+              "SubnetId": "SubnetId",
+              "InstanceType": "InstanceType",
+              "MinCount": "Details.MinCount",
+              "MaxCount": "Details.MaxCount",
+              "IamInstanceProfile": "Profile | {Name: @.InstanceProfileName}",
+              "SecurityGroupIds": "GroupId | [@]",
+              "KeyName": "KeyName"
+          }
+        }
+      }
+    }
+  ]
+}

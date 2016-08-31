@@ -1,0 +1,46 @@
+{
+  "StartStage": "CIDRPrompt",
+  "Stages": [
+    {
+      "Name": "CIDRPrompt",
+      "Prompt": "Enter VPC IP address block (e.g., 10.0.0.0/16)",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": {"CIDR": ""}
+      },
+
+      "Interaction": { "ScreenType": "SimplePrompt" },
+      "Resolution": { "Path": "CIDR", "Key": "CIDR" },
+      "NextStage": { "Type": "Name", "Name": "SelectTenancy" }
+    },
+    {
+      "Name": "SelectTenancy",
+      "Prompt": "Should this VPC use the default tenancy or force dedicated?",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [ "default", "dedicated"]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect" },
+      "Resolution": { "Key": "Tenancy" },
+      "NextStage": { "Type": "Name", "Name": "CreateVPC" }
+    },
+    {
+      "Name": "CreateVPC",
+      "Prompt": "Creating VPC...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "CreateVpc",
+          "Parameters": { "DryRun": false },
+          "EnvParameters": {
+              "CidrBlock": "CIDR",
+              "InstanceTenancy": "Tenancy"
+          }
+        }
+      }
+    }
+  ]
+}

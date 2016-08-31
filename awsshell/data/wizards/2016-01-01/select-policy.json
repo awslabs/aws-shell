@@ -1,0 +1,19 @@
+{
+  "StartStage": "GetPolicyList",
+  "Stages": [
+    {
+      "Name": "GetPolicyList",
+      "Prompt": "Select a policy: ",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "iam",
+          "Operation": "ListPolicies"
+        },
+        "Path": "Policies"
+      },
+      "Interaction": { "ScreenType": "FuzzySelect", "Path": "[].PolicyName" }
+    }
+  ]
+}

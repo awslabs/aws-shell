@@ -1,0 +1,95 @@
+{
+  "StartStage": "NamePrompt",
+  "Stages": [
+    {
+      "Name": "NamePrompt",
+      "Prompt": "Enter the Instance Profile name",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": {"Name": ""}
+      },
+
+      "Interaction": { "ScreenType": "SimplePrompt" },
+      "Resolution": { "Path": "Name", "Key": "ProfileName" },
+      "NextStage": { "Type": "Name", "Name": "CreateProfile" }
+    },
+    {
+      "Name": "CreateProfile",
+      "Prompt": "Creating Profile...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "iam",
+          "Operation": "CreateInstanceProfile",
+          "EnvParameters": {
+              "InstanceProfileName": "ProfileName"
+          }
+        },
+        "Path": "InstanceProfile"
+      },
+      "Resolution": { "Key": "Profile" },
+      "NextStage": { "Type": "Name", "Name": "AddRoleSwitch" }
+    },
+    {
+      "Name": "AddRoleSwitch",
+      "Prompt": "Add a role to this profile?",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "Yes", "Stage": "SelectRole"},
+          { "Option": "No", "Stage": "GetRole"}
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "RoleSwitch" },
+      "NextStage": { "Type": "Variable", "Name": "RoleSwitch" }
+    },
+    {
+      "Name": "SelectRole",
+      "Prompt": "Select Role to add:",
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "iam",
+          "Operation": "ListRoles"
+        },
+        "Path": "Roles[].RoleName"
+      },
+      "Interaction": { "ScreenType": "SimpleSelect" },
+      "Resolution": { "Key": "RoleName" },
+      "NextStage": { "Type": "Name", "Name": "AddRole" }
+    },
+    {
+      "Name": "AddRole",
+      "Prompt": "Adding role...",
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "iam",
+          "Operation": "AddRoleToInstanceProfile",
+          "EnvParameters": {
+            "RoleName": "RoleName",
+            "InstanceProfileName": "Profile.InstanceProfileName"
+          }
+        }
+      },
+      "NextStage": { "Type": "Name", "Name": "GetRole" }
+    },
+    {
+      "Name": "GetRole",
+      "Prompt": "Getting role...",
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "iam",
+          "Operation": "GetInstanceProfile",
+          "EnvParameters": {
+            "InstanceProfileName": "Profile.InstanceProfileName"
+          }
+        }
+      }
+    }
+  ]
+}

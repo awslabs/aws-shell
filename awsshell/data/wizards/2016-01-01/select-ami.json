@@ -1,0 +1,20 @@
+{
+  "StartStage": "GetAmiList",
+  "Stages": [
+    {
+      "Name": "GetAmiList",
+      "Prompt": "Select an AMI: ",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "DescribeImages",
+          "Parameters": { "Owners": ["self"] }
+        },
+        "Path": "Images"
+      },
+      "Interaction": { "ScreenType": "FuzzySelect", "Path": "[].Name" }
+    }
+  ]
+}

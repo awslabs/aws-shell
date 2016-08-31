@@ -1,0 +1,30 @@
+{
+  "StartStage": "GetPolicySwitch",
+  "Stages": [
+    {
+      "Name": "GetPolicySwitch",
+      "Prompt": "Select a source for the policy: ",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+            { "Option": "Create new policy", "Stage": "CreatePolicy" },
+            { "Option": "Select managed policy", "Stage": "SelectPolicy" }
+        ]
+      },
+
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "PolicySource" },
+      "NextStage": { "Type": "Variable", "Name": "PolicySource" }
+    },
+    {
+      "Name": "CreatePolicy",
+      "Prompt": "Delegate to create policy"
+    },
+    {
+      "Name": "SelectPolicy",
+      "Prompt": "Delegate to select policy",
+      "Retrieval": { "Type": "Wizard", "Resource": "select-policy" }
+    }
+  ]
+}

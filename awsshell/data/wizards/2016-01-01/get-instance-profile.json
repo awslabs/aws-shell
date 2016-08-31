@@ -1,0 +1,44 @@
+{
+  "StartStage": "GetProfileSwitch",
+  "Stages": [
+    {
+      "Name": "GetProfileSwitch",
+      "Prompt": "Select a source for the Instance Profile: ",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+            { "Option": "Create new Profile", "Stage": "CreateProfile" },
+            { "Option": "Select existing Profile", "Stage": "SelectProfile" }
+        ]
+      },
+
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "ProfileSource" },
+      "NextStage": { "Type": "Variable", "Name": "ProfileSource" }
+    },
+    {
+      "Name": "CreateProfile",
+      "Prompt": "Delegate to create Profile",
+      "Retrieval": {
+          "Type": "Wizard",
+          "Resource": "create-instance-profile",
+          "Path": "InstanceProfile"
+      }
+    },
+    {
+      "Name": "SelectProfile",
+      "Prompt": "Select a Profile: ",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "iam",
+          "Operation": "ListInstanceProfiles"
+        },
+        "Path": "InstanceProfiles"
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].InstanceProfileName" }
+    }
+  ]
+}
