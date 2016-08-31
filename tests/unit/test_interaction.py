@@ -6,7 +6,7 @@ from prompt_toolkit.buffer import Document
 from prompt_toolkit.contrib.validators.base import Validator, ValidationError
 from awsshell.interaction import InteractionLoader, InteractionException
 from awsshell.interaction import SimpleSelect, SimplePrompt, FilePrompt
-from awsshell.interaction import FuzzyCompleter, FuzzySelect
+from awsshell.interaction import FuzzyCompleter, FuzzySelect, InfoSelect
 
 
 @pytest.fixture
@@ -88,12 +88,13 @@ def test_simple_select():
     assert xformed == options[1]
 
 
-def test_simple_select_with_path():
+@pytest.mark.parametrize('selector', [SimpleSelect, InfoSelect])
+def test_simple_select_with_path(selector):
     # Verify that SimpleSelect calls prompt and it returns the corresponding
     # item derived from the path.
     prompt = mock.Mock()
     model = {'Path': '[].a'}
-    simple_selector = SimpleSelect(model, 'Promptingu', prompt)
+    simple_selector = selector(model, 'Promptingu', prompt)
     options = [{'a': '1', 'b': 'one'}, {'a': '2', 'b': 'two'}]
     prompt.return_value = ('2', 1)
     xformed = simple_selector.execute(options)

@@ -77,17 +77,30 @@ class SimpleSelect(Interaction):
         super(SimpleSelect, self).__init__(model, prompt_msg)
         self._prompter = prompter
 
-    def execute(self, data):
+    def execute(self, data, show_meta=False):
         if not isinstance(data, list) or len(data) < 1:
             raise InteractionException('SimpleSelect expects a non-empty list')
         if self._model.get('Path') is not None:
             display_data = jmespath.search(self._model['Path'], data)
-            result = self._prompter('%s ' % self.prompt, display_data)
+            options_meta = data if show_meta else None
+            result = self._prompter('%s ' % self.prompt, display_data,
+                                    options_meta=options_meta)
             (selected, index) = result
             return data[index]
         else:
             (selected, index) = self._prompter('%s ' % self.prompt, data)
             return selected
+
+
+class InfoSelect(SimpleSelect):
+    """Display a list of options with meta information.
+
+    Small extension of :class:`SimpleSelect` that turns the show_meta flag on
+    to display what the complete object looks like rendered as json in a pane
+    below the prompt.
+    """
+    def execute(self, data):
+        return super(InfoSelect, self).execute(data, show_meta=True)
 
 
 class SimplePrompt(Interaction):
@@ -174,6 +187,7 @@ class InteractionLoader(object):
     Interaction objects can be instantiated from their corresponding str.
     """
     _INTERACTIONS = {
+        'InfoSelect': InfoSelect,
         'FuzzySelect': FuzzySelect,
         'SimpleSelect': SimpleSelect,
         'SimplePrompt': SimplePrompt,

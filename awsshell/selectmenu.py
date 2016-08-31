@@ -1,4 +1,3 @@
-import json
 from pygments.lexers import find_lexer_class
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.token import Token
@@ -21,6 +20,7 @@ from prompt_toolkit.layout.controls import UIControl, UIContent, FillControl
 from prompt_toolkit.layout import Window, HSplit, FloatContainer, Float
 from prompt_toolkit.layout.containers import ScrollOffsets, \
     ConditionalContainer
+from awsshell.utils import format_json
 
 """An implementation of a selection menu using prompt toolkit.
 
@@ -261,8 +261,7 @@ class SelectMenuApplication(Application):
             def selection_changed(cli):
                 index = self.menu_control.get_index()
                 info = options_meta[index]
-                formatted_info = json.dumps(info, indent=4, sort_keys=True,
-                                            ensure_ascii=False)
+                formatted_info = format_json(info)
                 buffers['INFO'].text = formatted_info
             default_buf.on_text_changed += selection_changed
 

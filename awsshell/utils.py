@@ -6,9 +6,11 @@ import contextlib
 import tempfile
 import uuid
 import logging
+import json
 
 import awscli
 
+from awscli.utils import json_encoder
 from awsshell.compat import HTMLParser
 
 
@@ -142,3 +144,8 @@ def force_unicode(obj, encoding='utf8'):
         if not isinstance(obj, six.text_type):
             obj = _attempt_decode(obj, encoding)
     return obj
+
+
+def format_json(response):
+    return json.dumps(response, indent=4, default=json_encoder,
+                      ensure_ascii=False, sort_keys=True)
