@@ -1,0 +1,67 @@
+{
+  "StartStage": "GetTopic",
+  "Stages": [
+    {
+      "Name": "GetTopic",
+      "Prompt": "Select the topic to publish to:",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "sns",
+          "Operation": "ListTopics"
+        },
+        "Path": "Topics"
+      },
+
+      "Interaction": {
+        "ScreenType": "SimpleSelect",
+        "Path": "[].TopicArn"
+      },
+
+      "Resolution": {
+        "Key": "TopicArn",
+        "Path": "TopicArn"
+      },
+
+      "NextStage": { "Type": "Name", "Name": "MessageForm" }
+    },
+
+    {
+      "Name": "MessageForm",
+      "Prompt": "Provide the message details.",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": {
+          "Subject": "",
+          "Body": ""
+        }
+      },
+
+      "Interaction": { "ScreenType": "SimplePrompt" },
+
+      "Resolution": { "Key": "MessageDetails" },
+
+      "NextStage": { "Type": "Name", "Name": "PublishMessage" }
+    },
+
+    {
+      "Name": "PublishMessage",
+      "Prompt": "Publishing message...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "sns",
+          "Operation": "Publish",
+          "EnvParameters": {
+            "TopicArn": "TopicArn",
+            "Message": "MessageDetails.Body",
+            "Subject": "MessageDetails.Subject"
+          }
+        }
+      }
+    }
+  ]
+}
