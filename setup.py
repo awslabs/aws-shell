@@ -28,7 +28,7 @@ setup(
     description='AWS Shell',
     long_description=open('README.rst').read(),
     author='James Saryerwinnie',
-    url='https://github.com/jamesls/aws-shell',
+    url='https://github.com/awslabs/aws-shell',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     package_data={'awsshell': ['data/*/*.json',
