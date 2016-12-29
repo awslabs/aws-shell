@@ -4,6 +4,8 @@ env:
   - TOXENV=py27
   - TOXENV=py33
   - TOXENV=py34
+  - TOXENV=py35
+  - TOXENV=py36
 sudo: false
 install:
   - travis_retry pip install tox
