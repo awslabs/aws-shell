@@ -1,0 +1,6 @@
+I installed aws cli on my local machine and try to write a command to mannually create a redshift cluster snapshot. I ran the command :
+aws redshift create-cluster-snapshot --cluster-identifier xxx --snapshot-identifier myfirstsnapshot
+I kept getting this error: "An error occurred (InvalidClientTokenId) when calling the CreateClusterSnapshot operation: The security token
+included in the request is invalid."
+
+I don't know why and couldn't find any solution.
