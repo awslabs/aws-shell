@@ -225,6 +225,10 @@ Dot Commands
 The aws-shell provides additional commands specific to the aws-shell.
 The commands are available by adding the ``.`` prefix before a command.
 
+Exiting the Shell
+~~~~~~~~~~~~~~~~~
+You can run the ``.exit`` or ``.quit`` commands to exit the shell.
+
 Creating Shell Scripts with .edit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
