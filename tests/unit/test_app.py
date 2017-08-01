@@ -109,6 +109,20 @@ def test_delegates_to_complete_changing_profile():
     assert shell.profile == 'mynewprofile'
 
 
+def test_change_profile_pops_explicit_keys():
+    env = {
+        'AWS_ACCESS_KEY_ID': 'test',
+        'AWS_SECRET_ACCESS_KEY': 'test',
+    }
+    shell = app.AWSShell(mock.Mock(), mock.Mock(), mock.Mock(), env=env)
+    shell.profile = 'newprofile'
+    # ensure the profile is set
+    assert shell.profile == 'newprofile'
+    # ensure the credentials are not explicityly set in env
+    assert env.get('AWS_ACCESS_KEY_ID', None) is None
+    assert env.get('AWS_SECRET_ACCESS_KEY', None) is None
+
+
 def test_cd_handler_can_chdir():
     chdir = mock.Mock()
     handler = app.ChangeDirHandler(chdir=chdir)

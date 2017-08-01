@@ -221,7 +221,7 @@ class AWSShell(object):
     """
 
     def __init__(self, completer, model_completer, docs,
-                 input=None, output=None):
+                 env=None, input=None, output=None):
         self.completer = completer
         self.model_completer = model_completer
         self.history = InMemoryHistory()
@@ -232,10 +232,12 @@ class AWSShell(object):
         self.refresh_cli = False
         self.key_manager = None
         self._dot_cmd = DotCommandHandler()
-        self._env = os.environ.copy()
         self._profile = None
         self._input = input
         self._output = output
+        self._env = env
+        if self._env is None:
+            self._env = os.environ.copy()
 
         # These attrs come from the config file.
         self.config_obj = None
@@ -483,6 +485,11 @@ class AWSShell(object):
         # it's worth adding an event system or observers just yet.
         # If this gets hard to manage, the complexity of those systems
         # would be worth it.
+
+        # Remove explicit keys to ensure the profile will be used
+        self._env.pop('AWS_ACCESS_KEY_ID', None)
+        self._env.pop('AWS_SECRET_ACCESS_KEY', None)
+
         self._env['AWS_DEFAULT_PROFILE'] = new_profile_name
         self.completer.change_profile(new_profile_name)
         self._profile = new_profile_name
