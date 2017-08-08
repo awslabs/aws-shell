@@ -1,5 +1,5 @@
 doc8==0.6.0
 flake8==2.5.0
 pep257==0.7.0
-pylint==1.5.0
+pylint==1.7.2
 -rrequirements-test.txt
