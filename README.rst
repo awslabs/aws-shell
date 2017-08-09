@@ -180,7 +180,8 @@ Inline Documentation
 The aws-shell will automatically pull up documentation as you type commands.
 It will show inline documentation for CLI options.  There is also a separate
 documentation panel that will show documentation for the current command or
-option you are typing.
+option you are typing. Pressing F9 or clicking this panel will focus it
+allowing the use of your keybindings or scroll wheel to navigate the docs.
 
 .. image:: https://cloud.githubusercontent.com/assets/368057/11823320/36ae9b04-a328-11e5-9661-81abfc0afe5a.png
 
@@ -211,6 +212,7 @@ The aws-shell has a bottom toolbar that provides several options:
 * ``F3`` toggles between VI and Emacs key bindings
 * ``F4`` toggles between single and multi column auto completions
 * ``F5`` shows and hides the help documentation pane
+* ``F9`` toggles focus between the cli and documentation pane
 * ``F10`` or ``Ctrl-D`` exits the aws-shell
 
 As you toggle options in the toolbar, your preferences are persisted
