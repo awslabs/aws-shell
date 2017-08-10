@@ -31,6 +31,9 @@ check:
 	#
 	pylint --rcfile .pylintrc -E awsshell
 
+test:
+	python scripts/ci/run-tests
+
 pylint:
 	###### PYLINT ######
 	# Python linter.  This will generally not have clean output.
@@ -38,5 +41,6 @@ pylint:
 	#
 	#
 	pylint --rcfile .pylintrc awsshell
+
 coverage:
 	py.test --cov awsshell --cov-report term-missing tests/
