@@ -54,11 +54,11 @@ class Toolbar(object):
         assert callable(get_show_completion_columns)
         assert callable(get_show_help)
 
-        def get_toolbar_items(_):
+        def get_toolbar_items(cli):
             """Return the toolbar items.
 
-            :type _: :class:`prompt_toolkit.Cli`
-            :param _: (Unused)
+            :type cli: :class:`prompt_toolkit.Cli`
+            :param cli: The command line interface from prompt_toolkit
 
             :rtype: list
             :return: A list of (pygments.Token.Toolbar, str).
@@ -87,6 +87,10 @@ class Toolbar(object):
             else:
                 show_help_token = Token.Toolbar.Off
                 show_help_cfg = 'OFF'
+            if cli.current_buffer_name == 'DEFAULT_BUFFER':
+                show_buffer_name = 'cli'
+            else:
+                show_buffer_name = 'doc'
             return [
                 (match_fuzzy_token,
                  ' [F2] Fuzzy: {0} '.format(match_fuzzy_cfg)),
@@ -96,6 +100,8 @@ class Toolbar(object):
                  ' [F4] {0} Column '.format(show_columns_cfg)),
                 (show_help_token,
                  ' [F5] Help: {0} '.format(show_help_cfg)),
+                (Token.Toolbar,
+                 ' [F9] Focus: {0} '.format(show_buffer_name)),
                 (Token.Toolbar,
                  ' [F10] Exit ')
             ]

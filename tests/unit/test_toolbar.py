@@ -22,6 +22,7 @@ class ToolbarTest(unittest.TestCase):
 
     def setUp(self):
         self.aws_shell = AWSShell(mock.Mock(), mock.Mock(), mock.Mock())
+        self.cli = mock.Mock()
         self.toolbar = Toolbar(
             lambda: self.aws_shell.model_completer.match_fuzzy,
             lambda: self.aws_shell.enable_vi_bindings,
@@ -38,18 +39,21 @@ class ToolbarTest(unittest.TestCase):
             (Token.Toolbar.On, ' [F3] Keys: Vi '),
             (Token.Toolbar.On, ' [F4] Multi Column '),
             (Token.Toolbar.On, ' [F5] Help: ON '),
+            (Token.Toolbar, ' [F9] Focus: doc '),
             (Token.Toolbar, ' [F10] Exit ')]
-        assert expected == self.toolbar.handler(None)
+        assert expected == self.toolbar.handler(self.cli)
 
     def test_toolbar_off(self):
         self.aws_shell.model_completer.match_fuzzy = False
         self.aws_shell.enable_vi_bindings = False
         self.aws_shell.show_completion_columns = False
         self.aws_shell.show_help = False
+        self.cli.current_buffer_name = 'DEFAULT_BUFFER'
         expected = [
             (Token.Toolbar.Off, ' [F2] Fuzzy: OFF '),
             (Token.Toolbar.On, ' [F3] Keys: Emacs '),
             (Token.Toolbar.On, ' [F4] Single Column '),
             (Token.Toolbar.Off, ' [F5] Help: OFF '),
+            (Token.Toolbar, ' [F9] Focus: cli '),
             (Token.Toolbar, ' [F10] Exit ')]
-        assert expected == self.toolbar.handler(None)
+        assert expected == self.toolbar.handler(self.cli)

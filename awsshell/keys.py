@@ -97,7 +97,6 @@ class KeyManager(object):
             enable_abort_and_exit_bindings=True,
             enable_system_bindings=True,
             enable_auto_suggest_bindings=True,
-            enable_vi_mode=get_enable_vi_bindings(),
             enable_open_in_editor=False)
 
         @self.manager.registry.add_binding(Keys.F2)
@@ -144,6 +143,20 @@ class KeyManager(object):
             """
             set_show_help(not get_show_help())
             stop_input_and_refresh_cli()
+
+        @self.manager.registry.add_binding(Keys.F9)
+        def handle_f9(event):
+            """Switch between the default and docs buffers.
+
+            :type event: :class:`prompt_toolkit.Event`
+            :param event: Contains info about the event, namely the cli
+                which is used to changing which buffer is focused.
+
+            """
+            if event.cli.current_buffer_name == u'clidocs':
+                event.cli.focus(u'DEFAULT_BUFFER')
+            else:
+                event.cli.focus(u'clidocs')
 
         @self.manager.registry.add_binding(Keys.F10)
         def handle_f10(event):
