@@ -26,17 +26,35 @@ def test_can_dispatch_dot_commands():
     assert call_args == [(['.foo', 'a', 'b', 'c'], context)]
 
 
+class PopenLogger(object):
+    def __call__(self, cmd):
+        self.cmd = cmd
+        filename = cmd[1]
+        with open(filename, 'r') as f:
+            self.contents = f.read()
+        return mock.Mock()
+
+
 def test_edit_handler():
     env = {'EDITOR': 'my-editor'}
     popen_cls = mock.Mock()
-    context = mock.Mock()
-    context.history = []
-    handler = app.EditHandler(popen_cls, env)
-    handler.run(['.edit'], context)
+    application = mock.Mock()
+    application.history = [
+        '!ls',
+        '.edit',
+        'aws ec2 describe-instances',
+        'aws ec2 allocate-hosts',
+    ]
+    popen = PopenLogger()
+    handler = app.EditHandler(popen, env)
+    handler.run(['.edit'], application)
     # Ensure our editor was called with some arbitrary temp filename.
-    command_run = popen_cls.call_args[0][0]
+    command_run = popen.cmd
     assert len(command_run) == 2
     assert command_run[0] == 'my-editor'
+    # Ensure the contents of the temp file are correct
+    expected_contents = 'aws ec2 describe-instances\naws ec2 allocate-hosts'
+    assert popen.contents == expected_contents
 
 
 def test_error_msg_printed_on_error_handler(errstream):
@@ -130,6 +148,25 @@ def test_error_displayed_when_chdir_fails(errstream):
     handler = app.ChangeDirHandler(err=errstream, chdir=chdir)
     handler.run(['.cd', 'foo'], None)
     assert 'FAILED' in errstream.getvalue()
+
+
+def test_history_stored_correctly():
+    mock_prompter = mock.Mock()
+    mock_prompter.buffers = {'clidocs': mock.Mock()}
+    # Simulate the user entering various commands
+    quit_document = mock.Mock()
+    quit_document.text = '.quit'
+    command_document = mock.Mock()
+    command_document.text = 'ec2 describe-instances'
+    mock_prompter.run.side_effect = [command_document, quit_document]
+    shell = app.AWSShell(mock.Mock(), mock.Mock(), mock.Mock(),
+            popen_cls=mock.Mock())
+    shell.create_cli_interface = mock.Mock(return_value=mock_prompter)
+    shell.run()
+
+    # two calls should have been made, history should have added aws
+    assert mock_prompter.run.call_count == 2
+    assert list(shell.history) == ['aws ec2 describe-instances']
 
 
 def test_exit_dot_command_exits_shell():

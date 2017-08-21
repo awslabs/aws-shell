@@ -80,6 +80,11 @@ class EditHandler(object):
         else:
             return compat.default_editor()
 
+    def _generate_edit_history(self, application):
+        history = list(application.history)
+        commands = [h for h in history if not h.startswith(('.', '!'))]
+        return '\n'.join(commands)
+
     def run(self, command, application):
         """Open application's history buffer in an editor.
 
@@ -91,10 +96,8 @@ class EditHandler(object):
         :param application: The application object.
 
         """
-        all_commands = '\n'.join(
-            ['aws ' + h for h in list(application.history)
-             if not h.startswith(('.', '!'))])
         with temporary_file('w') as f:
+            all_commands = self._generate_edit_history(application)
             f.write(all_commands)
             f.flush()
             editor = self._get_editor_command()
@@ -222,7 +225,7 @@ class AWSShell(object):
     """
 
     def __init__(self, completer, model_completer, docs,
-                 input=None, output=None):
+                 input=None, output=None, popen_cls=None):
         self.completer = completer
         self.model_completer = model_completer
         self.history = InMemoryHistory()
@@ -237,6 +240,10 @@ class AWSShell(object):
         self._profile = None
         self._input = input
         self._output = output
+
+        if popen_cls is None:
+            popen_cls = subprocess.Popen
+        self._popen_cls = popen_cls
 
         # These attrs come from the config file.
         self.config_obj = None
@@ -309,7 +316,7 @@ class AWSShell(object):
                         initial_document=Document(self.current_docs,
                                                   cursor_position=0))
                     self.cli.request_redraw()
-                    p = subprocess.Popen(full_cmd, shell=True, env=self._env)
+                    p = self._popen_cls(full_cmd, shell=True, env=self._env)
                     p.communicate()
 
     def stop_input_and_refresh_cli(self):
