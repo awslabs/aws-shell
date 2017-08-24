@@ -1,0 +1,5 @@
+{
+  "type": "bugfix",
+  "category": "Keybinding",
+  "description": "Switching between emacs/vi keybindings now functions properly"
+}
