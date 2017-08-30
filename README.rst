@@ -180,8 +180,9 @@ Inline Documentation
 The aws-shell will automatically pull up documentation as you type commands.
 It will show inline documentation for CLI options.  There is also a separate
 documentation panel that will show documentation for the current command or
-option you are typing. Pressing F9 or clicking this panel will focus it
-allowing the use of your keybindings or scroll wheel to navigate the docs.
+option you are typing. Pressing F9 will toggle focus to the documentation panel
+allowing you to navigate it using your selected keybindings.
+
 
 .. image:: https://cloud.githubusercontent.com/assets/368057/11823320/36ae9b04-a328-11e5-9661-81abfc0afe5a.png
 

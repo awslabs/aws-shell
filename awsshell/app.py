@@ -433,7 +433,7 @@ class AWSShell(object):
         return Application(
             editing_mode=editing_mode,
             layout=self.create_layout(display_completions_in_columns, toolbar),
-            mouse_support=True,
+            mouse_support=False,
             style=style_factory.style,
             buffers=buffers,
             buffer=self.create_buffer(completer, history),
