@@ -61,7 +61,7 @@ Loading the completion index
 
 .. code-block:: python
 
-  # Default useage:
+  # Default usage:
 
   loader = CompletionIndex()
   # Load based on the current CLI version you have installed
