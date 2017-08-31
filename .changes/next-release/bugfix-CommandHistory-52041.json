@@ -1,5 +1,0 @@
-{
-  "type": "bugfix",
-  "category": "Command History",
-  "description": "Ensure aws prefix is not prepended twice in command history. Fixes `#157 <https://github.com/awslabs/aws-shell/issues/157>`__"
-}

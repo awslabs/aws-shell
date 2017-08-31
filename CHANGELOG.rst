@@ -2,6 +2,23 @@
 CHANGELOG
 =========
 
+0.2.0
+=====
+
+* bugfix:Command History: Ensure aws prefix is not prepended twice in command history.
+  Fixes `#157 <https://github.com/awslabs/aws-shell/issues/157>`__
+* bugfix:Keybinding: Switching between emacs/vi keybindings now functions properly
+* enhancement:Documentation: The documentation pane can now be focused and navigated.
+  Fixes `#74 <https://github.com/awslabs/aws-shell/issues/74>`__, `#159 <https://github.com/awslabs/aws-shell/issues/159>`__
+
+0.1.1
+=====
+
+* bugfix:AWS CLI: Fix issue with latest version of the AWS CLI
+  that would cause the AWS Shell to raise an exception on startup.
+  The minimum version of the AWS CLI has been bumped to 1.10.30.
+  (`issue 118 <https://github.com/awslabs/aws-shell/issues/118>`__)
+
 0.1.0
 =====
 

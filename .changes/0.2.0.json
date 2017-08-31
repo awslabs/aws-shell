@@ -1,0 +1,17 @@
+[
+  {
+    "category": "Command History",
+    "description": "Ensure aws prefix is not prepended twice in command history. Fixes `#157 <https://github.com/awslabs/aws-shell/issues/157>`__",
+    "type": "bugfix"
+  },
+  {
+    "category": "Keybinding",
+    "description": "Switching between emacs/vi keybindings now functions properly",
+    "type": "bugfix"
+  },
+  {
+    "category": "Documentation",
+    "description": "The documentation pane can now be focused and navigated. Fixes `#74 <https://github.com/awslabs/aws-shell/issues/74>`__, `#159 <https://github.com/awslabs/aws-shell/issues/159>`__",
+    "type": "enhancement"
+  }
+]

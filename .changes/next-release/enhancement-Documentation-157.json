@@ -1,5 +1,0 @@
-{
-  "type": "enhancement",
-  "category": "Documentation",
-  "description": "The documentation pane can now be focused and navigated. Fixes `#74 <https://github.com/awslabs/aws-shell/issues/74>`__, `#159 <https://github.com/awslabs/aws-shell/issues/159>`__"
-}
