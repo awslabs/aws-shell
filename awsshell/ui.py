@@ -81,15 +81,13 @@ def create_default_layout(app, message='',
 
     # Create processors list.
     # (DefaultPrompt should always be at the end.)
+    def search_highlighting(name):
+        return ConditionalProcessor(
+            HighlightSearchProcessor(preview_search=PreviousFocus(name)),
+            HasFocus(SEARCH_BUFFER))
+
     input_processors = [
-        ConditionalProcessor(
-            # By default, only highlight search when the search
-            # input has the focus. (Note that this doesn't mean
-            # there is no search: the Vi 'n' binding for instance
-            # still allows to jump to the next match in
-            # navigation mode.)
-            HighlightSearchProcessor(preview_search=Always()),
-            HasFocus(SEARCH_BUFFER)),
+        search_highlighting(DEFAULT_BUFFER),
         HighlightSelectionProcessor(),
         ConditionalProcessor(
             AppendAutoSuggestion(), HasFocus(DEFAULT_BUFFER) & ~IsDone()),
@@ -155,7 +153,7 @@ def create_default_layout(app, message='',
                         lexer=lexer,
                         # Enable preview_search, we want to have immediate
                         # feedback in reverse-i-search mode.
-                        preview_search=Always(),
+                        preview_search=PreviousFocus(DEFAULT_BUFFER),
                         focus_on_click=True,
                     ),
                     get_height=get_height,
@@ -183,6 +181,8 @@ def create_default_layout(app, message='',
                 BufferControl(
                     focus_on_click=True,
                     buffer_name=u'clidocs',
+                    input_processors=[search_highlighting(u'clidocs')],
+                    preview_search=PreviousFocus(u'clidocs'),
                 ),
                 height=LayoutDimension(max=15)),
             filter=HasDocumentation(app) & ~IsDone(),
@@ -233,3 +233,13 @@ class HasDocumentation(Filter):
 
     def __call__(self, cli):
         return bool(self._app.current_docs)
+
+
+class PreviousFocus(Filter):
+    def __init__(self, buffer_name):
+        self._buffer_name = buffer_name
+
+    def __call__(self, cli):
+        previous_buffer = cli.buffers.previous(cli)
+        target_buffer = cli.buffers.get(self._buffer_name)
+        return previous_buffer is target_buffer
