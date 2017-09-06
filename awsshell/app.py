@@ -18,6 +18,7 @@ from prompt_toolkit.interface import AbortAction, AcceptAction
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import InMemoryHistory, FileHistory
 from prompt_toolkit.enums import EditingMode
+from prompt_toolkit.enums import DEFAULT_BUFFER
 
 from awsshell.ui import create_default_layout
 from awsshell.config import Config
@@ -444,7 +445,7 @@ class AWSShell(object):
         )
 
     def on_input_timeout(self, cli):
-        if not self.show_help or cli.current_buffer_name != u'DEFAULT_BUFFER':
+        if not self.show_help or cli.current_buffer_name != DEFAULT_BUFFER:
             return
         document = cli.current_buffer.document
         text = document.text
