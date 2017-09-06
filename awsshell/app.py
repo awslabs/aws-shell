@@ -444,7 +444,7 @@ class AWSShell(object):
         )
 
     def on_input_timeout(self, cli):
-        if not self.show_help:
+        if not self.show_help or cli.current_buffer_name != u'DEFAULT_BUFFER':
             return
         document = cli.current_buffer.document
         text = document.text
