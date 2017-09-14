@@ -432,6 +432,7 @@ class AWSShell(object):
             editing_mode = EditingMode.EMACS
 
         return Application(
+            use_alternate_screen=self._output is not None,
             editing_mode=editing_mode,
             layout=self.create_layout(display_completions_in_columns, toolbar),
             mouse_support=False,
