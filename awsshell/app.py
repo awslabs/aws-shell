@@ -507,6 +507,6 @@ class AWSShell(object):
         # it's worth adding an event system or observers just yet.
         # If this gets hard to manage, the complexity of those systems
         # would be worth it.
-        self._env['AWS_DEFAULT_PROFILE'] = new_profile_name
+        self._env[str('AWS_DEFAULT_PROFILE')] = new_profile_name
         self.completer.change_profile(new_profile_name)
         self._profile = new_profile_name
