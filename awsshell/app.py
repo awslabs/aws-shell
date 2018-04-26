@@ -27,6 +27,7 @@ from awsshell.toolbar import Toolbar
 from awsshell.utils import build_config_file_path, temporary_file
 from awsshell import compat
 
+
 LOG = logging.getLogger(__name__)
 EXIT_REQUESTED = object()
 
@@ -343,7 +344,6 @@ class AWSShell(object):
             get_bottom_toolbar_tokens=toolbar.handler)
 
     def create_buffer(self, completer, history):
-
         def is_buffer_multiline():
             return buffer.document.text.endswith('\\')
 
@@ -371,7 +371,6 @@ class AWSShell(object):
             options take effect within the current session.
 
         """
-
         def set_match_fuzzy(match_fuzzy):
             """Setter for fuzzy matching mode.
 
