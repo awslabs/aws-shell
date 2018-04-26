@@ -12,7 +12,7 @@ import sys
 from prompt_toolkit.document import Document
 from prompt_toolkit.shortcuts import create_eventloop
 from prompt_toolkit.buffer import Buffer
-from prompt_toolkit.filters import Always
+from prompt_toolkit.filters import Always, Condition
 from prompt_toolkit.interface import CommandLineInterface, Application
 from prompt_toolkit.interface import AbortAction, AcceptAction
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
@@ -26,7 +26,6 @@ from awsshell.style import StyleFactory
 from awsshell.toolbar import Toolbar
 from awsshell.utils import build_config_file_path, temporary_file
 from awsshell import compat
-
 
 LOG = logging.getLogger(__name__)
 EXIT_REQUESTED = object()
@@ -344,13 +343,20 @@ class AWSShell(object):
             get_bottom_toolbar_tokens=toolbar.handler)
 
     def create_buffer(self, completer, history):
-        return Buffer(
+
+        def is_buffer_multiline():
+            return buffer.document.text.endswith('\\')
+
+        buffer = Buffer(
             history=history,
             auto_suggest=AutoSuggestFromHistory(),
             enable_history_search=True,
             completer=completer,
             complete_while_typing=Always(),
+            is_multiline=Condition(is_buffer_multiline),
             accept_action=AcceptAction.RETURN_DOCUMENT)
+
+        return buffer
 
     def create_key_manager(self):
         """Create the :class:`KeyManager`.
@@ -365,6 +371,7 @@ class AWSShell(object):
             options take effect within the current session.
 
         """
+
         def set_match_fuzzy(match_fuzzy):
             """Setter for fuzzy matching mode.
 
