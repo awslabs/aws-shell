@@ -256,6 +256,9 @@ class AWSShell(object):
 
         self.load_config()
 
+        if self.key_bindings is None:
+            self.set_default_key_bindings()
+
     def load_config(self):
         """Load the config from the config file or template."""
         config = Config()
@@ -269,7 +272,8 @@ class AWSShell(object):
             'show_completion_columns')
         self.show_help = self.config_section.as_bool('show_help')
         self.theme = self.config_section['theme']
-        self.key_bindings = self.config_section['keys']
+        if 'keys' in self.config_section:
+            self.key_bindings = self.config_section['keys']
 
     def save_config(self):
         """Save the config to the config file."""
@@ -281,6 +285,18 @@ class AWSShell(object):
         self.config_section['theme'] = self.theme
         self.config_section['keys'] = self.key_bindings
         self.config_obj.write()
+
+    def set_default_key_bindings(self):
+        pass
+        self.key_bindings = {
+            'toggle_fuzzy': 'F2',
+            'toggle_editor': 'F3',
+            'toggle_column': 'F4',
+            'toggle_help': 'F5',
+            'toggle_focus': 'F9',
+            'exit': 'F10'
+        }
+
 
     @property
     def cli(self):
