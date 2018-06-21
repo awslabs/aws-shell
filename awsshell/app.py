@@ -252,6 +252,7 @@ class AWSShell(object):
         self.show_completion_columns = None
         self.show_help = None
         self.theme = None
+        self.key_bindings = None
 
         self.load_config()
 
@@ -268,6 +269,7 @@ class AWSShell(object):
             'show_completion_columns')
         self.show_help = self.config_section.as_bool('show_help')
         self.theme = self.config_section['theme']
+        self.key_bindings = self.config_section['keys']
 
     def save_config(self):
         """Save the config to the config file."""
@@ -277,6 +279,7 @@ class AWSShell(object):
             self.show_completion_columns
         self.config_section['show_help'] = self.show_help
         self.config_section['theme'] = self.theme
+        self.config_section['keys'] = self.key_bindings
         self.config_obj.write()
 
     @property
@@ -410,7 +413,8 @@ class AWSShell(object):
             lambda: self.enable_vi_bindings, set_enable_vi_bindings,
             lambda: self.show_completion_columns, set_show_completion_columns,
             lambda: self.show_help, set_show_help,
-            self.stop_input_and_refresh_cli)
+            self.stop_input_and_refresh_cli,
+            self.key_bindings)
 
     def create_application(self, completer, history,
                            display_completions_in_columns):
@@ -419,7 +423,8 @@ class AWSShell(object):
             lambda: self.model_completer.match_fuzzy,
             lambda: self.enable_vi_bindings,
             lambda: self.show_completion_columns,
-            lambda: self.show_help)
+            lambda: self.show_help,
+            self.key_manager.key_bindings)
         style_factory = StyleFactory(self.theme)
         buffers = {
             'clidocs': Buffer(read_only=True)

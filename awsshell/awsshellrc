@@ -18,3 +18,12 @@ show_help = True
 # pastie, paraiso-light, trac, default, fruity.
 # to disable themes, set theme = none
 theme = vim
+
+# keyboard shortcuts configuration
+[[keys]]
+    toggle_fuzzy = 'f12'
+    toggle_editor = 'f9'
+    toggle_column = 'f4'
+    toggle_help = 'f5'
+    toggle_focus = 'f2'
+    exit = 'f10'
