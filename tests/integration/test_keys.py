@@ -37,35 +37,35 @@ class KeysTest(unittest.TestCase):
         self.processor.feed(KeyPress(key, u''))
         self.processor.process_keys()
 
-    def test_F2(self):
+    def test_toggle_fuzzy(self):
         match_fuzzy = self.aws_shell.model_completer.match_fuzzy
         self.feed_key(Keys.F2)
         assert match_fuzzy != self.aws_shell.model_completer.match_fuzzy
 
-    def test_F3(self):
+    def test_toggle_editor(self):
         enable_vi_bindings = self.aws_shell.enable_vi_bindings
         with self.assertRaises(InputInterrupt):
             self.feed_key(Keys.F3)
         assert enable_vi_bindings != self.aws_shell.enable_vi_bindings
 
-    def test_F4(self):
+    def test_toggle_column(self):
         show_completion_columns = self.aws_shell.show_completion_columns
         with self.assertRaises(InputInterrupt):
             self.feed_key(Keys.F4)
         assert show_completion_columns != \
             self.aws_shell.show_completion_columns
 
-    def test_F5(self):
+    def test_toggle_help(self):
         show_help = self.aws_shell.show_help
         with self.assertRaises(InputInterrupt):
             self.feed_key(Keys.F5)
         assert show_help != self.aws_shell.show_help
 
-    def test_F9(self):
+    def test_toggle_focus(self):
         assert self.aws_shell.cli.current_buffer_name == u'DEFAULT_BUFFER'
         self.feed_key(Keys.F9)
         assert self.aws_shell.cli.current_buffer_name == u'clidocs'
 
-    def test_F10(self):
+    def test_press_exit(self):
         self.feed_key(Keys.F10)
         assert self.aws_shell.cli.is_exiting

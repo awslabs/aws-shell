@@ -73,7 +73,9 @@ class TestTemporaryFile(unittest.TestCase):
             filename = f.name
             f.write("foobar")
             f.flush()
-            self.assertEqual(open(filename).read(), "foobar")
+            f = open(filename)
+            self.assertEqual(f.read(), "foobar")
+            f.close()
 
     def test_is_removed_after_exiting_context(self):
         with temporary_file('w') as f:
