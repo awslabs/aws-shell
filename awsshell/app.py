@@ -287,7 +287,6 @@ class AWSShell(object):
         self.config_obj.write()
 
     def set_default_key_bindings(self):
-        pass
         self.key_bindings = {
             'toggle_fuzzy': 'F2',
             'toggle_editor': 'F3',
@@ -296,7 +295,6 @@ class AWSShell(object):
             'toggle_focus': 'F9',
             'exit': 'F10'
         }
-
 
     @property
     def cli(self):
