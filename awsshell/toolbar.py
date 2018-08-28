@@ -94,15 +94,20 @@ class Toolbar(object):
                 show_buffer_name = 'doc'
             return [
                 (match_fuzzy_token,
-                 ' [{0}] Fuzzy: {1} '.format(self.key_bindings['toggle_fuzzy'], match_fuzzy_cfg)),
+                 ' [{0}] Fuzzy: {1} '.format(
+		    self.key_bindings['toggle_fuzzy'], match_fuzzy_cfg)),
                 (enable_vi_bindings_token,
-                 ' [{0}] Keys: {1} '.format(self.key_bindings['toggle_editor'], enable_vi_bindings_cfg)),
+                 ' [{0}] Keys: {1} '.format(
+		    self.key_bindings['toggle_editor'], enable_vi_bindings_cfg)),
                 (show_columns_token,
-                 ' [{0}] {1} Column '.format(self.key_bindings['toggle_column'], show_columns_cfg)),
+                 ' [{0}] {1} Column '.format(
+		    self.key_bindings['toggle_column'], show_columns_cfg)),
                 (show_help_token,
-                 ' [{0}] Help: {1} '.format(self.key_bindings['toggle_help'], show_help_cfg)),
+                 ' [{0}] Help: {1} '.format(
+		    self.key_bindings['toggle_help'], show_help_cfg)),
                 (Token.Toolbar,
-                 ' [{0}] Focus: {1} '.format(self.key_bindings['toggle_focus'], show_buffer_name)),
+                 ' [{0}] Focus: {1} '.format(
+		    self.key_bindings['toggle_focus'], show_buffer_name)),
                 (Token.Toolbar,
                  ' [{0}] Exit '.format(self.key_bindings['exit']))
             ]

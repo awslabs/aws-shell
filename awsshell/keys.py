@@ -101,7 +101,8 @@ class KeyManager(object):
             enable_auto_suggest_bindings=True,
             enable_open_in_editor=False)
 
-        @self.manager.registry.add_binding(getattr(Keys, self.key_bindings['toggle_fuzzy']))
+        @self.manager.registry.add_binding(
+	    getattr(Keys, self.key_bindings['toggle_fuzzy']))
         def handle_toggle_fuzzy(_):
             """Toggle fuzzy matching.
 
@@ -111,7 +112,8 @@ class KeyManager(object):
             """
             set_match_fuzzy(not get_match_fuzzy())
 
-        @self.manager.registry.add_binding(getattr(Keys, self.key_bindings['toggle_editor']))
+        @self.manager.registry.add_binding(
+	    getattr(Keys, self.key_bindings['toggle_editor']))
         def handle_toggle_editor(_):
             """Toggle Vi mode keybindings matching.
 
@@ -124,7 +126,8 @@ class KeyManager(object):
             set_enable_vi_bindings(not get_enable_vi_bindings())
             stop_input_and_refresh_cli()
 
-        @self.manager.registry.add_binding(getattr(Keys, self.key_bindings['toggle_column']))
+        @self.manager.registry.add_binding(
+	    getattr(Keys, self.key_bindings['toggle_column']))
         def handle_toggle_column(_):
             """Toggle multiple column completions.
 
@@ -135,7 +138,8 @@ class KeyManager(object):
             set_show_completion_columns(not get_show_completion_columns())
             stop_input_and_refresh_cli()
 
-        @self.manager.registry.add_binding(getattr(Keys, self.key_bindings['toggle_help']))
+        @self.manager.registry.add_binding(
+	    getattr(Keys, self.key_bindings['toggle_help']))
         def handle_toggle_help(_):
             """Toggle the help container.
 
@@ -146,7 +150,8 @@ class KeyManager(object):
             set_show_help(not get_show_help())
             stop_input_and_refresh_cli()
 
-        @self.manager.registry.add_binding(getattr(Keys, self.key_bindings['toggle_focus']))
+        @self.manager.registry.add_binding(
+	    getattr(Keys, self.key_bindings['toggle_focus']))
         def handle_toggle_focus(event):
             """Switch between the default and docs buffers.
 
@@ -160,7 +165,8 @@ class KeyManager(object):
             else:
                 event.cli.focus(u'clidocs')
 
-        @self.manager.registry.add_binding(getattr(Keys, self.key_bindings['exit']))
+        @self.manager.registry.add_binding(
+	    getattr(Keys, self.key_bindings['exit']))
         def handle_exit(event):
             """Quit when the `F10` key is pressed.
 
