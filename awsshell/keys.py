@@ -102,7 +102,7 @@ class KeyManager(object):
             enable_open_in_editor=False)
 
         @self.manager.registry.add_binding(
-	    getattr(Keys, self.key_bindings['toggle_fuzzy']))
+            getattr(Keys, self.key_bindings['toggle_fuzzy']))
         def handle_toggle_fuzzy(_):
             """Toggle fuzzy matching.
 
@@ -113,7 +113,7 @@ class KeyManager(object):
             set_match_fuzzy(not get_match_fuzzy())
 
         @self.manager.registry.add_binding(
-	    getattr(Keys, self.key_bindings['toggle_editor']))
+            getattr(Keys, self.key_bindings['toggle_editor']))
         def handle_toggle_editor(_):
             """Toggle Vi mode keybindings matching.
 
@@ -127,7 +127,7 @@ class KeyManager(object):
             stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(
-	    getattr(Keys, self.key_bindings['toggle_column']))
+            getattr(Keys, self.key_bindings['toggle_column']))
         def handle_toggle_column(_):
             """Toggle multiple column completions.
 
@@ -139,7 +139,7 @@ class KeyManager(object):
             stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(
-	    getattr(Keys, self.key_bindings['toggle_help']))
+            getattr(Keys, self.key_bindings['toggle_help']))
         def handle_toggle_help(_):
             """Toggle the help container.
 
@@ -151,7 +151,7 @@ class KeyManager(object):
             stop_input_and_refresh_cli()
 
         @self.manager.registry.add_binding(
-	    getattr(Keys, self.key_bindings['toggle_focus']))
+            getattr(Keys, self.key_bindings['toggle_focus']))
         def handle_toggle_focus(event):
             """Switch between the default and docs buffers.
 
@@ -166,7 +166,7 @@ class KeyManager(object):
                 event.cli.focus(u'clidocs')
 
         @self.manager.registry.add_binding(
-	    getattr(Keys, self.key_bindings['exit']))
+            getattr(Keys, self.key_bindings['exit']))
         def handle_exit(event):
             """Quit when the `F10` key is pressed.
 
