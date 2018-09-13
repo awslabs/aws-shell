@@ -42,7 +42,7 @@ def index_command(index_dict, help_command):
             service_name, op_name = help_command.event_class.rsplit('.', 1)
             example = SHORTHAND_DOC.generate_shorthand_example(
                 cli_argument=arg_obj,
-                service_name=service_name,
+                service_id=service_name,
                 operation_name=op_name,
             )
             metadata['example'] = example
