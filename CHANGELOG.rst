@@ -2,6 +2,11 @@
 CHANGELOG
 =========
 
+0.2.1
+=====
+
+* bugfix:AWS CLI: Fixes `#208 <https://github.com/awslabs/aws-shell/issues/208>`__. Update the AWS Shell to support the latest version of the AWS CLI.
+
 0.2.0
 =====
 
