@@ -1,0 +1,44 @@
+{
+  "StartStage": "GetSubnetSwitch",
+  "Stages": [
+    {
+      "Name": "GetSubnetSwitch",
+      "Prompt": "Select a source for the Subnet: ",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+            { "Option": "Create new Subnet", "Stage": "CreateSubnet" },
+            { "Option": "Select existing Subnet", "Stage": "SelectSubnet" }
+        ]
+      },
+
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "SubnetSource" },
+      "NextStage": { "Type": "Variable", "Name": "SubnetSource" }
+    },
+    {
+      "Name": "CreateSubnet",
+      "Prompt": "Delegate to create subnet",
+      "Retrieval": {
+          "Type": "Wizard",
+          "Resource": "create-subnet",
+          "Path": "Subnet"
+      }
+    },
+    {
+      "Name": "SelectSubnet",
+      "Prompt": "Select a Subnet: ",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "DescribeSubnets"
+        },
+        "Path": "Subnets"
+      },
+      "Interaction": { "ScreenType": "InfoSelect", "Path": "[].SubnetId" }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "StartStage": "GetVPCSwitch",
+  "Stages": [
+    {
+      "Name": "GetVPCSwitch",
+      "Prompt": "Select a source for the VPC: ",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+            { "Option": "Create new VPC", "Stage": "CreateVPC" },
+            { "Option": "Select existing VPC", "Stage": "SelectVPC" }
+        ]
+      },
+
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "VPCSource" },
+      "NextStage": { "Type": "Variable", "Name": "VPCSource" }
+    },
+    {
+      "Name": "CreateVPC",
+      "Prompt": "Delegate to create VPC",
+      "Retrieval": {
+          "Type": "Wizard",
+          "Resource": "create-vpc",
+          "Path": "Vpc"
+      }
+    },
+    {
+      "Name": "SelectVPC",
+      "Prompt": "Select a VPC: ",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "DescribeVpcs"
+        },
+        "Path": "Vpcs"
+      },
+      "Interaction": { "ScreenType": "InfoSelect", "Path": "[].VpcId" }
+    }
+  ]
+}

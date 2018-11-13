@@ -1,0 +1,43 @@
+{
+  "StartStage": "GetGroupSwitch",
+  "Stages": [
+    {
+      "Name": "GetGroupSwitch",
+      "Prompt": "Select a source for the Security Group: ",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+            { "Option": "Create new Security Group", "Stage": "CreateGroup" },
+            { "Option": "Select existing Security Group", "Stage": "SelectGroup" }
+        ]
+      },
+
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "GroupSource" },
+      "NextStage": { "Type": "Variable", "Name": "GroupSource" }
+    },
+    {
+      "Name": "CreateGroup",
+      "Prompt": "Delegate to create Security Group",
+      "Retrieval": {
+          "Type": "Wizard",
+          "Resource": "create-security-group"
+      }
+    },
+    {
+      "Name": "SelectGroup",
+      "Prompt": "Select a Security Group: ",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "DescribeSecurityGroups"
+        },
+        "Path": "SecurityGroups"
+      },
+      "Interaction": { "ScreenType": "InfoSelect", "Path": "[].GroupId" }
+    }
+  ]
+}

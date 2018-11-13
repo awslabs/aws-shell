@@ -1,0 +1,74 @@
+{
+  "StartStage": "GroupDetails",
+  "Stages": [
+    {
+      "Name": "GroupDetails",
+      "Prompt": "Please enter the details for this group: ",
+
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": {"Name": "", "Description": ""}
+      },
+
+      "Interaction": { "ScreenType": "SimplePrompt" },
+      "Resolution": { "Key": "Details" },
+      "NextStage": { "Type": "Name", "Name": "SelectVPCSwitch" }
+    },
+    {
+      "Name": "SelectVPCSwitch",
+      "Prompt": "Would you like to specify a VPC? ",
+      "Retrieval": {
+        "Type": "Static",
+        "Resource": [
+          { "Option": "Use Default", "Stage": "CreateGroupRequest" },
+          { "Option": "Select a VPC", "Stage": "GetVPC" }
+        ]
+      },
+      "Interaction": { "ScreenType": "SimpleSelect", "Path": "[].Option" },
+      "Resolution": { "Path": "Stage", "Key": "VPCSwitch" },
+      "NextStage": { "Type": "Variable", "Name": "VPCSwitch" }
+    },
+    {
+      "Name": "GetVPC",
+      "Prompt": "Getting VPC to use...",
+
+      "Retrieval": { "Type": "Wizard", "Resource": "get-vpc" },
+      "Resolution": { "Path": "VpcId", "Key": "VpcId" },
+      "NextStage": { "Type": "Name", "Name": "CreateGroupRequest" }
+    },
+    {
+      "Name": "CreateGroupRequest",
+      "Prompt": "Creating Security Group...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "CreateSecurityGroup",
+          "Parameters": { "DryRun": false },
+          "EnvParameters": {
+              "VpcId": "VpcId",
+              "GroupName": "Details.Name",
+              "Description": "Details.Description"
+          }
+        }
+      },
+      "Resolution": { "Path": "GroupId", "Key": "GroupId" },
+      "NextStage": { "Type": "Name", "Name": "GetGroup" }
+    },
+    {
+      "Name": "GetGroup",
+      "Prompt": "Getting Security Group...",
+
+      "Retrieval": {
+        "Type": "Request",
+        "Resource": {
+          "Service": "ec2",
+          "Operation": "DescribeSecurityGroups",
+          "EnvParameters": { "GroupIds": "GroupId | [@]" }
+        }
+      },
+      "Resolution": { "Path": "SecurityGroups[0]", "Key": "Group" }
+    }
+  ]
+}
