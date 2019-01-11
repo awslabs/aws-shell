@@ -20,9 +20,9 @@ try:
 except KeyError:
     python_version = '.'.join([str(i) for i in sys.version_info[:2]])
 
-run('pip install -r requirements-test.txt')
+run('pip install -U -r requirements-test.txt')
 if os.path.isdir('dist') and os.listdir('dist'):
     shutil.rmtree('dist')
 run('python setup.py bdist_wheel')
 wheel_dist = os.listdir('dist')[0]
-run('pip install %s' % (os.path.join('dist', wheel_dist)))
+run('pip install -U %s' % (os.path.join('dist', wheel_dist)))
