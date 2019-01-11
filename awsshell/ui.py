@@ -54,8 +54,8 @@ def create_default_layout(app, message='',
         replacing the prompt.
     """
     assert isinstance(message, text_type)
-    assert (get_bottom_toolbar_tokens is None or
-            callable(get_bottom_toolbar_tokens))
+    assert (get_bottom_toolbar_tokens is None
+            or callable(get_bottom_toolbar_tokens))
     assert get_prompt_tokens is None or callable(get_prompt_tokens)
     assert not (message and get_prompt_tokens)
 
@@ -166,13 +166,13 @@ def create_default_layout(app, message='',
                           content=CompletionsMenu(
                               max_height=16,
                               scroll_offset=1,
-                              extra_filter=(HasFocus(DEFAULT_BUFFER) &
-                                            ~display_completions_in_columns))),
+                              extra_filter=(HasFocus(DEFAULT_BUFFER)
+                                            & ~display_completions_in_columns))),   # noqa E501
                     Float(xcursor=True,
                           ycursor=True,
                           content=MultiColumnCompletionsMenu(
-                              extra_filter=(HasFocus(DEFAULT_BUFFER) &
-                                            display_completions_in_columns),
+                              extra_filter=(HasFocus(DEFAULT_BUFFER)
+                                            & display_completions_in_columns),
                               show_meta=Always()))
                 ]
             ),
