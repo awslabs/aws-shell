@@ -2,6 +2,13 @@
 # py.test --cov awsshell --cov-report term-missing --cov-fail-under 95 tests/
 # which will fail if tests are under 95%
 
+prepare:
+	###### FLAKE8 #####
+	# Install all requirements for testing and debugging
+	pip install -U -r requirements-dev.txt
+	pip install -U -r requirements-test.txt
+	python scripts/ci/install
+
 check:
 	###### FLAKE8 #####
 	# No unused imports, no undefined vars,
@@ -33,6 +40,9 @@ check:
 
 test:
 	python scripts/ci/run-tests
+
+integration:
+	python scripts/ci/run-integ-tests
 
 pylint:
 	###### PYLINT ######
