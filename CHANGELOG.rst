@@ -2,6 +2,11 @@
 CHANGELOG
 =========
 
+0.2.2
+=====
+
+* Update the AWS Shell to support the latest version of the AWS CLI `1.16.287 <https://github.com/aws/aws-cli/releases/tag/1.16.287>`__. 
+
 0.2.1
 =====
 

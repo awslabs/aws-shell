@@ -13,7 +13,7 @@ from awsshell.index import completion
 from awsshell import utils
 
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 
 def determine_doc_index_filename():
