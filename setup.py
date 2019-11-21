@@ -6,9 +6,9 @@ from setuptools import setup, find_packages
 
 
 requires = [
-    'awscli>=1.16.10,<2.0.0',
+    'awscli>=1.16.287,<2.0.0',
     'prompt-toolkit>=1.0.0,<1.1.0',
-    'boto3>=1.9.0,<2.0.0',
+    'boto3>=1.10.23,<2.0.0',
     'configobj>=5.0.6,<6.0.0',
     'Pygments>=2.1.3,<3.0.0',
 ]
