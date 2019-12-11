@@ -1,0 +1,2 @@
+language = "python3"
+run = "python /home/runner/scripts/ci/install ; python /home/runner/awsshell/__init__.py"
