@@ -5,9 +5,12 @@ import json
 
 from six import BytesIO
 from docutils.core import publish_string
-from botocore.docs.bcdoc import textwriter
 import awscli.clidriver
 from awscli.argprocess import ParamShorthandDocGen
+try:
+    from botocore.docs.bcdoc import textwriter
+except ImportError:
+    from awscli.bcdoc import textwriter
 
 from awsshell import determine_doc_index_filename
 from awsshell.utils import remove_html
