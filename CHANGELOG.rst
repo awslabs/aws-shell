@@ -2,6 +2,11 @@
 CHANGELOG
 =========
 
+0.2.2
+=====
+
+* bugfix:Dependency: Fix bcdoc import errors. Fixes `#247 <https://github.com/awslabs/aws-shell/issues/247>`__.
+
 0.2.1
 =====
 

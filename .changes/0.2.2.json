@@ -1,0 +1,10 @@
+{
+  "schema-version": "1.0",
+  "changes": [
+    {
+      "type": "bugfix",
+      "category": "Dependency",
+      "description": "Fix bcdoc import errors. Fixes `#247 <https://github.com/awslabs/aws-shell/issues/247>`__."
+    }
+  ]
+}
