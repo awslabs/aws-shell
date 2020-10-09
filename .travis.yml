@@ -12,7 +12,9 @@ matrix:
           env: TEST_TYPE=test
         - python: 3.6
           env: TEST_TYPE=test
-
+        - python: 3.7
+          env: TEST_TYPE=test
+          
 sudo: false
 install:
   - if [[ $TEST_TYPE == 'check' ]]; then pip install -r requirements-dev.txt; fi

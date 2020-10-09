@@ -1,5 +1,5 @@
-doc8==0.6.0
-flake8==2.5.0
+doc8==0.8.0
+flake8==3.6.0
 pep257==0.7.0
-pylint==1.7.2
+pylint<=2.2.2   # pylint 2.2.2 is not released on Python 2.7.x
 -rrequirements-test.txt

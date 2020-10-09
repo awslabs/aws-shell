@@ -110,8 +110,8 @@ class AWSShellCompleter(Completer):
         completions = self._completer.autocomplete(text_before_cursor)
         prompt_completions = list(self._convert_to_prompt_completions(
             completions, text_before_cursor))
-        if (not prompt_completions and self._completer.last_option and
-                len(self._completer.cmd_path) == 3):
+        if (not prompt_completions and self._completer.last_option
+                and len(self._completer.cmd_path) == 3):
             # If we couldn't complete anything from the JSON model
             # completer and we're on a cli option (e.g --foo), we
             # can ask the server side completer if it knows anything
