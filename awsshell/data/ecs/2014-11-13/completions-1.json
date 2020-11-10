@@ -1,0 +1,132 @@
+{
+  "operations": {
+    "ListServices": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "CreateService": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "DeleteAttributes": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "DeleteCluster": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "DeleteService": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "DeregisterContainerInstance": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "DescribeContainerInstances": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "DescribeServices": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "DescribeTasks": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "ListAttributes": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "ListContainerInstances": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "ListTasks": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "PutAttributes": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "RegisterContainerInstance": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "RunTask": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "StartTask": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "StopTask": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "UpdateContainerAgent": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "UpdateContainerInstancesState": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    },
+    "UpdateService": {
+      "cluster": {
+        "resourceName": "Cluster",
+        "resourceIdentifier": "Arn"
+      }
+    }
+  },
+  "resources": {
+    "Cluster": {
+      "operation": "ListClusters",
+      "resourceIdentifier": {
+        "Arn": "clusterArns[]"
+      }
+    }
+  }
+}
