@@ -380,3 +380,31 @@ def test_global_arg_metadata_property(index_data):
     }
     completer = AWSCLIModelCompleter(index_data)
     assert '--global1' in completer.global_arg_metadata
+
+def test_add_context_changes_context(index_data):
+    index_data['aws']['commands'] = ['ec2']
+    index_data['aws']['children'] = {
+        'ec2': {
+            'commands': ['create-tags'],
+            'argument_metadata': {},
+            'arguments': [],
+            'children': {
+                'create-tags': {
+                    'commands': [],
+                    'argument_metadata': {
+                        '--resources': {'example': '', 'minidoc': 'foo'},
+                    },
+                    'arguments': ['--resources'],
+                    'children': {},
+                }
+            }
+        }
+    }
+    completer = AWSCLIModelCompleter(index_data)
+    completer.reset()
+    completer.autocomplete('c')
+    assert completer.autocomplete('c') == ['ec2']
+    completer.context = ['ec2']
+    completer.reset()
+    completer.autocomplete('c')
+    assert completer.autocomplete('c') == ['create-tags']

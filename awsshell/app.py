@@ -240,6 +240,7 @@ class AWSShell(object):
         self._profile = None
         self._input = input
         self._output = output
+        self.prompt_tokens = u'aws > '
 
         if popen_cls is None:
             popen_cls = subprocess.Popen
@@ -279,6 +280,22 @@ class AWSShell(object):
         self.config_section['theme'] = self.theme
         self.config_obj.write()
 
+    def add_context(self, text):
+        self.model_completer.context.append(
+            text.split()[0].strip('@'))
+        self.model_completer.reset()
+        self.prompt_tokens = u'aws ' + ' '.join(
+            self.model_completer.context) + u' > '
+        self.refresh_cli = True
+        self.cli.request_redraw()
+
+    def remove_context(self):
+        self.model_completer.context.pop()
+        self.prompt_tokens = u'aws ' + ' '.join(
+            self.model_completer.context) + u' > '
+        self.refresh_cli = True
+        self.cli.request_redraw()
+
     @property
     def cli(self):
         if self._cli is None or self.refresh_cli:
@@ -290,14 +307,21 @@ class AWSShell(object):
         while True:
             try:
                 document = self.cli.run(reset_current_buffer=True)
-                text = document.text
+                if self.model_completer.context and isinstance(
+                        self.model_completer.context, list):
+                    text = " ".join(self.model_completer.context) + \
+                        " " + document.text
+                    original_text = document.text
+                else:
+                    text = document.text
+                    original_text = text
             except InputInterrupt:
                 pass
             except (KeyboardInterrupt, EOFError):
                 self.save_config()
                 break
             else:
-                if text.startswith('.'):
+                if original_text.startswith('.'):
                     # These are special commands (dot commands) that are
                     # interpreted by the aws-shell directly and typically used
                     # to modify some type of behavior in the aws-shell.
@@ -305,9 +329,18 @@ class AWSShell(object):
                     if result is EXIT_REQUESTED:
                         break
                 else:
-                    if text.startswith('!'):
-                        # Then run the rest as a normally shell command.
+                    if original_text.startswith('!'):
+                        # Then run the rest as a normal shell command.
                         full_cmd = text[1:]
+                    elif original_text.startswith('@'):
+                        # Add word as context to completions
+                        self.add_context(text)
+                        continue
+                    elif original_text == 'exit' and\
+                            self.model_completer.context:
+                        # Remove most recently added context
+                        self.remove_context()
+                        continue
                     else:
                         full_cmd = 'aws ' + text
                         self.history.append(full_cmd)
@@ -339,7 +372,7 @@ class AWSShell(object):
         if self.config_section['theme'] == 'none':
             lexer = None
         return create_default_layout(
-            self, u'aws> ', lexer=lexer, reserve_space_for_menu=True,
+            self, self.prompt_tokens, lexer=lexer, reserve_space_for_menu=True,
             display_completions_in_columns=display_completions_in_columns,
             get_bottom_toolbar_tokens=toolbar.handler)
 
