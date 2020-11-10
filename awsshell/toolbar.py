@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from pygments.token import Token
+from prompt_toolkit.enums import DEFAULT_BUFFER
 
 
 class Toolbar(object):
@@ -87,7 +88,7 @@ class Toolbar(object):
             else:
                 show_help_token = Token.Toolbar.Off
                 show_help_cfg = 'OFF'
-            if cli.current_buffer_name == 'DEFAULT_BUFFER':
+            if cli.current_buffer_name == DEFAULT_BUFFER:
                 show_buffer_name = 'cli'
             else:
                 show_buffer_name = 'doc'

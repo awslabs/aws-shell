@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from prompt_toolkit.key_binding.manager import KeyBindingManager
+from prompt_toolkit.enums import DEFAULT_BUFFER
 from prompt_toolkit.keys import Keys
 
 
@@ -154,7 +155,7 @@ class KeyManager(object):
 
             """
             if event.cli.current_buffer_name == u'clidocs':
-                event.cli.focus(u'DEFAULT_BUFFER')
+                event.cli.focus(DEFAULT_BUFFER)
             else:
                 event.cli.focus(u'clidocs')
 

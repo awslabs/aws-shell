@@ -18,6 +18,7 @@ from prompt_toolkit.interface import AbortAction, AcceptAction
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import InMemoryHistory, FileHistory
 from prompt_toolkit.enums import EditingMode
+from prompt_toolkit.enums import DEFAULT_BUFFER
 
 from awsshell.ui import create_default_layout
 from awsshell.config import Config
@@ -431,6 +432,7 @@ class AWSShell(object):
             editing_mode = EditingMode.EMACS
 
         return Application(
+            use_alternate_screen=self._output is not None,
             editing_mode=editing_mode,
             layout=self.create_layout(display_completions_in_columns, toolbar),
             mouse_support=False,
@@ -444,7 +446,7 @@ class AWSShell(object):
         )
 
     def on_input_timeout(self, cli):
-        if not self.show_help:
+        if not self.show_help or cli.current_buffer_name != DEFAULT_BUFFER:
             return
         document = cli.current_buffer.document
         text = document.text
