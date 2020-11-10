@@ -22,10 +22,11 @@ class Toolbar(object):
     """
 
     def __init__(self, get_match_fuzzy, get_enable_vi_bindings,
-                 get_show_completion_columns, get_show_help):
+                 get_show_completion_columns, get_show_help, key_bindings):
+        self.key_bindings = key_bindings
         self.handler = self._create_toolbar_handler(
             get_match_fuzzy, get_enable_vi_bindings,
-            get_show_completion_columns, get_show_help)
+            get_show_completion_columns, get_show_help,)
 
     def _create_toolbar_handler(self, get_match_fuzzy, get_enable_vi_bindings,
                                 get_show_completion_columns, get_show_help):
@@ -93,17 +94,27 @@ class Toolbar(object):
                 show_buffer_name = 'doc'
             return [
                 (match_fuzzy_token,
-                 ' [F2] Fuzzy: {0} '.format(match_fuzzy_cfg)),
+                 ' [{0}] Fuzzy: {1} '.format(
+                     self.key_bindings['toggle_fuzzy'],
+                     match_fuzzy_cfg)),
                 (enable_vi_bindings_token,
-                 ' [F3] Keys: {0} '.format(enable_vi_bindings_cfg)),
+                 ' [{0}] Keys: {1} '.format(
+                     self.key_bindings['toggle_editor'],
+                     enable_vi_bindings_cfg)),
                 (show_columns_token,
-                 ' [F4] {0} Column '.format(show_columns_cfg)),
+                 ' [{0}] {1} Column '.format(
+                     self.key_bindings['toggle_column'],
+                     show_columns_cfg)),
                 (show_help_token,
-                 ' [F5] Help: {0} '.format(show_help_cfg)),
+                 ' [{0}] Help: {1} '.format(
+                     self.key_bindings['toggle_help'],
+                     show_help_cfg)),
                 (Token.Toolbar,
-                 ' [F9] Focus: {0} '.format(show_buffer_name)),
+                 ' [{0}] Focus: {1} '.format(
+                     self.key_bindings['toggle_focus'],
+                     show_buffer_name)),
                 (Token.Toolbar,
-                 ' [F10] Exit ')
+                 ' [{0}] Exit '.format(self.key_bindings['exit']))
             ]
 
         return get_toolbar_items

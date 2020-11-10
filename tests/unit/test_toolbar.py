@@ -27,7 +27,8 @@ class ToolbarTest(unittest.TestCase):
             lambda: self.aws_shell.model_completer.match_fuzzy,
             lambda: self.aws_shell.enable_vi_bindings,
             lambda: self.aws_shell.show_completion_columns,
-            lambda: self.aws_shell.show_help)
+            lambda: self.aws_shell.show_help,
+            self.aws_shell.key_bindings)
 
     def test_toolbar_on(self):
         self.aws_shell.model_completer.match_fuzzy = True

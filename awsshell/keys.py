@@ -30,8 +30,10 @@ class KeyManager(object):
     def __init__(self, get_match_fuzzy, set_match_fuzzy,
                  get_enable_vi_bindings, set_enable_vi_bindings,
                  get_show_completion_columns, set_show_completion_columns,
-                 get_show_help, set_show_help, stop_input_and_refresh_cli):
+                 get_show_help, set_show_help, stop_input_and_refresh_cli,
+                 key_bindings):
         self.manager = None
+        self.key_bindings = key_bindings
         self._create_key_manager(
             get_match_fuzzy, set_match_fuzzy,
             get_enable_vi_bindings, set_enable_vi_bindings,
@@ -99,8 +101,9 @@ class KeyManager(object):
             enable_auto_suggest_bindings=True,
             enable_open_in_editor=False)
 
-        @self.manager.registry.add_binding(Keys.F2)
-        def handle_f2(_):
+        @self.manager.registry.add_binding(
+            getattr(Keys, self.key_bindings['toggle_fuzzy']))
+        def handle_toggle_fuzzy(_):
             """Toggle fuzzy matching.
 
             :type _: :class:`prompt_toolkit.Event`
@@ -109,8 +112,9 @@ class KeyManager(object):
             """
             set_match_fuzzy(not get_match_fuzzy())
 
-        @self.manager.registry.add_binding(Keys.F3)
-        def handle_f3(_):
+        @self.manager.registry.add_binding(
+            getattr(Keys, self.key_bindings['toggle_editor']))
+        def handle_toggle_editor(_):
             """Toggle Vi mode keybindings matching.
 
             Disabling Vi keybindings will enable Emacs keybindings.
@@ -122,8 +126,9 @@ class KeyManager(object):
             set_enable_vi_bindings(not get_enable_vi_bindings())
             stop_input_and_refresh_cli()
 
-        @self.manager.registry.add_binding(Keys.F4)
-        def handle_f4(_):
+        @self.manager.registry.add_binding(
+            getattr(Keys, self.key_bindings['toggle_column']))
+        def handle_toggle_column(_):
             """Toggle multiple column completions.
 
             :type _: :class:`prompt_toolkit.Event`
@@ -133,8 +138,9 @@ class KeyManager(object):
             set_show_completion_columns(not get_show_completion_columns())
             stop_input_and_refresh_cli()
 
-        @self.manager.registry.add_binding(Keys.F5)
-        def handle_f5(_):
+        @self.manager.registry.add_binding(
+            getattr(Keys, self.key_bindings['toggle_help']))
+        def handle_toggle_help(_):
             """Toggle the help container.
 
             :type _: :class:`prompt_toolkit.Event`
@@ -144,8 +150,9 @@ class KeyManager(object):
             set_show_help(not get_show_help())
             stop_input_and_refresh_cli()
 
-        @self.manager.registry.add_binding(Keys.F9)
-        def handle_f9(event):
+        @self.manager.registry.add_binding(
+            getattr(Keys, self.key_bindings['toggle_focus']))
+        def handle_toggle_focus(event):
             """Switch between the default and docs buffers.
 
             :type event: :class:`prompt_toolkit.Event`
@@ -158,8 +165,9 @@ class KeyManager(object):
             else:
                 event.cli.focus(u'clidocs')
 
-        @self.manager.registry.add_binding(Keys.F10)
-        def handle_f10(event):
+        @self.manager.registry.add_binding(
+            getattr(Keys, self.key_bindings['exit']))
+        def handle_exit(event):
             """Quit when the `F10` key is pressed.
 
             :type event: :class:`prompt_toolkit.Event`
