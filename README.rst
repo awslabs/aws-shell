@@ -10,18 +10,18 @@ Installation
 The aws-shell requires python and `pip`_ to install.
 You can install the aws-shell using `pip`_::
 
-    $ pip install aws-shell
+    $ pip3 install aws-shell
 
 If you are not installing into a virtualenv you can run::
 
-    $ sudo pip install aws-shell
+    $ sudo pip3 install aws-shell
 
 **Mac OS X (10.11 El Capitan) users**: There is a known issue with Apple and
 its included python package dependencies (more info at
 https://github.com/pypa/pip/issues/3165).
 We are investigating ways to fix this issue but in the meantime,
 to install the aws-shell, you can run:
-``sudo pip install aws-shell --upgrade --ignore-installed six``
+``sudo pip3 install aws-shell --upgrade --ignore-installed six``
 
 Once you've installed the aws-shell, you can now run::
 
@@ -35,7 +35,7 @@ Upgrading the aws-shell
 If you want to upgrade to the latest version of the aws-shell,
 you can run::
 
-    $ pip install --upgrade aws-shell
+    $ pip3 install --upgrade aws-shell
 
 You can also use this upgrade command whenever a new version of the AWS CLI is
 released that includes new services and API updates.  You will then be
