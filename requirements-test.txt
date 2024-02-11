@@ -5,4 +5,4 @@ tox==2.2.1
 configobj==5.0.6
 # Note you need at least pip --version of 6.0 or
 # higher to be able to pick on these version specifiers.
-unittest2==1.1.0; python_version == '2.6'
+unittest2==1.1.0; python_version == '3'
